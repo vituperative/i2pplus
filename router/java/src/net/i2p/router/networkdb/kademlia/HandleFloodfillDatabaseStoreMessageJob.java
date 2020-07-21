@@ -274,9 +274,11 @@ class HandleFloodfillDatabaseStoreMessageJob extends JobImpl {
             msg2 = new DatabaseStoreMessage(getContext());
             RouterInfo me = getContext().router().getRouterInfo();
             msg2.setEntry(me);
-            if (_log.shouldWarn())
-                _log.warn("Received a DbStoreMessage with Reply token, but we aren't Floodfill\n* From: [" + _from.toBase64().substring(0,6) +
-                          "]\n* FromHash: " + _fromHash + "\n* Message: " + _message, new Exception());
+            if (_fromHash != null && _from != null) {
+                if (_log.shouldWarn())
+                    _log.warn("Received a DbStoreMessage with Reply token, but we're not a Floodfill\n* From: " + _from +
+                              "\n* From Hash: " + _fromHash + "\n* Message: " + _message, new Exception());
+            }
         }
         Hash toPeer = _message.getReplyGateway();
         boolean toUs = getContext().routerHash().equals(toPeer);
@@ -345,13 +347,13 @@ class HandleFloodfillDatabaseStoreMessageJob extends JobImpl {
                         }
                         if (_log.shouldWarn()) {
                             if (isEstab)
-                                _log.warn("Switched to alt connected peer " + toPeer + " in LS with " + count + " leases");
+                                _log.warn("Switched to alternative connected peer [" + toPeer.toBase64().substring(0,6) + "] in LeaseSet with " + count + " leases");
                             else
-                                _log.warn("Alt connected peer not found in LS with " + count + " leases");
+                                _log.warn("Alternative connected peer not found in LeaseSet with " + count + " leases");
                         }
                     } else {
                         if (_log.shouldWarn())
-                            _log.warn("Reply gw not found in LS with " + count + " leases");
+                            _log.warn("Reply gateway not found in LeaseSet with " + count + " leases");
                     }
                 }
             }

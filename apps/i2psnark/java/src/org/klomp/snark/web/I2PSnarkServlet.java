@@ -2108,7 +2108,7 @@ public class I2PSnarkServlet extends BasicServlet {
                                "<td class=\"snarkTorrentStatus\"><b>" + txt +
                                "</b></td>\n<td class=\"snarkTorrentPeerCount\"><span class=\"right\">" + curPeers +
                                "</span>" + thinsp(noThinsp) + "<span class=\"left\">" + knownPeers + "</span>";
-                    if (upBps > 0) {
+                    if (upBps > 0 || curPeers > 0) {
                         snarkStatus = "active seeding complete";
                     } else {
                         snarkStatus = "inactive seeding complete";
@@ -2401,7 +2401,8 @@ public class I2PSnarkServlet extends BasicServlet {
             if (!showDebug)
                 Collections.sort(peers, new PeerComparator());
             for (Peer peer : peers) {
-                if (upBps > 0 || downBps > 0) {
+                long t = peer.getInactiveTime();
+                if ((peer.getUploadRate() > 0 || peer.getDownloadRate() > 0) && t < 60 * 1000) {
                     snarkStatus = "active";
                     } else
                     snarkStatus = "inactive";
@@ -2440,7 +2441,6 @@ public class I2PSnarkServlet extends BasicServlet {
                 else
                     client = _t("Unknown") + " (" + ch + ')';
                 out.write(client + "</span></span>");
-                long t = peer.getInactiveTime();
                 if (t >= 5000) {
                     if (showDebug) {
                         out.write(" &#10140; <i>" + _t("inactive") + "&nbsp;" + (t / 1000) + "s</i>");

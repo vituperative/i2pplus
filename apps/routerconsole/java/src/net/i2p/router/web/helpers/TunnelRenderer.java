@@ -104,8 +104,9 @@ class TunnelRenderer {
                     out.write(" <a href=\"/i2ptunnelmgr\" title=\"" +
                               _t("Configure tunnels") + "\">[" + _t("configure") + "]</a>");
                 writeGraphLinks(out, in, outPool);
-                out.write(" <span class=\"b32\" title=\"" + _t("Truncated Local Destination (b32)") + "\">" +
-                          client.toBase32().substring(0,4) + "</span>");
+                out.write(" <a class=\"lsview\" href=\"/netdb?l=1#ls_" + client.toBase32().substring(0,4) + "\">" +
+                          "<span class=\"b32\" title=\"" + _t("View LeaseSet") + "\">" +
+                          client.toBase32().substring(0,4) + "</span></a>");
                 out.write("</h3>\n");
                 if (in != null) {
                     // list aliases
@@ -204,10 +205,11 @@ class TunnelRenderer {
                 else
                     out.write("</span><span class=\"left\">" + _t("B/s"));
                 out.write("</span></td>");
+                long recv = cfg.getReceiveTunnelId();
                 if (debug) {
-                    if (cfg.getReceiveTunnel() != null)
+                    if (recv != 0)
                         out.write("<td class=\"cells\" align=\"center\" title=\"" + _t("Tunnel identity") + "\"><span class=\"tunnel_id\">" +
-                                  cfg.getReceiveTunnel().getTunnelId() + "</span></td>");
+                                  recv + "</span></td>");
                     else
                         out.write("<td class=\"cells\" align=\"center\">" + _t("n/a") + "</td>");
                 }
@@ -216,10 +218,11 @@ class TunnelRenderer {
                               "</span>&nbsp;<b class=\"tunnel_cap\" title=\"" + _t("Bandwidth tier") + "\">" + getCapacity(cfg.getReceiveFrom()) + "</b></td>");
                 else
                     out.write("<td class=\"cells\"></td>");
+                long send = cfg.getSendTunnelId();
                 if (debug) {
-                    if (cfg.getSendTunnel() != null)
+                    if (send != 0)
                         out.write("<td class=\"cells\" align=\"center\" title=\"" + _t("Tunnel identity") + "\"><span class=\"tunnel_id\">" +
-                                  cfg.getSendTunnel().getTunnelId() + "</span></td>");
+                                  send + "</span></td>");
                     else
                         out.write("<td class=\"cells\"></td>");
                 }

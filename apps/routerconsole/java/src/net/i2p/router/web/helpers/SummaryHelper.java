@@ -926,6 +926,20 @@ public class SummaryHelper extends HelperBase {
         return _context.throttle().getLocalizedTunnelStatus();
     }
 
+    public String getConcurrency() {
+        if (_context == null)
+            return "0 / 0";
+        RateStat cb = _context.statManager().getRate("tunnel.concurrentBuilds");
+        RateStat brt = _context.statManager().getRate("tunnel.buildRequestTime");
+        if (cb == null || brt == null)
+            return "0 / 0";
+        Rate concurrentBuilds = cb.getRate(60*1000);
+        Rate buildRequestTime = brt.getRate(60*1000);
+        DecimalFormat fmt = new DecimalFormat("##0.0");
+        return String.valueOf(fmt.format((long)concurrentBuilds.getAverageValue()).replace(".0", "") + " / " +
+               DataHelper.formatDuration2((long)buildRequestTime.getAverageValue()));
+    }
+
     public String getInboundBacklog() {
         if (_context == null)
             return "0";

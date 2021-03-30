@@ -12,6 +12,8 @@ import net.i2p.router.util.CoDelBlockingQueue;
 import net.i2p.router.util.CoDelPriorityBlockingQueue;
 import net.i2p.util.Log;
 
+import net.i2p.util.SystemVersion;
+
 /**
  * This is used for all gateways with more than zero hops.
  *
@@ -45,10 +47,17 @@ class PumpedTunnelGateway extends TunnelGateway {
      *  warning - these limit total messages per second throughput due to
      *  requeue delay in TunnelGatewayPumper to max * 1000 / REQUEUE_TIME
      */
+
+/*
     private static final int MAX_OB_MSGS_PER_PUMP = 64;
     private static final int MAX_IB_MSGS_PER_PUMP = 24;
     private static final int INITIAL_OB_QUEUE = 64;
     private static final int MAX_IB_QUEUE = 1024;
+*/
+    private static final int MAX_OB_MSGS_PER_PUMP = SystemVersion.getMaxMemory() < 1024*1024*1024 ? 64 : 256;
+    private static final int MAX_IB_MSGS_PER_PUMP = SystemVersion.getMaxMemory() < 1024*1024*1024 ? 24 : 128;
+    private static final int INITIAL_OB_QUEUE = SystemVersion.getMaxMemory() < 1024*1024*1024 ? 64 : 256;
+    private static final int MAX_IB_QUEUE = SystemVersion.getMaxMemory() < 1024*1024*1024 ? 1024 : 2048;
 
     /**
      * @param preprocessor this pulls Pending messages off a list, builds some

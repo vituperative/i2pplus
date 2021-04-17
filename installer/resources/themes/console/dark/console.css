@@ -1417,9 +1417,7 @@ div.widescroll { /* only scroll content, not entire page eg /peers */
   line-height: 136% !important;
   text-align: center;
   box-shadow: var(--lowlight);
-  background: url(images/header.png) repeat-x scroll center center #000;
-  background: linear-gradient(to bottom, #001000, #001900 50%, #000 51%, #000) !important;
-  background: var(--h3), var(--navbar), url(/themes/console/dark/images/camotile2.png) !important;
+  background: var(--h3), var(--navbar), var(--camotile) !important;
   background-blend-mode: normal, exclusion, normal;
 }
 
@@ -9119,11 +9117,11 @@ th code {
 
 #debug h3.debug_outboundsessions {
   margin-top: -2px !important;
-  background: url(images/out.png) 8px center no-repeat, linear-gradient(to bottom, rgba(0,0,0,0) 50%, #000 50%), repeating-linear-gradient(to right, rgba(0,0,0,.5) 1px, rgba(0,16,0,.5) 2px, rgba(0,16,0,.4) 3px), var(--h3_fade) !important;
+  background: var(--out) 8px center no-repeat, linear-gradient(to bottom, rgba(0,0,0,0) 50%, #000 50%), repeating-linear-gradient(to right, rgba(0,0,0,.5) 1px, rgba(0,16,0,.5) 2px, rgba(0,16,0,.4) 3px), var(--h3_fade) !important;
 }
 
 #debug h3.debug_inboundsessions {
-  background: url(images/in.png) 8px center no-repeat, linear-gradient(to bottom, rgba(0,0,0,0) 50%, #000 50%), repeating-linear-gradient(to right, rgba(0,0,0,.5) 1px, rgba(0,16,0,.5) 2px, rgba(0,16,0,.4) 3px), var(--h3_fade) !important;
+  background: var(--in) 8px center no-repeat, linear-gradient(to bottom, rgba(0,0,0,0) 50%, #000 50%), repeating-linear-gradient(to right, rgba(0,0,0,.5) 1px, rgba(0,16,0,.5) 2px, rgba(0,16,0,.4) 3px), var(--h3_fade) !important;
 }
 
 #debug h3.debug_outboundsessions, #debug h3.debug_inboundsessions {
@@ -12560,11 +12558,11 @@ a[href^="/netdb"]:hover span {
 }
 
 #themesettings, #consolepass, #langsettings, #pw_adduser {
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), url(/themes/console/dark/images/camotile2.png) #000 !important;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), var(--camotile) #000 !important;
 }
 
 #config_ui .formaction {
-  background: repeating-linear-gradient(to right, rgba(0,0,0,.4), rgba(0,0,0,.4) 2px, rgba(0,32,0,.4) 3px), repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), url(/themes/console/dark/images/camotile2.png) #000 !important;
+  background: repeating-linear-gradient(to right, rgba(0,0,0,.4), rgba(0,0,0,.4) 2px, rgba(0,32,0,.4) 3px), repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), var(--camotile) #000 !important;
   background: #000 !important;
 }
 
@@ -12578,13 +12576,13 @@ a[href^="/netdb"]:hover span {
 
 #pluginconfig tr {
   box-shadow: var(--lowlight), inset 0 -1px 0 1px #000, inset -1px 0 0 1px #000, inset 0 0 1px 1px #020, inset 0 -1px 1px 1px #020, inset -1px 0 1px 1px #020 !important;
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), url(/themes/console/dark/images/camotile2.png) !important;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), var(--camotile) !important;
 }
 
 #plugininstall, #plugininstall2, #reseedconfig tr, #manualreseed tr, #i2pupdates tr, #netconfig tr, #externali2cp tr,
 #joinfamily tr:last-child, #newfamily tr:last-child {
   box-shadow: var(--lowlight), inset 0 0 1px 1px #040 !important;
-  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), url(/themes/console/dark/images/camotile2.png) !important;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,16,0,.5) 1px, rgba(0,16,0,.5) 2px), var(--camotile) !important;
 }
 
 #plugininstall tr, #plugininstall2 tr, #plugininstall td, #plugininstall2 td, #reseedconfig td, #manualreseed td, #i2pupdates td:not(.infohelp),
@@ -12691,19 +12689,19 @@ a[href^="/netdb"]:hover span {
 /* h1 icons */
 
 h1 {
-  background: url(images/netwrk.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--netwrk) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.home {
-  background: url(images/home.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--home) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.perf {
-  background: url(images/perf.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--perf) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.nfo {
-  background: url(images/info.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--info)10px center no-repeat, var(--h1) !important;
 }
 
 h1.hlp {
@@ -12711,39 +12709,39 @@ h1.hlp {
 }
 
 h1.addbook {
-  background: url(images/addbook.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--addbook) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.snark {
-  background: url(images/app_snark.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--app_snark) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.mail {
-  background: url(images/app_mail.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--app_mail) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.conf {
-  background: url(images/cog.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--cog) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.adv {
-  background: url(images/info.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--info) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.err {
-  background: url(images/error.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--error) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.sched {
-  background: url(images/tasks.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--tasks) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.log {
-  background: url(images/logs.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--logs) 10px center no-repeat, var(--h1) !important;
 }
 
 h1.webapp {
-  background: url(images/webapp.png) 10px center no-repeat, var(--h1) !important;
+  background: var(--webapp) 10px center no-repeat, var(--h1) !important;
 }
 
 h1[class], h1 {
@@ -14350,7 +14348,7 @@ h3 + table {
   height: 14px;
   display: inline-block;
   vertical-align: middle;
-  background: url(images/in.png) center center no-repeat;
+  background: var(--in) center center no-repeat;
   background-size: 14px !important;
 }
 
@@ -14370,7 +14368,7 @@ h3 + table {
 }
 
 .outbound  {
-  background: url(images/out.png) center center no-repeat;
+  background: var(--out) center center no-repeat;
 }
 
 #peerdefs li {

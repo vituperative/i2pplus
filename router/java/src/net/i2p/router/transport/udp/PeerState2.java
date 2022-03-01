@@ -48,7 +48,17 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
     private final SSU2Bitfield _ackedMessages;
     private byte[] _sessConfForReTX;
 
+    // As SSU
+    public static final int MIN_SSU_IPV4_MTU = 1292;
+    public static final int MAX_SSU_IPV4_MTU = 1484;
+    public static final int DEFAULT_SSU_IPV4_MTU = MAX_SSU_IPV4_MTU;
+    public static final int MIN_SSU_IPV6_MTU = 1280;
+    public static final int MAX_SSU_IPV6_MTU = 1488;
+    public static final int DEFAULT_SSU_IPV6_MTU = MIN_SSU_IPV6_MTU;  // should always be published
+    // As SSU2
     public static final int MIN_MTU = 1280;
+    public static final int MAX_MTU = 1500;
+    public static final int DEFAULT_MTU = MAX_MTU;
 
     /**
      *  @param rtt from the EstablishState, or 0 if not available
@@ -126,7 +136,11 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
 
     // SSU 2 things
 
-    long getNextPacketNumber() { return _packetNumber.incrementAndGet(); }
+    /**
+     * Next outbound packet number,
+     * starts at 1 for Alice (0 is Session Confirmed) and 0 for Bob
+     */
+    long getNextPacketNumber() { return _packetNumber.getAndIncrement(); }
     long getSendConnID() { return _sendConnID; }
     long getRcvConnID() { return _rcvConnID; }
     /** caller must sync on returned object when encrypting */
@@ -138,6 +152,9 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
     SSU2Bitfield getReceivedMessages() { return _receivedMessages; }
     SSU2Bitfield getAckedMessages() { return _ackedMessages; }
 
+    /**
+     *  @param packet fully encrypted, header and body decryption will be done here
+     */
     void receivePacket(UDPPacket packet) {
         DatagramPacket dpacket = packet.getPacket();
         byte[] data = dpacket.getData();
@@ -163,6 +180,14 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
             if (header.getType() != DATA_FLAG_BYTE) {
                 if (_log.shouldWarn())
                     _log.warn("bad data pkt type " + (header.getType() & 0xff) + " on " + this);
+                // TODO if it's early:
+                // If inbound, could be a retransmitted Session Confirmed,
+                // ack it again.
+                // If outbound, and Session Confirmed is not acked yet,
+                // could be a retransmitted Session Created,
+                // retransmit Session Confirmed.
+                // Alternatively, could be a new Session Request or Token Request,
+                // we didn't know the session has disconnected yet.
                 return;
             }
             long n = header.getPacketNumber();

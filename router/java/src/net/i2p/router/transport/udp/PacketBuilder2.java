@@ -283,7 +283,7 @@ class PacketBuilder2 {
      */
     public UDPPacket buildTokenRequestPacket(OutboundEstablishState2 state) {
         long n = _context.random().signedNextInt() & 0xFFFFFFFFL;
-        UDPPacket packet = buildLongPacketHeader(state.getSendConnID(), n, SESSION_REQUEST_FLAG_BYTE,
+        UDPPacket packet = buildLongPacketHeader(state.getSendConnID(), n, TOKEN_REQUEST_FLAG_BYTE,
                                                  state.getRcvConnID(), 0);
         DatagramPacket pkt = packet.getPacket();
 
@@ -452,7 +452,6 @@ class PacketBuilder2 {
         } else {
             len = info.length;
         }
-
 
         UDPPacket packets[] = new UDPPacket[numFragments];
         packets[0] = buildSessionConfirmedPacket(state, numFragments, info, len, gzip);
@@ -840,7 +839,7 @@ class PacketBuilder2 {
         byte data[] = pkt.getData();
         int off = pkt.getOffset();
         try {
-            List<Block> blocks = new ArrayList<Block>(4);
+            List<Block> blocks = new ArrayList<Block>(3);
             Block block = new SSU2Payload.DateTimeBlock(_context);
             int len = block.getTotalLength();
             blocks.add(block);
@@ -851,8 +850,7 @@ class PacketBuilder2 {
             block = getPadding(len, 1280);
             len += block.getTotalLength();
             blocks.add(block);
-            byte[] payload = new byte[len];
-            SSU2Payload.writePayload(payload, 0, blocks);
+            SSU2Payload.writePayload(data, off + LONG_HEADER_SIZE, blocks);
 
             ChaChaPolyCipherState chacha = new ChaChaPolyCipherState();
             chacha.initializeKey(chachaKey, 0);
@@ -882,7 +880,7 @@ class PacketBuilder2 {
         byte data[] = pkt.getData();
         int off = pkt.getOffset();
         try {
-            List<Block> blocks = new ArrayList<Block>(4);
+            List<Block> blocks = new ArrayList<Block>(2);
             Block block = new SSU2Payload.DateTimeBlock(_context);
             int len = block.getTotalLength();
             blocks.add(block);
@@ -890,14 +888,13 @@ class PacketBuilder2 {
             block = getPadding(len, 1280);
             len += block.getTotalLength();
             blocks.add(block);
-            byte[] payload = new byte[len];
-            SSU2Payload.writePayload(payload, 0, blocks);
+            SSU2Payload.writePayload(data, off + LONG_HEADER_SIZE, blocks);
 
             ChaChaPolyCipherState chacha = new ChaChaPolyCipherState();
             chacha.initializeKey(chachaKey, 0);
             chacha.setNonce(n);
             chacha.encryptWithAd(data, off, LONG_HEADER_SIZE,
-                                 data, off + LONG_HEADER_SIZE, data, off + LONG_HEADER_SIZE, len - LONG_HEADER_SIZE);
+                                 data, off + LONG_HEADER_SIZE, data, off + LONG_HEADER_SIZE, len);
 
             pkt.setLength(pkt.getLength() + len + MAC_LEN);
         } catch (RuntimeException re) {
@@ -909,7 +906,7 @@ class PacketBuilder2 {
                 _log.error("Bad token req msg out", gse);
             throw new RuntimeException("Bad token req msg out", gse);
         }
-        SSU2Header.encryptHandshakeHeader(packet, hdrKey1, hdrKey2);
+        SSU2Header.encryptLongHeader(packet, hdrKey1, hdrKey2);
     }
 
     /**

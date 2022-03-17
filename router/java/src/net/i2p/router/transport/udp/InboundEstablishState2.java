@@ -58,13 +58,19 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
     private int _mtu;
     private PeerState2 _pstate;
     private List<UDPPacket> _queuedDataPackets;
-    
+
     // testing
     private static final boolean ENFORCE_TOKEN = true;
     private static final long MAX_SKEW = 2*60*1000L;
 
 
     /**
+     *  Start a new handshake with the given incoming packet,
+     *  which must be a Session Request or Token Request.
+     *
+     *  Caller must then check getState() and build a
+     *  Retry or Session Created in response.
+     *
      *  @param packet with all header encryption removed,
      *                either a SessionRequest OR a TokenRequest.
      */
@@ -136,7 +142,6 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
             if (_log.shouldDebug())
                 _log.debug("State after mixHash 1: " + _handshakeState);
 
-            byte[] payload = new byte[len - 80]; // 32 hdr, 32 eph. key, 16 MAC
             // decrypt in-place
             try {
                 _handshakeState.readMessage(data, off + LONG_HEADER_SIZE, len - LONG_HEADER_SIZE, data, off + LONG_HEADER_SIZE);
@@ -165,7 +170,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
 
     @Override
     public int getVersion() { return 2; }
-    
+
     private void processPayload(byte[] payload, int offset, int length, boolean isHandshake) throws GeneralSecurityException {
         try {
             int blocks = SSU2Payload.processPayload(_context, this, payload, offset, length, isHandshake);
@@ -412,7 +417,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
     /////////////////////////////////////////////////////////
     // end payload callbacks
     /////////////////////////////////////////////////////////
-    
+
     // SSU 1 unsupported things
 
     @Override
@@ -456,7 +461,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
         _currentState = InboundState.IB_STATE_CREATED_SENT;
     }
 
-    
+
     /** note that we just sent a Retry packet */
     public synchronized void retryPacketSent() {
         if (_currentState != InboundState.IB_STATE_REQUEST_BAD_TOKEN_RECEIVED &&
@@ -708,9 +713,9 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
             _pstate.receivePacket(packet);
         }
     }
-    
+
     @Override
-    public String toString() {            
+    public String toString() {
         StringBuilder buf = new StringBuilder(128);
         buf.append("IES2 ");
         buf.append(Addresses.toString(_aliceIP, _alicePort));

@@ -1022,7 +1022,7 @@ public class SummaryHelper extends HelperBase {
         String source = _context.getProperty(ConfigUpdateHandler.PROP_ZIP_URL);
         boolean needSpace = false;
         if (status.length() > 0) {
-            buf.append("<h4 class=\"sb_info sb_update\">").append(status).append("</h4>\n");
+            buf.append("<h4 class=\"sb_info sb_update volatile\">").append(status).append("</h4>\n");
             needSpace = true;
         }
         String dver = NewsHelper.updateVersionDownloaded();
@@ -1031,23 +1031,27 @@ public class SummaryHelper extends HelperBase {
             if (dver == null)
                 dver = NewsHelper.unsignedVersionDownloaded();
         }
-        if (dver != null && !NewsHelper.isUpdateInProgress() &&
-            !_context.router().gracefulShutdownInProgress()) {
+        if (dver != null && !NewsHelper.isUpdateInProgress()) {
             if (needSpace)
                 buf.append("<hr>");
             else
                 needSpace = true;
-            buf.append("<h4 id=\"restartRequired\" class=\"sb_info sb_update\" title=\"");
-            if (_context.hasWrapper() || NewsHelper.isExternalRestartPending())
-                buf.append(_t("Click Restart to install").replace("Click ", ""));
-            else
-                buf.append(_t("Click Shutdown and restart to install").replace("Click ", ""));
-            buf.append("\"><b>");
-            if (source != null && source.contains("skank"))
-                buf.append("I2P+ ");
-            buf.append(_t("Update downloaded")).append("<br>");
-            buf.append("[").append(_t("{0}", DataHelper.escapeHTML(dver))).append("]");
-            buf.append("</b></h4>");
+            if (!_context.router().gracefulShutdownInProgress()) {
+                buf.append("<h4 id=\"restartRequired\" class=\"sb_info sb_update volatile\" title=\"");
+                if (_context.hasWrapper() || NewsHelper.isExternalRestartPending())
+                    buf.append(_t("Click Restart to install").replace("Click ", ""));
+                else
+                    buf.append(_t("Click Shutdown and restart to install").replace("Click ", ""));
+                buf.append("\"><b>");
+                if (source != null && source.contains("skank"))
+                    buf.append("I2P+ ");
+                buf.append(_t("Update downloaded")).append("<br>")
+                   .append("[").append(_t("{0}", DataHelper.escapeHTML(dver))).append("]")
+                   .append("</b></h4>");
+            } else {
+                buf.append("<h4 id=\"shutdownInProgress\" class=\"sb_info sb_update\" class=\"volatile\"><b>")
+                   .append(_t("Updating after restart")).append("&hellip;</b></h4>");
+            }
         }
         boolean avail = updateAvailable();
         boolean unsignedAvail = unsignedUpdateAvailable();

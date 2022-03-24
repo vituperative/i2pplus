@@ -515,8 +515,11 @@ h3[id*="jobs"] {clear: both; margin-top: 25px}
 #schedjobs li {width: calc(100% - 12px); margin: 0 4px}
 #schedjobs tr:hover td {background: #000800}
 #jobstats {margin-bottom: 10px}
+#jobstats tr:nth-last-child(n+2) {border-top: var(--border_softer)}
 #jobstats th, #jobstats td {text-align: right; padding-right: 12px}
-#jobstats td {padding-top: 6px; padding-bottom: 6px; border-top: none; border-bottom: none}
+#jobstats td {padding-top: 6px; padding-bottom: 6px; border-bottom: none}
+#jobstats tr:last-child td {border-top: var(--border); background: var(--th)}
+#jobstats tr:nth-last-child(n+2) td:nth-last-child(n+2) {border-right: var(--border_softer)}
 #jobstats tr:nth-last-child(n+2) td:nth-child(odd) {background: rgba(255,255,255,.01)}
 #jobstats tr:last-child {font-weight: 700}
 #schedjobs th:first-child, #jobstats th:first-child, #jobstats td:first-child {padding-left: 10px; text-align: left; font-weight: 700}
@@ -1164,14 +1167,14 @@ th code {user-select: all}
 .sybil_distance:last-child {margin-bottom: 8px}
 .sybil_container p:first-child {margin-top: 0}
 .sybil_container p:last-child {margin-bottom: 0}
-.sybil_container p {text-align: left}
-.sybil_container, .sybilinfo_container, .threatpoints + ul {padding: 0 5px; display: flex}
+.sybil_container p {text-align: left; white-space: nowrap}
+.sybil_container, .sybilinfo_container, .threatpoints + ul {padding: 0 5px; display: flex; flex-wrap: wrap}
 .sybil_routerinfo b.netdb_transport {margin-right: 0}
 .sybil_routerinfo td[colspan="3"] {white-space: normal}
 .sybil_routerinfo .viewprofile img, .sybil_routerinfo .viewfullentry img, .sybil_routerinfo .familysearch img, .sybil_routerinfo .configpeer img {margin-bottom: 1px; margin-right: 6px}
 .sybil_routerinfo td:first-child, .netdbentry td:first-child {padding-right: 10px; text-align: right}
 .sybil_routerinfo th img[src^="/flags"] {margin-right: 5px; width: 30px; height: 22px}
-.sybil_routerinfo .identicon {vertical-align: middle}
+.sybil_routerinfo .identicon {margin: 0 1.5px 0 -2px; vertical-align: middle; border: none; border-radius: 3px; filter: invert(1) saturate(1.1); mix-blend-mode: screen}
 #netdb .sybil_addresses, #netdb .sybil_addresses td {border-top: none}
 #netdb .sybil_addresses {padding-right: 0}
 #netdb .sybil_addresses table td {box-shadow: var(--bevel); background: #000}

@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'java', 'javascript', 'python' ]
+        language: [ 'java', 'javascript', 'python' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
@@ -63,9 +63,9 @@ jobs:
     #    uses a compiled language
 
     - name: Install dependencies
-      run: apt-get install -yqq libc6-i386 ant gettext zip openjdk-18-jdk
+      run: apt-get install -yqq libc6-i386 ant gettext zip
       
-    - name: ant pkg
+    - name: Build pkg with ant
       run: ant pkg
 
     #- run: |

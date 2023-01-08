@@ -1740,7 +1740,9 @@ public class UDPTransport extends TransportImpl implements TimedWeightedPriority
         Long id = Long.valueOf(peer.getRcvConnID());
         PeerStateDestroyed oldPSD;
         synchronized(_addDropLock) {
-            oldPSD = _recentlyClosedConnIDs.putIfAbsent(id, peer);
+            oldPSD = _recentlyClosedConnIDs.put(id, peer);
+            if (oldPSD != null)
+                _recentlyClosedConnIDs.put(id, oldPSD); // put the old one back
         }
         if (oldPSD != null)
             peer.kill();
@@ -1932,9 +1934,12 @@ public class UDPTransport extends TransportImpl implements TimedWeightedPriority
                 PeerState2 state2 = (PeerState2) oldPeer;
                 Long id = Long.valueOf(state2.getRcvConnID());
                 PeerStateDestroyed newPSD = new PeerStateDestroyed(_context, this, state2);
-                PeerStateDestroyed oldPSD = _recentlyClosedConnIDs.putIfAbsent(id, newPSD);
-                if (oldPSD != null)
+                PeerStateDestroyed oldPSD = _recentlyClosedConnIDs.put(id, newPSD);
+                if (oldPSD != null) {
+                    // put the old one back, kill new one
+                    _recentlyClosedConnIDs.put(id, oldPSD);
                     newPSD.kill();
+                }
                 _peersByConnID.remove(id);
             }
         }
@@ -2191,9 +2196,12 @@ public class UDPTransport extends TransportImpl implements TimedWeightedPriority
             PeerState2 state2 = (PeerState2) peer;
             Long id = Long.valueOf(state2.getRcvConnID());
             PeerStateDestroyed newPSD = new PeerStateDestroyed(_context, this, state2);
-            PeerStateDestroyed oldPSD = _recentlyClosedConnIDs.putIfAbsent(id, newPSD);
-            if (oldPSD != null)
+            PeerStateDestroyed oldPSD = _recentlyClosedConnIDs.put(id, newPSD);
+            if (oldPSD != null) {
+                // put the old one back, kill new one
+                _recentlyClosedConnIDs.put(id, oldPSD);
                 newPSD.kill();
+            }
             _peersByConnID.remove(id);
         }
 

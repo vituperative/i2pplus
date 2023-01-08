@@ -260,6 +260,17 @@ class PeerTestManager {
                     _log.warn("Unable to get our IP", uhe);
                 return false;
             }
+        } else {
+            // set Alice IP/port, needed for receiveTestReply() checks for msg 7
+            RouterAddress ra = _transport.getCurrentExternalAddress(bob.isIPv6());
+            if (ra != null) {
+                byte[] ourIP = ra.getIP();
+                int ourPort = ra.getPort();
+                try {
+                    InetAddress addr = InetAddress.getByAddress(ourIP);
+                    test.setAlice(addr, ourPort, null);
+                } catch (UnknownHostException uhe) {}
+            }
         }
         _currentTest = test;
         _currentTestComplete = false;
@@ -593,8 +604,24 @@ class PeerTestManager {
 
                     if (_log.shouldDebug())
                         _log.debug("Receive test reply from Charlie: " + test);
-                    boolean portok = testPort == test.getAlicePort();
-                    boolean IPok = DataHelper.eq(ip, test.getAliceIP().getAddress());
+
+                    // fixups if we didn't know our IP/port at the start
+                    int origPort = test.getAlicePort();
+                    InetAddress origAddr = test.getAliceIP();
+                    boolean portok;
+                    if (origPort > 0) {
+                        portok = testPort == origPort;
+                    } else {
+                        portok = true;
+                        test.setAlice(test.getAliceIP(), testPort, null);
+                    }
+                    boolean IPok;
+                    if (origAddr != null) {
+                        IPok = DataHelper.eq(ip, origAddr.getAddress());
+                    } else {
+                        IPok = true;
+                        test.setAlice(addr, test.getAlicePort(), null);
+                    }
                     if (!portok || !IPok) {
                         if (_log.shouldWarn())
                             _log.warn("Charlie said we had a different IP/port: " +
@@ -2405,7 +2432,7 @@ class PeerTestManager {
             long remaining = state.getBeginTime() + MAX_CHARLIE_LIFETIME - now;
             if (remaining <= 0) {
                 if (_log.shouldDebug())
-                    _log.debug("Expired as charlie on " + state);
+                    _log.debug("Expired as Charlie on " + state);
                 _activeTests.remove(_nonce);
                 return;
             }
@@ -2417,7 +2444,7 @@ class PeerTestManager {
 
             // retransmit at 4/8/12 sec, no backoff
             if (_log.shouldDebug())
-                _log.debug("Retx msg 5 to alice on " + state);
+                _log.debug("Resending message #5 to Alice on " + state);
             long nonce = _nonce.longValue();
             long sendId = (nonce << 32) | nonce;
             long rcvId = ~sendId;

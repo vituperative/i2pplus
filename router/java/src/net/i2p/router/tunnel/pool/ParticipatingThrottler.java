@@ -116,6 +116,8 @@ class ParticipatingThrottler {
             }
         } else {
             rv = Result.ACCEPT;
+            if (_log.shouldDebug())
+                _log.debug("Accepting tunnel request from [" + h.toBase64().substring(0,6) + "] -> Count: " + count + " in " + 11*60 / LIFETIME_PORTION + "s");
         }
         return rv;
     }

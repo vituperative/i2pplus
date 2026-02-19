@@ -230,7 +230,7 @@ public class NTCPConnection implements Closeable {
      * Create an outbound unconnected NTCP connection.
      * Caller MUST call transport.establishing(this) after construction.
      *
-     * @param version must be 1 or 2
+     * @param version must be 2-5
      * @throws DataFormatException if there's a problem with the address
      */
     public NTCPConnection(RouterContext ctx, NTCPTransport transport, RouterIdentity remotePeer,
@@ -238,7 +238,7 @@ public class NTCPConnection implements Closeable {
         this(ctx, transport, remAddr, false);
         _remotePeer = remotePeer;
         _version = version;
-        if (version != 2) {
+        if (version < 2 || version > 5) {
             throw new IllegalArgumentException("Bad version " + version);
         } else {
             try {
@@ -896,15 +896,14 @@ public class NTCPConnection implements Closeable {
     }
 
     /**
-     *  NTCP 1 or 2.
-     *  For NTCP1, simply closes the connection immediately.
+     *  NTCP2.
      *  For NTCP2, sends termination and then closes the connection after a brief delay.
      *
      *  @since 0.9.36
      */
     void sendTerminationAndClose() {
         ReadState rs = null;
-        if (_version == 2 && isEstablished()) {
+        if (isEstablished()) {
             synchronized (_readLock) {
                 rs = _curReadState;
             }

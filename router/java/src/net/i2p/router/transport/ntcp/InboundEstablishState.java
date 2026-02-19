@@ -5,6 +5,7 @@ import static net.i2p.router.transport.ntcp.OutboundNTCP2State.*;
 import com.southernstorm.noise.protocol.CipherState;
 import com.southernstorm.noise.protocol.CipherStatePair;
 import com.southernstorm.noise.protocol.HandshakeState;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,6 +14,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import net.i2p.crypto.EncType;
 import net.i2p.data.Base64;
 import net.i2p.data.ByteArray;
 import net.i2p.data.DataFormatException;
@@ -94,6 +97,8 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     private ByteArray _payloadTmp;
     /** Alice's negotiated options from message 3 */
     private NTCP2Options _hisPadding;
+    private int _version = 2;
+
     /** Reusable options array for message 1 processing to eliminate per-call allocation */
     private final byte[] _options1 = new byte[OPTIONS1_SIZE];
 
@@ -119,7 +124,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
 
     /** Set of states that are part of NTCP 2 protocol processing */
     private static final Set<State> STATES_NTCP2 =
-        EnumSet.of(State.IB_NTCP2_INIT, State.IB_NTCP2_GOT_X, State.IB_NTCP2_GOT_PADDING,
+        EnumSet.of(State.IB_NTCP2_INIT, State.IB_NTCP2_GOT_X, State.IB_NTCP2_GOT_MSG1, State.IB_NTCP2_GOT_PADDING,
                    State.IB_NTCP2_SENT_Y, State.IB_NTCP2_GOT_RI, State.IB_NTCP2_READ_RANDOM);
 
     private BanLogger _banLogger;
@@ -217,12 +222,13 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     }
 
     /**
-     * Returns the NTCP protocol version this state machine handles.
-     *
-     * @return 2 for NTCP 2, as this class only supports the NTCP 2 protocol
+     * Get the NTCP version
+     * @return 2-5 or 0 if unknown
      * @since 0.9.35
      */
-    public int getVersion() {return 2;}
+    public int getVersion() {
+        return _version;
+    }
 
     /**
      * Receives bytes as part of an inbound connection (Bob's perspective).
@@ -242,15 +248,12 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
      * @param src the ByteBuffer containing received data; data is copied out
      */
     private void receiveInbound(ByteBuffer src) {
-        if (STATES_NTCP2.contains(_state)) {
-            receiveInboundNTCP2(src);
-            return;
-        }
+        // first 32 bytes
 
         if (_state == State.IB_INIT && src.hasRemaining()) {
             int remaining = src.remaining();
-            if (remaining + _received < MSG1_SIZE) {
-                // Less than 64 total received, so we defer the NTCP 1 or 2 decision.
+            if (remaining + _received < KEY_SIZE) {
+                // Less than 32 total received, so we defer the X decode.
                 // Buffer in _X.
                 // Stay in the IB_INIT state, and wait for more data.
                 src.get(_X, _received, remaining);
@@ -260,12 +263,94 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                 }
                 return;
             }
-            // Less than 288 total received, assume NTCP2
-            // TODO can't change our mind later if we get more than 287
-            _con.setVersion(2);
             changeState(State.IB_NTCP2_INIT);
+            decodeInboundNTCP2X(src);
+        }
+
+        // remainder of message except padding
+        if (_state == State.IB_NTCP2_GOT_X && src.hasRemaining()) {
+            int remaining = src.remaining();
+            int extralen = 0;
+            switch (_version) {
+                case 2:
+                    break;
+                case 3:
+                    extralen = MAC_SIZE + EncType.MLKEM512_X25519_INT.getPubkeyLen();
+                    break;
+                case 4:
+                    extralen = MAC_SIZE + EncType.MLKEM768_X25519_INT.getPubkeyLen();
+                    break;
+                case 5:
+                    extralen = MAC_SIZE + EncType.MLKEM1024_X25519_INT.getPubkeyLen();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Bad version " + _version);
+            }
+            int sz = MSG1_SIZE + extralen;
+            if (remaining + _received < sz) {
+                // Less than full message 1 received, so we defer the handling.
+                // Buffer in _X.
+                // Stay in the IB_NTCP2_GOT_X state, and wait for more data.
+                src.get(_X, _received, remaining);
+                _received += remaining;
+                if (_log.shouldWarn())
+                    _log.warn("Short buffer got " + remaining + " total now " + _received + " on " + this);
+                return;
+            }
+        }
+
+        // full message and optional padding
+        if (STATES_NTCP2.contains(_state)) {
             receiveInboundNTCP2(src);
             return; // releaseBufs() will return the unused DH
+}
+     }
+
+    /**
+     * Decodes the first 32 bytes (X) from the inbound NTCP2 message 1.
+     * Performs replay check, decryption, zero-key check, and MSB-based version detection.
+     *
+     * @since 0.9.69 split out from below
+     */
+    private synchronized void decodeInboundNTCP2X(ByteBuffer src) {
+        if (_state == State.IB_NTCP2_INIT && src.hasRemaining()) {
+            int toGet = Math.min(src.remaining(), KEY_SIZE - _received);
+            src.get(_X, _received, toGet);
+            _received += toGet;
+            changeState(State.IB_NTCP2_GOT_X);
+            if (!_transport.isHXHIValid(_X)) {
+                _context.statManager().addRateData("ntcp.replayHXxorBIH", 1);
+                fail("Replay msg 1, eX = " + Base64.encode(_X, 0, KEY_SIZE));
+                return;
+            }
+
+            Hash h = _context.routerHash();
+            SessionKey bobHash = new SessionKey(h.getData());
+            System.arraycopy(_X, KEY_SIZE - IV_SIZE, _prevEncrypted, 0, IV_SIZE);
+            _context.aes().decrypt(_X, 0, _X, 0, bobHash, _transport.getNTCP2StaticIV(), KEY_SIZE);
+            if (DataHelper.eqCT(_X, 0, ZEROKEY, 0, KEY_SIZE)) {
+                fail("Bad msg 1, X = 0");
+                return;
+            }
+            if ((_X[KEY_SIZE - 1] & 0x80) != 0) {
+                if (NTCPTransport.PQ_INT_VERSION != 0) {
+                    _version = NTCPTransport.PQ_INT_VERSION;
+                    _X[KEY_SIZE - 1] &= (byte) 0x7f;
+                } else {
+                    _padlen1 = _context.random().nextInt(PADDING1_FAIL_MAX) - src.remaining();
+                    if (_padlen1 > 0) {
+                        if (_log.shouldWarn())
+                            _log.warn("Bad PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
+                                      " more bytes, waiting for " + _padlen1 + " more bytes");
+                        changeState(State.IB_NTCP2_READ_RANDOM);
+                    } else {
+                        fail("Bad PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining());
+                    }
+                    _transport.getPumper().blockIP(_con.getRemoteIP());
+                    return;
+                }
+            }
+            _con.setVersion(_version);
         }
     }
 
@@ -396,99 +481,83 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         return rv;
     }
 
-    //// NTCP2 below here
-
     /**
-     * Processes NTCP 2 handshake messages from Alice.
+     *  NTCP2 only. State must be one of IB_NTCP2_*.
+     *  Decoded X must be in _X.
+     *  Remaining part of msg1 must be in _X or src.
+     *  Padding if any is still in src and will be read here.
      *
-     * <p>NTCP 2 only. This method handles the complete handshake protocol:
-     * <ul>
-     *   <li>{@link State#IB_NTCP2_INIT}: Receives Noise X, options, and padding (message 1)</li>
-     *   <li>{@link State#IB_NTCP2_GOT_X}: Waits for padding if specified</li>
-     *   <li>{@link State#IB_NTCP2_READ_RANDOM}: Probing resistance - waits before failing</li>
-     *   <li>{@link State#IB_NTCP2_SENT_Y}: Receives Alice's RouterIdentity (message 3)</li>
-     * </ul>
+     *  Side effect: Sets state to IB_NTCP2_GOT_MSG1, IB_NTCP2_GOT_PADDING, or a failure state.
      *
-     * <p>Bob sends message 2 (Y + options + padding) after receiving message 1.
+     *  we are Bob, so receive these bytes as part of an inbound connection
+     *  This method receives messages 1 and 3, and sends message 2.
      *
-     * <p>All data must be copied out of the buffer as Reader.processRead()
-     * will return it to the pool.
+     *  All data must be copied out of the buffer as Reader.processRead()
+     *  will return it to the pool.
      *
-     * @param src the ByteBuffer containing received data
-     * @since 0.9.36
+     *  @since 0.9.36
      */
-    private void receiveInboundNTCP2(ByteBuffer src) {
-        if (_state == State.IB_NTCP2_INIT) {
-            if (!src.hasRemaining()) {return;}
-            // use _X for the buffer
-            int toGet = Math.min(src.remaining(), MSG1_SIZE - _received);
-            src.get(_X, _received, toGet);
-            _received += toGet;
-            changeState(State.IB_NTCP2_GOT_X);
-            _received = 0;
-
-            // Replay check using encrypted key
-            if (!_transport.isHXHIValid(_X)) {
-                _context.statManager().addRateData("ntcp.replayHXxorBIH", 1);
-                fail("\n* Replay Message 1: eX = " + Base64.encode(_X, 0, KEY_SIZE));
-                return;
-            }
-
-            Hash h = _context.routerHash();
-            SessionKey bobHash = new SessionKey(h.getData());
-
-            // Save encrypted data for CBC for msg 2
-            System.arraycopy(_X, KEY_SIZE - IV_SIZE, _prevEncrypted, 0, IV_SIZE);
-            _context.aes().decrypt(_X, 0, _X, 0, bobHash, _transport.getNTCP2StaticIV(), KEY_SIZE);
-            if (DataHelper.eqCT(_X, 0, ZEROKEY, 0, KEY_SIZE)) {
-                fail("BAD Establishment handshake message #1: X = 0");
-                return;
-            }
-            // Fast MSB check for key < 2^255
-            if ((_X[KEY_SIZE - 1] & 0x80) != 0) {
-                // Same probing resistance strategy as below
-                _padlen1 = _context.random().nextInt(PADDING1_FAIL_MAX) - src.remaining();
-                if (_padlen1 > 0) {
-                    if (_log.shouldWarn()) {
-                        _log.warn("[NTCP] Bad PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                  " more bytes, waiting for " + _padlen1 + " more bytes");
-                    }
-                    changeState(State.IB_NTCP2_READ_RANDOM);
-                } else {
-                    fail("Bad PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining());
+    private synchronized void receiveInboundNTCP2(ByteBuffer src) {
+        if (_state == State.IB_NTCP2_GOT_X && src.hasRemaining()) {
+            int extralen = 0;
+            String pattern;
+            try {
+                switch (_version) {
+                    case 2:
+                        pattern = HandshakeState.PATTERN_ID_XK;
+                        break;
+                    case 3:
+                        pattern = HandshakeState.PATTERN_ID_XKHFS_512;
+                        extralen = MAC_SIZE + EncType.MLKEM512_X25519_INT.getPubkeyLen();
+                        break;
+                    case 4:
+                        pattern = HandshakeState.PATTERN_ID_XKHFS_768;
+                        extralen = MAC_SIZE + EncType.MLKEM768_X25519_INT.getPubkeyLen();
+                        break;
+                    case 5:
+                        pattern = HandshakeState.PATTERN_ID_XKHFS_1024;
+                        extralen = MAC_SIZE + EncType.MLKEM1024_X25519_INT.getPubkeyLen();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Bad version " + _version);
                 }
-                return;
+                _handshakeState = new HandshakeState(pattern, HandshakeState.RESPONDER, _transport.getXDHFactory());
+            } catch (GeneralSecurityException gse) {
+                throw new IllegalStateException("bad proto", gse);
             }
-
-            try {_handshakeState = new HandshakeState(HandshakeState.PATTERN_ID_XK, HandshakeState.RESPONDER, _transport.getXDHFactory());}
-            catch (GeneralSecurityException gse) {throw new IllegalStateException("Bad protocol", gse);}
+            // use _X for the buffer
+            int toGet = Math.min(src.remaining(), MSG1_SIZE + extralen - _received);
+            src.get(_X, _received, toGet);
+            changeState(State.IB_NTCP2_GOT_MSG1);
+            _received = 0;
             _handshakeState.getLocalKeyPair().setKeys(_transport.getNTCP2StaticPrivkey(), 0,
                                                       _transport.getNTCP2StaticPubkey(), 0);
+            byte options[] = new byte[OPTIONS1_SIZE];
             try {
                 _handshakeState.start();
-                if (_log.shouldDebug()) {_log.debug("After start: " + _handshakeState.toString());}
-                _handshakeState.readMessage(_X, 0, MSG1_SIZE, _options1, 0);
+                if (_log.shouldDebug())
+                    _log.debug("After start: " + _handshakeState.toString());
+                _handshakeState.readMessage(_X, 0, MSG1_SIZE + extralen, options, 0);
             } catch (GeneralSecurityException gse) {
-                boolean gseNotNull = gse.getMessage() != null && gse.getMessage() != "null";
+                String gseMsg = gse.getMessage();
                 // Read a random number of bytes, store wanted in _padlen1
                 _padlen1 = _context.random().nextInt(PADDING1_FAIL_MAX) - src.remaining();
                 if (_padlen1 > 0) {
                     // Delayed fail for probing resistance - need more bytes before failure
-                    if (verifyInbound(h)) {
-                        if (_log.shouldDebug()) {
-                            _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                      " more bytes, waiting for " + _padlen1 + " more bytes...", gse);
-                        } else if (_log.shouldWarn()) {
-                            _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                      " more bytes, waiting for " + _padlen1 + " more bytes..." +
-                                      (gseNotNull ? "\n* General Security Exception: " + gse.getMessage() : ""));
-                        }
+                    if (_log.shouldDebug()) {
+                        _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
+                                  " more bytes, waiting for " + _padlen1 + " more bytes...", gse);
+                    } else if (_log.shouldWarn()) {
+                        _log.warn("[NTCP] BAD PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
+                                  " more bytes, waiting for " + _padlen1 + " more bytes" +
+                                  (gseMsg != null && !gseMsg.equals("null") ? "\n* General Security Exception: " + gseMsg : ""));
                     }
                     changeState(State.IB_NTCP2_READ_RANDOM);
                 } else {
                     // Got all we need, fail now
                     fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining(), gse);
                 }
+                _transport.getPumper().blockIP(_con.getRemoteIP());
                 return;
             } catch (RuntimeException re) {
                 fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE), re);
@@ -503,7 +572,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                 return;
             }
             // network ID cross-check, proposal 147, as of 0.9.42
-            v = _options1[0] & 0xff;
+            v = options[0] & 0xff;
             if (v != 0 && v != _context.router().getNetworkID()) {
                 byte[] ip = _con.getRemoteIP();
                 if (ip != null) {
@@ -671,16 +740,38 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
      * @since 0.9.36
      */
     private synchronized void prepareOutbound2() {
-        int padlen2 = _context.random().nextInt(PADDING2_MAX); // create msg 2 payload
-        byte[] tmp = new byte[MSG2_SIZE + padlen2];
-        DataHelper.toLong(tmp, KEY_SIZE + 2, 2, padlen2); // write options directly to tmp with 32 byte offset
+        // create msg 2 payload
+        int padlen2 = _context.random().nextInt(PADDING2_MAX);
+        int len = MSG2_SIZE + padlen2;
+        switch (_version) {
+            case 2:
+                break;
+            case 3:
+                len += MAC_SIZE + EncType.MLKEM512_X25519_CT.getPubkeyLen();
+                break;
+            case 4:
+                len += MAC_SIZE + EncType.MLKEM768_X25519_CT.getPubkeyLen();
+                break;
+            case 5:
+                len += MAC_SIZE + EncType.MLKEM1024_X25519_CT.getPubkeyLen();
+                break;
+            default:
+                throw new IllegalArgumentException("Bad version " + _version);
+        }
+        byte[] tmp = new byte[len];
+        // write options directly to tmp with offset so it doesn't get clobbered
+        int off = len - (OPTIONS2_SIZE + MAC_SIZE + padlen2);
+        DataHelper.toLong(tmp, off + 2, 2, padlen2);
         long now = (_context.clock().now() + 500) / 1000;
-        DataHelper.toLong(tmp, KEY_SIZE + 8, 4, now);
-        try {_handshakeState.writeMessage(tmp, 0, tmp, KEY_SIZE, OPTIONS2_SIZE);} // encrypt in-place
-        catch (GeneralSecurityException gse) { // buffer length error
+        DataHelper.toLong(tmp, off + 8, 4, now);
+        try {
+            // encrypt in-place
+            _handshakeState.writeMessage(tmp, 0, tmp, off, OPTIONS2_SIZE);
+        } catch (GeneralSecurityException gse) {
+            // buffer length error
             boolean gseNotNull = gse.getMessage() != null && gse.getMessage() != "null";
             if (!_log.shouldWarn()) {
-                _log.warn("[NTCP] BAD Outbound Establishment handshake message #2 -> " + gse.getMessage());
+                _log.error("[NTCP] BAD Outbound Establishment handshake message #2 -> " + gse.getMessage());
             }
             fail("BAD Establishment handshake message #2 out", gse);
             return;
@@ -698,8 +789,8 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         SessionKey bobHash = new SessionKey(h.getData());
         _context.aes().encrypt(tmp, 0, tmp, 0, bobHash, _prevEncrypted, KEY_SIZE);
         if (padlen2 > 0) {
-            _context.random().nextBytes(tmp, MSG2_SIZE, padlen2);
-            _handshakeState.mixHash(tmp, MSG2_SIZE, padlen2);
+            _context.random().nextBytes(tmp, len - padlen2, padlen2);
+            _handshakeState.mixHash(tmp, len - padlen2, padlen2);
             if (_log.shouldDebug()) {
                 _log.debug("After mixhash padding " + padlen2 + " Establishment handshake message #2: " + _handshakeState.toString());
             }

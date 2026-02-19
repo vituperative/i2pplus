@@ -1,6 +1,11 @@
 package net.i2p.router.crypto.ratchet;
 
-import static net.i2p.router.crypto.ratchet.RatchetPayload.*;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.southernstorm.noise.crypto.x25519.Curve25519;
 import com.southernstorm.noise.protocol.ChaChaPolyCipherState;
@@ -8,33 +13,36 @@ import com.southernstorm.noise.protocol.CipherState;
 import com.southernstorm.noise.protocol.CipherStatePair;
 import com.southernstorm.noise.protocol.DHState;
 import com.southernstorm.noise.protocol.HandshakeState;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+
 import net.i2p.crypto.EncType;
 import net.i2p.crypto.HKDF;
 import net.i2p.crypto.KeyFactory;
+import net.i2p.crypto.SessionKeyManager;
 import net.i2p.data.Base64;
 import net.i2p.data.Certificate;
+import net.i2p.data.DatabaseEntry;
 import net.i2p.data.DataFormatException;
 import net.i2p.data.DataHelper;
-import net.i2p.data.DatabaseEntry;
 import net.i2p.data.Destination;
+import net.i2p.data.Hash;
+import net.i2p.data.LeaseSet;
 import net.i2p.data.LeaseSet2;
 import net.i2p.data.PrivateKey;
 import net.i2p.data.PublicKey;
 import net.i2p.data.SessionKey;
+import net.i2p.data.SessionTag;
 import net.i2p.data.i2np.DatabaseStoreMessage;
 import net.i2p.data.i2np.GarlicClove;
 import net.i2p.data.i2np.I2NPMessage;
+import net.i2p.router.crypto.pqc.MLKEM;
+import net.i2p.router.crypto.pqc.MLKEMKeyFactory;
+import static net.i2p.router.crypto.ratchet.RatchetPayload.*;
 import net.i2p.router.LeaseSetKeys;
 import net.i2p.router.Router;
 import net.i2p.router.RouterContext;
-import net.i2p.router.crypto.pqc.MLKEM;
 import net.i2p.router.message.CloveSet;
 import net.i2p.util.Log;
+import net.i2p.util.SimpleByteCache;
 
 /**
  * ECIES+AEAD encryption engine providing New Session, New Session Reply, and Existing Session message handling
@@ -50,6 +58,8 @@ public final class ECIESAEADEngine {
     private final MuxedPQEngine _muxedPQEngine;
     private final HKDF _hkdf;
     private final Elg2KeyFactory _edhThread;
+    // For now, started on demand, see getHybridKeyFactory()
+    private MLKEMKeyFactory _mlkem768Thread;
     private boolean _isRunning;
 
     private static final byte[] ZEROLEN = new byte[0];
@@ -141,6 +151,10 @@ public final class ECIESAEADEngine {
     public synchronized void shutdown() {
         _isRunning = false;
         _edhThread.shutdown();
+        synchronized(this) {
+            if (_mlkem768Thread != null)
+                _mlkem768Thread.shutdown();
+        }
     }
 
     //// start decrypt ////
@@ -409,14 +423,23 @@ public final class ECIESAEADEngine {
     }
 
     /**
-     * @since 0.9.67
+     * @since 0.9.67, public since 0.9.69 for transports
      */
-    private static KeyFactory getHybridKeyFactory(EncType type) {
+    public KeyFactory getHybridKeyFactory(EncType type) {
         switch(type) {
           case MLKEM512_X25519:
               return MLKEM.MLKEM512KeyFactory;
           case MLKEM768_X25519:
-              return MLKEM.MLKEM768KeyFactory;
+              // non-threaded
+              //return MLKEM.MLKEM768KeyFactory;
+              // threaded, start on demand for now
+              synchronized(this) {
+                  if (_mlkem768Thread == null) {
+                      _mlkem768Thread = new MLKEMKeyFactory(_context, EncType.MLKEM768_X25519_INT);
+                      _mlkem768Thread.start();
+                  }
+                  return _mlkem768Thread;
+              }
           case MLKEM1024_X25519:
               return MLKEM.MLKEM1024KeyFactory;
           default:

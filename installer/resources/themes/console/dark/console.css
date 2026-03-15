@@ -670,6 +670,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #routerjobqueue .toggle:hover .dropdown::after{background:var(--dropdown_hover);content:"";transform:rotate(-90deg)}
 #routerjobqueue .toggle.expanded .dropdown::after{background:var(--dropdown);content:"";transform:none}
 #routerjobqueue .toggle.expanded:hover .dropdown::after{background:var(--dropdown_hover);content:"";transform:none}
+#routerjobqueue .toggle.nojobs{display:none;opacity:0}
 
 /* job queue stats */
 #jobstats+hr{display:none}
@@ -684,6 +685,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #statCount td:nth-child(n+2) span{display:inline-block;transform-origin:center center;will-change:transform}
 #statCount td.updated:nth-child(n+2) span{animation:updatingTd .1s ease-in-out both,updatingTdRevert 1.5s ease 3s both}
 .advmode #jobstats td:nth-child(n+2){width:6.5%}
+#routerjobqueue #jobs h3 span:not(.dropdown){margin:-3px 22px -3px 0;padding:3px 8px;min-width:140px;text-align:center;border-radius:16px;box-shadow:var(--bevel);background:var(--badge)}
 #statCount tr{border-top:var(--border_softer)}
 #statTotals td{border-top:var(--border)}
 #totaljobstats{margin-top:0}

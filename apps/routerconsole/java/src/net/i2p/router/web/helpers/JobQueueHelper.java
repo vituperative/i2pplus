@@ -76,24 +76,45 @@ public class JobQueueHelper extends HelperBase {
         StringBuilder buf = new StringBuilder(32*1024);
         buf.append("<div class=joblog>");
         long now = _context.clock().now();
+        boolean inactive = activeJobs.size() <= 0;
 
-        if ((activeJobs.size() != 0) && (isAdvanced())) {
-            buf.append("<div class=tablewrap id=active><h3 id=activejobs>")
-               .append(_t("Active jobs")).append(": ").append(activeJobs.size())
-               .append("</h3>\n<ol class=jobqueue>\n");
+        long maxLag = _context.jobQueue().getMaxLag();
+        long avgLag = _context.jobQueue().getMaxLag();
+        String maxLagStr = maxLag > 0 ? " <span id=maxLag class=jobCounter style=float:right>" +
+                                         _t("Max Lag: {0}", DataHelper.formatDuration2(maxLag)) + "</span>" : "";
+        String avgLagStr = avgLag > 0 ? " <span id=avgLag class=jobCounter style=float:right>" +
+                                         _t("Average Lag: {0}", DataHelper.formatDuration2(maxLag)) + "</span>" : "";
+        buf.append("<div class=tablewrap id=active><h3 id=activejobs")
+           .append(inactive ? " class=nojobs" : "").append(">")
+           .append(_t("Active jobs")).append(": ").append(activeJobs.size())
+           .append(maxLag > 0 ? maxLagStr : avgLagStr)
+           .append("</h3>\n<ol class=jobqueue>\n");
+
+        if (activeJobs.size() > 0) {
             for (int i = 0; i < activeJobs.size(); i++) {
                 Job j = activeJobs.get(i);
                 long startTime = j.getTiming().getStartAfter();
-                long elapsed = Math.max(0, now - startTime); // Prevent negative durations
-                buf.append("<li><b title=\"").append(j.toString()).append("\">").append(j.getName()).append("</b> &#10140; ");
-                buf.append(_t("started {0} ago", DataHelper.formatDuration2(elapsed))).append("</li>\n");
+                buf.append("<li><b title=\"").append(j.toString()).append("\">").append(j.getName()).append("</b></li>\n");
             }
-            buf.append("</ol></div>\n");
+            buf.append("</ol>");
         }
+        buf.append("</div>\n");
 
         if ((justFinishedJobs.size() != 0) && (isAdvanced())) {
+            // Calculate total runtime for just finished jobs
+            long totalRuntime = 0;
+            for (Job j : justFinishedJobs) {
+                long start = j.getTiming().getActualStart();
+                long end = j.getTiming().getActualEnd();
+                if (start > 0 && end > 0) {
+                    totalRuntime += (end - start);
+                }
+            }
+            String runtimeStr = totalRuntime > 0 ? " <span id=totalRuntime class=jobCounter style=float:right>" +
+                                                    _t("Duration: {0}", DataHelper.formatDuration2(totalRuntime)) +
+                                                    "</span>" : "";
             buf.append("<div class=tablewrap id=finished><h3 id=finishedjobs>")
-               .append(_t("Just finished jobs")).append(": ").append(justFinishedJobs.size())
+               .append(_t("Just finished jobs")).append(": ").append(justFinishedJobs.size()).append(runtimeStr)
                .append("</h3>\n<ol class=jobqueue>\n");
 
             // Group finished jobs by name and completion time
@@ -183,21 +204,68 @@ public class JobQueueHelper extends HelperBase {
             buf.append("</ol></div>\n");
         }
 
-        if ((readyJobs.size() != 0) && (isAdvanced())) {
-            buf.append("<div class=tablewrap id=ready><h3 id=readyjobs>")
-               .append(_t("Ready/waiting jobs")).append(": ").append(readyJobs.size())
-               .append("</h3>\n<ol class=jobqueue>\n");
-            ObjectCounterUnsafe<String> readyJobsCounter = new ObjectCounterUnsafe<String>();
-            for (int i = 0; i < readyJobs.size() && i < MAX_JOBS_DISPLAYED; i++) { // Early break
-                Job j = readyJobs.get(i);
-                readyJobsCounter.increment(j.getName());
+        if (readyJobs.size() != 0) {
+            // Find oldest wait time for header
+            long oldestElapsed = 0;
+            for (Job j : readyJobs) {
                 long elapsed = Math.max(0, now - j.getTiming().getStartAfter());
-                buf.append("<li><b title=\"").append(j.toString()).append("\">").append(j.getName()).append("</b> &#10140; ")
-                   .append(_t("waiting")).append(' ').append(DataHelper.formatDuration2(elapsed))
-                   .append("</li>\n");
+                if (elapsed > oldestElapsed) oldestElapsed = elapsed;
+            }
+            String oldestStr = oldestElapsed > 0 ? " <span id=oldest class=jobCounter style=float:right>" +
+                                                    _t("Oldest: {0}", DataHelper.formatDuration2(oldestElapsed)) +
+                                                    "</span>" : "";
+            buf.append("<div class=tablewrap id=ready><h3 id=readyjobs>")
+               .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
+               .append(oldestStr)
+               .append("</h3>\n<ol class=jobqueue>\n");
+
+            // Group ready jobs by name and elapsed time (rounded to nearest second)
+            Map<String, Map<Long, List<Job>>> groupedReadyJobs = new HashMap<String, Map<Long, List<Job>>>();
+            for (int i = 0; i < readyJobs.size(); i++) {
+                Job j = readyJobs.get(i);
+                String jobName = j.getName();
+                long elapsed = Math.max(0, now - j.getTiming().getStartAfter());
+                long elapsedSeconds = (elapsed / 1000) * 1000; // Round to nearest second
+
+                if (!groupedReadyJobs.containsKey(jobName)) {
+                    groupedReadyJobs.put(jobName, new HashMap<Long, List<Job>>());
+                }
+                Map<Long, List<Job>> timeGroups = groupedReadyJobs.get(jobName);
+                if (!timeGroups.containsKey(elapsedSeconds)) {
+                    timeGroups.put(elapsedSeconds, new ArrayList<Job>());
+                }
+                timeGroups.get(elapsedSeconds).add(j);
+            }
+
+            // Sort and display
+            List<String> sortedJobNames = new ArrayList<>(groupedReadyJobs.keySet());
+            Collections.sort(sortedJobNames);
+
+            int displayedJobCount = 0;
+            for (String jobName : sortedJobNames) {
+                Map<Long, List<Job>> timeGroups = groupedReadyJobs.get(jobName);
+                List<Long> sortedTimes = new ArrayList<>(timeGroups.keySet());
+                Collections.sort(sortedTimes);
+
+                for (Long elapsedSeconds : sortedTimes) {
+                    if (displayedJobCount >= MAX_JOBS_DISPLAYED) break;
+
+                    List<Job> jobsAtTime = timeGroups.get(elapsedSeconds);
+                    displayedJobCount += jobsAtTime.size();
+
+                    String timeStr = "<i>" + DataHelper.formatDuration2(elapsedSeconds) + "</i>";
+                    String jobDisplay = "<b title=\"" + jobsAtTime.get(0).toString() + "\">" + jobName + "</b>";
+                    if (jobsAtTime.size() > 1) {
+                        jobDisplay += " <span class=jobsCounter>" + jobsAtTime.size() + "</span>";
+                    }
+
+                    buf.append("<li>").append(jobDisplay).append(" &#10140; ")
+                       .append(_t("waiting {0}", timeStr))
+                       .append("</li>\n");
+                }
+                if (displayedJobCount >= MAX_JOBS_DISPLAYED) break;
             }
             buf.append("</ol></div>\n");
-            getJobCounts(buf, readyJobsCounter);
             out.append(buf);
             buf.setLength(0);
         }
@@ -252,9 +320,13 @@ public class JobQueueHelper extends HelperBase {
 
         // Build scheduled jobs list
         StringBuilder scheduledBuf = new StringBuilder(8192);
+        int droppedCount = _context.jobQueue().getAndResetDroppedCount();
+        String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
+                                                _t("Dropped: {0}", droppedCount) + "</span>" : "";
         scheduledBuf.append("<div class=tablewrap id=scheduled><h3 id=scheduledjobs>")
            .append(_t("Scheduled jobs")).append(": ")
-           .append(displayedJobCount).append(" / ").append(eligibleScheduledCount) // Will update later
+           .append(displayedJobCount).append(" / ").append(eligibleScheduledCount)
+           .append(droppedStr)
            .append("</h3>\n<ol class=jobqueue>\n");
 
         for (JobTimeEntry entry : sortedJobs) {

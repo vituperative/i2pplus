@@ -22,6 +22,7 @@
 #advconf .newKey:empty:not(:focus)::before{width:12px;height:12px;display:inline-block;vertical-align:middle;background:var(--star) no-repeat center center/12px;content:""}
 #advconf .value{word-break:break-all}
 #advancedconfig{position:relative}
+#banSummary ul:empty{display:none}
 #compactLookup{margin:-12px auto 16px;width:50%;min-width:500px}
 #compactLookup{margin-top:15px;position:sticky !important;top:-1px;z-index:999;box-shadow:var(--border_table)}
 #compactLookup #netdblookup button,#compactLookup #netdblookup input, #compactLookup #netdblookup select{margin:0 !important;width:calc(100% - 4px);min-width:0!important;display:inline-block;vertical-align:middle}
@@ -52,7 +53,7 @@
 #pluginTotals #started{background:var(--start) no-repeat left center/10px}
 #pluginTotals #stopped{margin-left:0;background:var(--stop) no-repeat left center/10px}
 #pconfig:hover #pluginTotals{color:var(--ink)}#.tIn{background:url(/themes/console/images/inbound.svg) no-repeat 6px center/16px,var(--badge)}
-#banSummary ul:empty{display:none}
+#routerjobqueue #jobs h3 span:not(.dropdown){margin-right:22px;text-transform:none;letter-spacing:0;transform:scale(0.85);transform-origin:right center}#tunnelconfig .tunnelName::before{margin:-4px 6px -4px 0;width:20px;height:20px;display:inline-block;vertical-align:middle;background:url(/themes/console/images/hardhat.svg) no-repeat center center/20px;content:""}
 #sessionBanned th,#sessionBanned td{padding:4px 6px}
 #sessionBanned thead th{font-size:85%;text-align:left}
 #sessionBanned tfoot th{padding:8px 12px;text-align:center}
@@ -63,4 +64,3 @@
 #sidebar h3:hover .badge{margin:0;width:0;font-size:0;opacity:0}
 #ssuadv a{display:inline-block;vertical-align:text-top;text-transform:none;letter-spacing:0;font-size:85%}
 #tunnelconfig .tunnelName{margin-right:6px;min-width:240px;display:inline-block}
-#tunnelconfig .tunnelName::before{margin:-4px 6px -4px 0;width:20px;height:20px;display:inline-block;vertical-align:middle;background:url(/themes/console/images/hardhat.svg) no-repeat center center/20px;content:""}

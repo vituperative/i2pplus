@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,8 @@ public class JobQueue {
     private final Set<Job> _timedJobs;
     /** Queue of timed jobs that are ready to run (moved from _timedJobs when ready) */
     private final BlockingQueue<Job> _timedJobsReady;
+    /** Track jobs currently being processed by runners to prevent duplicate requeue */
+    private final Set<Job> _jobsInFlight;
     /** Job name to JobStat for that job */
     private final ConcurrentHashMap<String, JobStats> _jobStats;
     private final QueuePumper _pumper;
@@ -94,7 +97,7 @@ public class JobQueue {
     private final static int DEFAULT_MAX_WAITING_JOBS = SystemVersion.isSlow() ? Math.max(SystemVersion.getCores() * 8, 128) :
                                                                                  Math.max(SystemVersion.getCores() * 16, 256);
     private int _maxWaitingJobs = DEFAULT_MAX_WAITING_JOBS;
-    private final static long MIN_LAG_TO_DROP = SystemVersion.isSlow() ? 500 : 200;
+    private final static long MIN_LAG_TO_DROP = SystemVersion.isSlow() ? 100 : 50;
 
     /**
      *  @since 0.9.52+
@@ -111,6 +114,9 @@ public class JobQueue {
     private final JobQueueScaler _scaler;
 
     private static final long[] RATES = RateConstants.SHORT_TERM_RATES;
+
+    /** Track dropped jobs for UI display */
+    private final AtomicInteger _droppedJobsCount = new AtomicInteger();
 
     /**
      *  Does not start the pumper. Caller MUST call startup.
@@ -134,6 +140,7 @@ public class JobQueue {
         _highPriorityJobs = new LinkedBlockingQueue<>();
         _timedJobs = new TreeSet<>(new JobComparator());
         _timedJobsReady = new LinkedBlockingQueue<>();
+        _jobsInFlight = Collections.synchronizedSet(new HashSet<>());
         _jobLock = new Object();
         _queueRunners = new ConcurrentHashMap<>(RUNNERS);
         _jobStats = new ConcurrentHashMap<>();
@@ -163,29 +170,32 @@ public class JobQueue {
             _log.warn(job + " scheduled far in the future: " + (new Date(start)));
         }
         synchronized (_jobLock) {
-            alreadyExists = _readyJobs.contains(job) || _highPriorityJobs.contains(job);
+            alreadyExists = _readyJobs.contains(job) || _highPriorityJobs.contains(job) || 
+                           _timedJobsReady.contains(job) || _jobsInFlight.contains(job);
             numReady = _readyJobs.size();
 
             if (!alreadyExists) {
                 boolean removed = _timedJobs.remove(job);
                 if (removed && _log.shouldWarn()) {_log.warn(job + " removed from queue and rescheduled -> Duplicate instance");}
 
-                if (shouldDrop(job, numReady)) {
-                    job.dropped();
-                    dropped = true;
-                }
-                else {
-                    if (start <= now) {
-                        job.getTiming().setStartAfter(now);
-                        if (job instanceof JobImpl) {((JobImpl) job).madeReady(now);}
-                        _readyJobs.offer(job);
+                // Don't re-add if it was already in _timedJobs (duplicate from requeue while still scheduled)
+                if (!removed) {
+                    if (shouldDrop(job, numReady)) {
+                        job.dropped();
+                        dropped = true;
                     } else {
-                        _timedJobs.add(job);
-                        if (_log.shouldDebug()) {
-                            _log.debug("Waking pumper: job " + job.getName() + " scheduled at " + start + " < next pumper run " + _nextPumperRun);
-                        }
-                        if (start < _nextPumperRun) {
-                            _jobLock.notifyAll();
+                        if (start <= now) {
+                            job.getTiming().setStartAfter(now);
+                            if (job instanceof JobImpl) {((JobImpl) job).madeReady(now);}
+                            _readyJobs.offer(job);
+                        } else {
+                            _timedJobs.add(job);
+                            if (_log.shouldDebug()) {
+                                _log.debug("Waking pumper: job " + job.getName() + " scheduled at " + start + " < next pumper run " + _nextPumperRun);
+                            }
+                            if (start < _nextPumperRun) {
+                                _jobLock.notifyAll();
+                            }
                         }
                     }
                 }
@@ -202,6 +212,7 @@ public class JobQueue {
         }
         if (dropped) {
             _context.statManager().addRateData("jobQueue.droppedJobs", 1);
+            _droppedJobsCount.incrementAndGet();
             if (_log.shouldWarn()) {
                 _log.warn(job + " dropped due to backlog -> " + numReady + " jobs already queued");
             }
@@ -265,6 +276,14 @@ public class JobQueue {
      */
     public int getReadyCount() {
         return _readyJobs.size() + _highPriorityJobs.size() + _timedJobsReady.size();
+    }
+
+    /**
+     * Get and reset the dropped jobs count.
+     * @return number of jobs dropped since last call
+     */
+    public int getAndResetDroppedCount() {
+        return _droppedJobsCount.getAndSet(0);
     }
 
     /**
@@ -389,8 +408,6 @@ public class JobQueue {
             boolean shouldDrop = getMaxLag() >= MIN_LAG_TO_DROP;
             if (shouldDrop) {
                 if (cls == RepublishLeaseSetJob.class) {return false;}
-                // Exclude critical tunnel management jobs from dropping
-                if (jobName.equals("net.i2p.router.tunnel.pool.TunnelPoolManager$RemoveSlowTunnelsJob")) {return false;}
                 if ((!disableTunnelTests && cls == TestJob.class) || cls == PeerTestJob.class) {
                     return true;
                 }
@@ -400,7 +417,8 @@ public class JobQueue {
                     cls == HandleFloodfillDatabaseLookupMessageJob.class ||
                     cls == HandleGarlicMessageJob.class ||
                     cls == IterativeSearchJob.class ||
-                    jobName.equals("net.i2p.router.networkdb.kademlia.IterativeTimeoutJob")) {
+                    jobName.equals("net.i2p.router.networkdb.kademlia.IterativeTimeoutJob") ||
+                    jobName.equals("net.i2p.router.tunnel.pool.TunnelPoolManager$RemoveSlowTunnelsJob")) {
                     return true;
                 }
             }
@@ -511,6 +529,7 @@ public class JobQueue {
                 Job j = _highPriorityJobs.poll();
                 if (j != null) {
                     if (j.getJobId() == POISON_ID) break;
+                    _jobsInFlight.add(j);
                     return j;
                 }
 
@@ -518,6 +537,7 @@ public class JobQueue {
                 j = _timedJobsReady.poll();
                 if (j != null) {
                     if (j.getJobId() == POISON_ID) break;
+                    _jobsInFlight.add(j);
                     return j;
                 }
 
@@ -525,6 +545,7 @@ public class JobQueue {
                 j = _readyJobs.poll(50, TimeUnit.MILLISECONDS);
                 if (j != null) {
                     if (j.getJobId() == POISON_ID) break;
+                    _jobsInFlight.add(j);
                     return j;
                 }
             } catch (InterruptedException ie) {}
@@ -752,6 +773,9 @@ public class JobQueue {
     }
 
     void updateStats(Job job, long doStart, long origStartAfter, long duration) {
+        // Remove from in-flight tracking when job completes
+        _jobsInFlight.remove(job);
+        
         if (_context.router() == null) return;
         String key = job.getName();
         // Fix lag calculation: use actual job start time, not current time
@@ -842,6 +866,7 @@ public class JobQueue {
             readyJobs.addAll(_highPriorityJobs);
             timedJobs.addAll(_timedJobs);
         }
+        readyJobs.addAll(_timedJobsReady);
         return _queueRunners.size();
     }
 

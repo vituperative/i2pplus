@@ -43,8 +43,8 @@ public class TestJob extends JobImpl {
     private RatchetSessionTag _ratchetEncryptTag;
     private static final AtomicInteger __id = new AtomicInteger();
     private int _id;
-    private static final int MIN_TEST_PERIOD = 8*1000;
-    private static final int MAX_TEST_PERIOD = 15*1000;
+    private static final int MIN_TEST_PERIOD = 30*1000;
+    private static final int MAX_TEST_PERIOD = 120*1000;
 
     /**
      * Maximum number of tunnel tests that can run concurrently.

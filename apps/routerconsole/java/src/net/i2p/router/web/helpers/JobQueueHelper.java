@@ -295,8 +295,8 @@ public class JobQueueHelper extends HelperBase {
                     }
 
                     buf.append("<li>").append(jobDisplay).append(" &#10140; ");
-                    if (!timeStr.equals("0") {
-                       buf.append(_t("waiting {0}", timeStr))
+                    if (!timeStr.equals("0")) {
+                       buf.append(_t("waiting {0}", timeStr));
                     }
                     buf.append("</li>\n");
                 }

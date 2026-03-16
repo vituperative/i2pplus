@@ -3,8 +3,10 @@ package net.i2p.router.networkdb.kademlia;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
+import java.util.Collections;
 import net.i2p.data.Hash;
 import net.i2p.data.router.RouterAddress;
 import net.i2p.data.router.RouterInfo;
@@ -105,7 +107,7 @@ class RefreshRoutersJob extends JobImpl {
      */
     private void initializeRouterListIfNeeded() {
         if (_routers == null || _routers.isEmpty()) {
-            _routers = _facade.getFloodfillPeers();
+            _routers = new ArrayList<Hash>(_facade.getFloodfillPeers());
             Set<Hash> allRouters = _facade.getAllRouters();
             allRouters.removeAll(_routers);
             _routers.addAll(allRouters);
@@ -150,11 +152,13 @@ class RefreshRoutersJob extends JobImpl {
      * Processes the next router in the list to determine whether to refresh its info.
      */
     private void processNextRouterForRefresh() {
-        Iterator<Hash> iter = _routers.iterator();
-        if (!iter.hasNext()) return;
-
-        Hash routerHash = iter.next();
-        iter.remove();
+        Hash routerHash;
+        synchronized (this) {
+            if (_routers == null || _routers.isEmpty()) return;
+            routerHash = _routers.remove(0);
+        }
+        
+        if (routerHash == null) return;
 
         if (routerHash.equals(getContext().routerHash())) {
             return;

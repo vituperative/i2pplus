@@ -171,7 +171,8 @@ public class JobQueue {
         }
         synchronized (_jobLock) {
             alreadyExists = _readyJobs.contains(job) || _highPriorityJobs.contains(job) || 
-                           _timedJobsReady.contains(job) || _jobsInFlight.contains(job);
+                           _timedJobsReady.contains(job);
+            // Note: Don't check _jobsInFlight here - a job MUST be allowed to requeue itself
             numReady = _readyJobs.size();
 
             if (!alreadyExists) {
@@ -181,6 +182,9 @@ public class JobQueue {
                 // Don't re-add if it was already in _timedJobs (duplicate from requeue while still scheduled)
                 if (!removed) {
                     if (shouldDrop(job, numReady)) {
+                        if (_log.shouldWarn() && job.getName().contains("Remove Slow")) {
+                            _log.warn("Dropping RemoveSlowTunnelsJob: numReady=" + numReady + ", maxLag=" + getMaxLag());
+                        }
                         job.dropped();
                         dropped = true;
                     } else {
@@ -191,7 +195,8 @@ public class JobQueue {
                         } else {
                             _timedJobs.add(job);
                             if (_log.shouldDebug()) {
-                                _log.debug("Waking pumper: job " + job.getName() + " scheduled at " + start + " < next pumper run " + _nextPumperRun);
+                                long diff = _nextPumperRun - start;
+                                _log.debug("Waking pumper: job " + job.getName() + " early by " + diff + "ms");
                             }
                             if (start < _nextPumperRun) {
                                 _jobLock.notifyAll();
@@ -408,6 +413,8 @@ public class JobQueue {
             boolean shouldDrop = getMaxLag() >= MIN_LAG_TO_DROP;
             if (shouldDrop) {
                 if (cls == RepublishLeaseSetJob.class) {return false;}
+                // Don't drop critical tunnel management jobs
+                if (jobName.equals("net.i2p.router.tunnel.pool.TunnelPoolManager$RemoveSlowTunnelsJob")) {return false;}
                 if ((!disableTunnelTests && cls == TestJob.class) || cls == PeerTestJob.class) {
                     return true;
                 }
@@ -416,9 +423,7 @@ public class JobQueue {
                     cls == ExploreJob.class ||
                     cls == HandleFloodfillDatabaseLookupMessageJob.class ||
                     cls == HandleGarlicMessageJob.class ||
-                    cls == IterativeSearchJob.class ||
-                    jobName.equals("net.i2p.router.networkdb.kademlia.IterativeTimeoutJob") ||
-                    jobName.equals("net.i2p.router.tunnel.pool.TunnelPoolManager$RemoveSlowTunnelsJob")) {
+                    cls == IterativeSearchJob.class) {
                     return true;
                 }
             }

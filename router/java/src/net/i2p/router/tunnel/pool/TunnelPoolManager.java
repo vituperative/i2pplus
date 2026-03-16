@@ -50,7 +50,9 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     private static final String PROP_DISABLE_TUNNEL_TESTING = "router.disableTunnelTesting";
     private static final String PROP_SLOW_TUNNEL_THRESHOLD = "router.tunnel.slowThreshold";
     private static final String PROP_SLOW_TUNNEL_MIN = "router.tunnel.slowThresholdMin";
+    private static final String PROP_SLOW_TUNNEL_INTERVAL = "router.tunnel.slowTunnelInterval";
     private static final int DEFAULT_SLOW_THRESHOLD_MS = 0; // 0 means use 1.5x average
+    private static final int DEFAULT_RUN_INTERVAL_MS = 60*1000; // 60s default
     private static final double MAX_SHARE_RATIO = 100000d;
 
     public TunnelPoolManager(RouterContext ctx) {
@@ -595,7 +597,9 @@ public class TunnelPoolManager implements TunnelManagerFacade {
         _context.jobQueue().addJob(new BootstrapPool(_context, _inboundExploratory));
         _context.jobQueue().addJob(new BootstrapPool(_context, _outboundExploratory));
 
-        // remove slow tunnels job - runs every minute
+        // remove slow tunnels job - runs every 10 seconds
+        if (_log.shouldDebug())
+            _log.debug("Adding RemoveSlowTunnelsJob to job queue");
         _context.jobQueue().addJob(new RemoveSlowTunnelsJob(_context, this));
     }
 
@@ -614,7 +618,6 @@ public class TunnelPoolManager implements TunnelManagerFacade {
 
     private static class RemoveSlowTunnelsJob extends JobImpl {
         private final TunnelPoolManager _mgr;
-        private static final long RUN_INTERVAL = 10*1000; // 10s
         private static final long STARTUP_DELAY = 90*1000; // 90s after startup
         private static final AtomicInteger _runCount = new AtomicInteger(0);
 
@@ -654,13 +657,13 @@ public class TunnelPoolManager implements TunnelManagerFacade {
             int runNum = _runCount.incrementAndGet();
             _mgr._log.info("RemoveSlowTunnelsJob run #" + runNum + " completed in " + duration + "ms");
 
-            // Use requeue() like other periodic jobs (TestJob, ExpireJob)
-            // This reuses the same job instance instead of creating new ones
-            _mgr._log.info("Remove Slow Tunnels Job: Requeueing in " + (RUN_INTERVAL / 1000) + "s...");
+            // Use configurable interval (default 30s)
+            long interval = _mgr._context.getProperty(PROP_SLOW_TUNNEL_INTERVAL, DEFAULT_RUN_INTERVAL_MS);
+            _mgr._log.info("Remove Slow Tunnels Job: Requeueing in " + (interval / 1000) + "s...");
             long start = _mgr._context.clock().now();
-            requeue(RUN_INTERVAL);
+            requeue(interval);
             long after = _mgr._context.clock().now();
-            _mgr._log.info("RemoveSlowTunnelsJob requeue took " + (after - start) + "ms, next run at " + (after + RUN_INTERVAL));
+            _mgr._log.info("RemoveSlowTunnelsJob requeue took " + (after - start) + "ms, next run at " + (after + interval));
         }
     }
 
@@ -735,7 +738,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 int currentCount = pool.getTunnelCount();
                 int configuredQty = pool.getSettings().getQuantity();
                 int minOverride = _context.getProperty(PROP_SLOW_TUNNEL_MIN, 0);
-                int minToKeep = minOverride > 0 ? minOverride : configuredQty;
+                int minToKeep = Math.max(2, minOverride > 0 ? minOverride : configuredQty);
 
                 if (currentCount <= minToKeep) continue;
 

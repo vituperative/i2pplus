@@ -220,7 +220,10 @@
 <tr><td><%=intl._t("The latency threshold in milliseconds for removing slow tunnels from <a href=/tunnels>local tunnel pools</a>. Tunnels with latency above this threshold will be removed if the pool exceeds the minimum tunnel count. Set to 0 to use 1.5x the global average latency. [Default is 0]")%></td></tr>
 
 <tr class=config><th>router.tunnel.slowThresholdMin={n} <span class=plus>I2P+</span></th></tr>
-<tr><td><%=intl._t("The minimum number of tunnels to keep in each pool when removing slow tunnels, overriding the configured tunnel quantity. Set to 0 to use the configured quantity per pool. [Default is 0]")%></td></tr>
+<tr><td><%=intl._t("The minimum number of tunnels to keep in each pool when removing slow tunnels (minimum 2), overriding the configured tunnel quantity. Set to 0 to use the configured quantity per pool. [Default is 0]")%></td></tr>
+
+<tr class=config><th>router.tunnel.slowTunnelInterval={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The interval in milliseconds between runs of the Remove Slow Tunnels job. Higher values reduce tunnel churn but may keep slow tunnels longer. [Default is 60000]")%></td></tr>
 
 <tr class=config><th>router.updateUnsigned={true|false}</th></tr>
 <tr><td><%=intl._t("If you wish to install unsigned (.zip) I2P updates, this should be added to your <code>router.config</code> file unless you have already configured <code>routerconsole.advanced=true</code>, in which case this option is already provisioned. Note: as of I2P+ 0.9.48+, installation of <a href=/configupdate#i2pupdates>unsigned updates</a> is enabled by default.")%></td></tr>

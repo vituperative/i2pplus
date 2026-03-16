@@ -16,6 +16,9 @@ import net.i2p.router.Job;
 import net.i2p.router.JobStats;
 import net.i2p.router.tunnel.pool.TestJob;
 import net.i2p.router.web.HelperBase;
+import net.i2p.stat.Rate;
+import net.i2p.stat.RateConstants;
+import net.i2p.stat.RateStat;
 import net.i2p.util.ObjectCounterUnsafe;
 import net.i2p.util.SystemVersion;
 
@@ -79,22 +82,54 @@ public class JobQueueHelper extends HelperBase {
         boolean inactive = activeJobs.size() <= 0;
 
         long maxLag = _context.jobQueue().getMaxLag();
-        long avgLag = _context.jobQueue().getMaxLag();
-        String maxLagStr = maxLag > 0 ? " <span id=maxLag class=jobCounter style=float:right>" +
-                                         _t("Max Lag: {0}", DataHelper.formatDuration2(maxLag)) + "</span>" : "";
-        String avgLagStr = avgLag > 0 ? " <span id=avgLag class=jobCounter style=float:right>" +
-                                         _t("Average Lag: {0}", DataHelper.formatDuration2(maxLag)) + "</span>" : "";
+        String lagStr = "";
+        // Show lag - always check rate stat like SidebarHelper
+        RateStat rs = _context.statManager().getRate("jobQueue.jobLag");
+        if (rs != null) {
+            Rate lagRate = rs.getRate(RateConstants.ONE_MINUTE);
+            double avgLag = lagRate.getAverageValue();
+            if (maxLag > 0) {
+                lagStr = " <span id=maxLag class=jobCounter style=float:right>" +
+                         _t("Delayed: {0}", DataHelper.formatDuration2(maxLag)) + "</span>";
+            } else if (avgLag > 0) {
+                if (avgLag < 0.001) {
+                    // Under 1ms - show in microseconds
+                    lagStr = " <span id=avgLag class=jobCounter style=float:right>" +
+                             _t("Avg: {0}µs", String.format("%.0f", avgLag * 1000)) + "</span>";
+                } else {
+                    lagStr = " <span id=avgLag class=jobCounter style=float:right>" +
+                             _t("Avg: {0}", DataHelper.formatDuration2((long)(avgLag * 1000))) + "</span>";
+                }
+            }
+        }
         buf.append("<div class=tablewrap id=active><h3 id=activejobs")
            .append(inactive ? " class=nojobs" : "").append(">")
            .append(_t("Active jobs")).append(": ").append(activeJobs.size())
-           .append(maxLag > 0 ? maxLagStr : avgLagStr)
-           .append("</h3>\n<ol class=jobqueue>\n");
+           .append(lagStr)
+           .append("</h3>\n");
 
         if (activeJobs.size() > 0) {
+            buf.append("<ol class=jobqueue>\n");
+            // Group active jobs by name
+            Map<String, List<Job>> groupedActiveJobs = new HashMap<String, List<Job>>();
             for (int i = 0; i < activeJobs.size(); i++) {
                 Job j = activeJobs.get(i);
-                long startTime = j.getTiming().getStartAfter();
-                buf.append("<li><b title=\"").append(j.toString()).append("\">").append(j.getName()).append("</b></li>\n");
+                String jobName = j.getName();
+                if (!groupedActiveJobs.containsKey(jobName)) {
+                    groupedActiveJobs.put(jobName, new ArrayList<Job>());
+                }
+                groupedActiveJobs.get(jobName).add(j);
+            }
+            // Sort and display
+            List<String> sortedNames = new ArrayList<>(groupedActiveJobs.keySet());
+            Collections.sort(sortedNames);
+            for (String jobName : sortedNames) {
+                List<Job> jobs = groupedActiveJobs.get(jobName);
+                String jobDisplay = "<b title=\"" + jobs.get(0).toString() + "\">" + jobName + "</b>";
+                if (jobs.size() > 1) {
+                    jobDisplay += " <span class=jobsCounter>" + jobs.size() + "</span>";
+                }
+                buf.append("<li>").append(jobDisplay).append("</li>\n");
             }
             buf.append("</ol>");
         }
@@ -259,9 +294,11 @@ public class JobQueueHelper extends HelperBase {
                         jobDisplay += " <span class=jobsCounter>" + jobsAtTime.size() + "</span>";
                     }
 
-                    buf.append("<li>").append(jobDisplay).append(" &#10140; ")
-                       .append(_t("waiting {0}", timeStr))
-                       .append("</li>\n");
+                    buf.append("<li>").append(jobDisplay).append(" &#10140; ");
+                    if (!timeStr.equals("0") {
+                       buf.append(_t("waiting {0}", timeStr))
+                    }
+                    buf.append("</li>\n");
                 }
                 if (displayedJobCount >= MAX_JOBS_DISPLAYED) break;
             }

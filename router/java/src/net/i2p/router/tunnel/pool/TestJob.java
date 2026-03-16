@@ -173,6 +173,16 @@ public class TestJob extends JobImpl {
             }
         }
 
+        // Check if job queue is overloaded - skip scheduling if queue is backing up
+        int readyCount = ctx.jobQueue().getReadyCount();
+        if (readyCount > 1000) {
+            Log log = ctx.logManager().getLog(TestJob.class);
+            if (log.shouldInfo()) {
+                log.info("Job queue overloaded (" + readyCount + " ready jobs) -> Not scheduling test for " + cfg);
+            }
+            return false;
+        }
+
         // Try to increment total jobs counter to check limit
         int current = TOTAL_TEST_JOBS.get();
         if (current >= maxQueuedTests) {

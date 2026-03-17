@@ -629,8 +629,8 @@ public class TunnelPool {
      *  Window set to 10 minutes to handle slow tunnel builds.
      */
     private static final long RECENTLY_ADDED_WINDOW = 10 * 60 * 1000;
-    /** Throttle refresh to prevent flooding job queue */
-    private static final long REFRESH_THROTTLE = 30 * 1000;
+    /** Throttle refresh to prevent flooding job queue - reduced to 5s for faster LeaseSet creation */
+    private static final long REFRESH_THROTTLE = 5 * 1000;
     /** Initialize to allow first request immediately */
     private long _lastRefreshTime = -REFRESH_THROTTLE;
     /** Track last NetDB publish time */
@@ -686,8 +686,12 @@ public class TunnelPool {
             }
         }
         if (info.getExpiration() > now + 60*1000 && ls != null) {
-            // Throttle requests per pool to prevent flooding job queue
-            if (now - _lastRefreshTime >= REFRESH_THROTTLE) {
+            // Check if we already have a published LeaseSet in NetDB
+            Hash destHash = _settings.getDestination();
+            boolean hasPublishedLS = _context.netDb().lookupLeaseSetLocally(destHash) != null;
+
+            // Only throttle if we already have a LeaseSet - don't throttle initial creation
+            if (!hasPublishedLS || now - _lastRefreshTime >= REFRESH_THROTTLE) {
                 _lastRefreshTime = now;
                 requestLeaseSet(ls);
             }
@@ -847,12 +851,22 @@ public class TunnelPool {
     }
 
     /**
-     * Refresh the LeaseSet, throttled to prevent flooding.
+     * Refresh the LeaseSet, throttled to prevent flooding but not on initial creation.
      * @param force if true, bypass throttle (for critical refresh when below minimum or near expiry)
      */
     void refreshLeaseSet(boolean force) {
         if (_settings.isInbound() && !_settings.isExploratory()) {
             long now = _context.clock().now();
+
+            // Check if we already have a published LeaseSet in NetDB
+            Hash destHash = _settings.getDestination();
+            boolean hasPublishedLS = _context.netDb().lookupLeaseSetLocally(destHash) != null;
+
+            // Bypass throttle if no existing LeaseSet (initial creation) or if forced
+            if (!force && !hasPublishedLS) {
+                force = true;
+            }
+
             if (!force && now - _lastRefreshTime < REFRESH_THROTTLE) {
                 if (_log.shouldDebug()) {
                     _log.debug(toString() + "\n* Skipping LeaseSet refresh - throttled");

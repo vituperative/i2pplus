@@ -53,9 +53,6 @@ public class RepublishLeaseSetJob extends JobImpl {
     private static final ConcurrentHashMap<Hash, Long> _lastPublishLogTime = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Hash, Long> _lastVerifyLogTime = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Hash, Long> _lastNotRequeueLogTime = new ConcurrentHashMap<>();
-    
-
-    
     private final Hash _dest;
     private final KademliaNetworkDatabaseFacade _facade;
     private long _lastPublished;
@@ -114,17 +111,30 @@ public class RepublishLeaseSetJob extends JobImpl {
                 if (ls != null) {
                     String tunnelName = getTunnelName(ls.getDestination());
                     String name = !tunnelName.isEmpty() ? " for '" + tunnelName + "'" : " for key";
+                    long now = getContext().clock().now();
+
                     if (!ls.isCurrent(Router.CLOCK_FUDGE_FACTOR)) {
+                        // LeaseSet is already expired - request immediate rebuild
                         if (_log.shouldWarn()) {
-                            _log.warn("Not publishing expired LOCAL LeaseSet" + name + " [" + _dest.toBase32().substring(0,8) + "]");
+                            _log.warn("LeaseSet EXPIRED - triggering immediate rebuild for " + name + " [" + _dest.toBase32().substring(0,8) + "]");
                         }
-                        scheduleRepublish(getRepublishInterval());
+                        getContext().clientManager().requestLeaseSet(_dest, ls);
+                        scheduleRepublish(REPUBLISH_INTERVAL);
                     } else {
-                        long timeUntilExpiry = ls.getLatestLeaseDate() - getContext().clock().now();
-                        long now = getContext().clock().now();
+                        long timeUntilExpiry = ls.getLatestLeaseDate() - now;
+
+                        // Renew early enough to never expire - at least EXPIRY_WINDOW before expiry
                         Long lastPubLog = _lastPublishLogTime.get(_dest);
+                        if (timeUntilExpiry <= EXPIRY_WINDOW) {
+                            // Too close to expiry - renew immediately
+                            if (_log.shouldInfo()) {
+                                _log.info("LeaseSet expiring soon - immediate renew for " + name + " [" + _dest.toBase32().substring(0,8) +
+                                          "] (expires in " + (timeUntilExpiry / 1000) + "s)");
+                            }
+                            lastPubLog = null; // Force log
+                        }
                         if (_log.shouldInfo() && (lastPubLog == null || (now - lastPubLog > 10 * 1000))) {
-                            _log.info("Attempting to publish LeaseSet" + name + " [" + _dest.toBase32().substring(0,8) +
+                            _log.info("Publishing LeaseSet" + name + " [" + _dest.toBase32().substring(0,8) +
                                        "] (expires in " + (timeUntilExpiry / 1000) + "s)...");
                             _lastPublishLogTime.put(_dest, now);
                         }
@@ -133,13 +143,17 @@ public class RepublishLeaseSetJob extends JobImpl {
                         failCount.set(0);
                         _facade.sendStore(_dest, ls, null, new OnRepublishFailure(ls), REPUBLISH_LEASESET_TIMEOUT, null);
                         _lastPublished = now;
-                        scheduleRepublish(getRepublishInterval());
+                        // Schedule next republish for EXPIRY_WINDOW before expiry
+                        long nextRepublish = Math.max(REPUBLISH_INTERVAL, timeUntilExpiry - EXPIRY_WINDOW);
+                        scheduleRepublish(nextRepublish);
                     }
                 } else {
+                    // No LeaseSet found - request immediate rebuild
                     if (_log.shouldWarn()) {
-                        _log.warn("Client [" + _dest.toBase32().substring(0,8) + "] is LOCAL, but no valid LeaseSet found -> Being rebuilt?");
+                        _log.warn("Client [" + _dest.toBase32().substring(0,8) + "] is LOCAL, but no valid LeaseSet found -> Requesting immediate rebuild");
                     }
                     clearRetryInProgress();
+                    getContext().clientManager().requestLeaseSet(_dest, null);
                     scheduleRepublish(REPUBLISH_INTERVAL);
                 }
             } else {

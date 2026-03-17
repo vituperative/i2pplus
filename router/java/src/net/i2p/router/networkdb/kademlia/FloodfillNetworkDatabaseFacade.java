@@ -166,9 +166,10 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
      * @param timeoutMs the absolute time when the timeout expires
      */
     public void registerSearchTimeout(Hash peer, IterativeSearchJob search, long timeoutMs) {
+        if (peer == null || search == null) { return; }
         long bucket = (timeoutMs / 1000) * 1000;
         TimeoutEntry entry = new TimeoutEntry(peer, search);
-        _searchTimeouts.computeIfAbsent(bucket, k -> new ArrayList<>()).add(entry);
+        _searchTimeouts.computeIfAbsent(bucket, k -> Collections.synchronizedList(new ArrayList<>())).add(entry);
     }
 
     /**
@@ -182,7 +183,11 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
             if (bucket <= currentBucket) {
                 List<TimeoutEntry> entries = _searchTimeouts.remove(bucket);
                 if (entries != null) {
-                    for (TimeoutEntry entry : entries) {
+                    List<TimeoutEntry> toProcess;
+                    synchronized (entries) {
+                        toProcess = new ArrayList<>(entries);
+                    }
+                    for (TimeoutEntry entry : toProcess) {
                         entry.search.failed(entry.peer, true);
                     }
                 }

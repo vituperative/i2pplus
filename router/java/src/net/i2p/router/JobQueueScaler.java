@@ -57,10 +57,10 @@ class JobQueueScaler implements Runnable {
 
     // Feedback configuration
     private static final int FEEDBACK_CHECKS_AFTER_SCALE = 3; // Check 3 times after scaling
-    private static final int MAX_CONSECUTIVE_FAILED_SCALES = 2; // After 2 failed scales, stop trying
+    private static final int MAX_CONSECUTIVE_FAILED_SCALES = 10; // After 10 failed scales, stop trying
     private static final long EXTENDED_COOLDOWN_MULTIPLIER = 3; // 3x normal cooldown after failed scale
-    private static final double LAG_INCREASE_THRESHOLD = 1.2; // If lag increased by 20%, consider it failed (tight for sub-ms targets)
-    private static final double READY_JOBS_INCREASE_THRESHOLD = 1.1; // If ready jobs increased by 10%, consider it failed
+    private static final double LAG_INCREASE_THRESHOLD = 2.0; // If lag doubled or worse, consider it failed
+    private static final double READY_JOBS_INCREASE_THRESHOLD = 2.0; // If ready jobs doubled or worse, consider it failed
 
     // RAM-based limits
     private static final long MB = 1024 * 1024;
@@ -423,12 +423,24 @@ class JobQueueScaler implements Runnable {
 
         // Don't scale up if circuit breaker is open
         if (_scalingUpDisabled) {
-            if (_log.shouldWarn()) {
-                _log.warn("Scaling up is disabled due to repeated failed attempts");
+            long cooldown = getCooldownPeriod();
+            // Auto-reset circuit breaker when conditions improve OR after cooldown
+            if ((maxLag < 1 && readyJobs == 0) || timeSinceLastScale > cooldown) {
+                _scalingUpDisabled = false;
+                _consecutiveFailedScaleUps = 0;
+                _isInExtendedCooldown = false;
+                if (_log.shouldInfo()) {
+                    _log.info("CIRCUIT BREAKER RESET: Conditions improved or cooldown expired (lag=" + maxLag +
+                              "ms, ready=" + readyJobs + ", cooldown=" + (timeSinceLastScale/1000) + "s)");
+                }
+            } else {
+                if (_log.shouldInfo()) {
+                    _log.info("Scaling up is disabled due to repeated failed attempts (lag=" + maxLag + "ms, ready=" + readyJobs + ")");
+                }
+                // Only allow scale down
+                checkScaleDown(activeRunners, readyJobs, maxLag, avgLag, minRunners, inCooldown);
+                return;
             }
-            // Only allow scale down
-            checkScaleDown(activeRunners, readyJobs, maxLag, avgLag, minRunners, inCooldown);
-            return;
         }
 
         // Determine if we should scale up
@@ -533,14 +545,10 @@ class JobQueueScaler implements Runnable {
             // Scaling made things worse - rollback!
             _consecutiveFailedScaleUps++;
 
-            if (_log.shouldWarn()) {
-                _log.warn("SCALE-UP FAILED: Rolling back " + snapshot.runnersAdded + " runners. " +
-                         "Before: readyJobs=" + snapshot.readyJobs + ", avgLag=" + snapshot.avgLag + "ms. " +
-                         "After: readyJobs=" + currentReadyJobs + ", avgLag=" + currentAvgLag + "ms. " +
-                         "Lag ratio=" + String.format("%.2f", lagRatio) +
-                         ", Ready jobs ratio=" + String.format("%.2f", readyJobsRatio) +
-                         (memoryCritical ? ", Memory critical=" + getMemoryUsagePercent() + "%" : "") +
-                         ". Failures: " + _consecutiveFailedScaleUps + "/" + MAX_CONSECUTIVE_FAILED_SCALES);
+            if (_log.shouldInfo()) {
+                _log.info("SCALE-UP FAILED: Rolling back " + snapshot.runnersAdded + " runners. " +
+                          "Lag " + snapshot.avgLag + "ms->" + currentAvgLag + "ms, Ready " + snapshot.readyJobs + "->" + currentReadyJobs +
+                          " (" + _consecutiveFailedScaleUps + "/" + MAX_CONSECUTIVE_FAILED_SCALES + ")");
             }
 
             // Rollback: remove the runners we just added
@@ -554,15 +562,15 @@ class JobQueueScaler implements Runnable {
 
             // Enter extended cooldown
             _isInExtendedCooldown = true;
+            long cooldown = getCooldownPeriod();
             _lastScaleTime = _context.clock().now();
 
             // Circuit breaker: if we've failed too many times, disable scaling up
             if (_consecutiveFailedScaleUps >= MAX_CONSECUTIVE_FAILED_SCALES) {
                 _scalingUpDisabled = true;
-                if (_log.shouldError()) {
-                    _log.error("CIRCUIT BREAKER OPEN: Scaling up is now disabled due to " +
-                              _consecutiveFailedScaleUps + " consecutive failed attempts. " +
-                              "Jobs may be CPU-bound. Will only scale down when load is low.");
+                if (_log.shouldInfo()) {
+                    _log.info("CIRCUIT BREAKER OPEN: Scaling up disabled due to " +
+                              _consecutiveFailedScaleUps + " failed attempts. Jobs may be CPU-bound. Retrying in " + (cooldown / 1000) + "s.");
                 }
             }
         } else {
@@ -571,7 +579,7 @@ class JobQueueScaler implements Runnable {
                 _consecutiveFailedScaleUps = 0;
                 _isInExtendedCooldown = false;
                 if (_log.shouldInfo()) {
-                    _log.info("Scale-up successful. Resetting failure counter.");
+                    _log.info("Job queue runner scale-up successful -> Resetting failure counter...");
                 }
             }
         }
@@ -590,7 +598,7 @@ class JobQueueScaler implements Runnable {
         int activeRunners = _jobQueue.getActiveRunnerCount();
 
         if (_log.shouldInfo()) {
-            _log.info("Scaling UP: Adding " + count + " runners. " +
+            _log.info("Scaling up: Adding " + count + " runners -> " +
                      "Ready jobs: " + readyJobs + ", Max lag: " + maxLag + "ms, Avg lag: " + avgLag + "ms");
         }
 
@@ -621,7 +629,7 @@ class JobQueueScaler implements Runnable {
         }
 
         if (_log.shouldInfo()) {
-            _log.info("Scaling DOWN: Removing " + count + " runners. " +
+            _log.info("Scaling down: Removing " + count + " runners -> " +
                      "Ready jobs: " + readyJobs + ", Max lag: " + maxLag + "ms");
         }
 

@@ -164,12 +164,12 @@
       const newTbody = jobsResponse.querySelector("#statCount");
       if (!oldTbody || !newTbody) return;
 
-      if (oldRowsMap.size === 0) {
-        Array.from(oldTbody.rows).forEach(row => {
-          const name = row.cells[0]?.textContent.trim();
-          if (name) oldRowsMap.set(name, row);
-        });
-      }
+      // Always repopulate oldRowsMap to stay in sync with current DOM
+      oldRowsMap.clear();
+      Array.from(oldTbody.rows).forEach(row => {
+        const name = row.cells[0]?.textContent.trim();
+        if (name) oldRowsMap.set(name, row);
+      });
 
       progressx.show(theme);
       requestAnimationFrame(() => {

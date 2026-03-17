@@ -31,7 +31,7 @@ public class JobQueueHelper extends HelperBase {
     private static int CORES = SystemVersion.getCores();
     private static boolean isSlow = SystemVersion.isSlow();
     private static int MAX_JOBS_DISPLAYED = 30;
-    private static final long RECENT_WINDOW_MS = 20 * 1000;
+    private static final long RECENT_WINDOW_MS = 10 * 1000;
     private static final int MAX_RECENT_DISPLAY = 10000;
 
     private String _requestURI;
@@ -466,19 +466,22 @@ public class JobQueueHelper extends HelperBase {
      */
     private void getJobStats(StringBuilder buf) {
         boolean recentMode = isRecentMode();
+        if (recentMode) {
+            JobStats.enableRecentTracking();
+        }
         long now = System.currentTimeMillis();
         long cutoff = now - RECENT_WINDOW_MS;
 
         buf.append("<div class=widescroll>\n");
         buf.append("<h3 id=totaljobstats>")
            .append(_t("Job Statistics"))
-           .append(recentMode ? " (" + _t("last 20s") + ")" : "")
+           .append(recentMode ? " (" + _t("last 10s") + ")" : "")
            .append("<span id=toggleJobstats>");
 
         if (recentMode) {
             buf.append(" <a href=\"/jobs?period=all\">").append(_t("All Stats")).append("</a>");
         } else {
-            buf.append(" <a href=\"/jobs?period=recent\">").append(_t("Last 20s")).append("</a>");
+            buf.append(" <a href=\"/jobs?period=recent\">").append(_t("Last 10s")).append("</a>");
         }
 
         buf.append("</span></h3>\n")
@@ -527,8 +530,8 @@ public class JobQueueHelper extends HelperBase {
 
             long displayRuns = recentMode ? recent.runs : stats.getRuns();
             // If we're in recent mode and hit the buffer limit, indicate with +
-            if (recentMode && recent.runs >= MAX_RECENT_DISPLAY) {
-                displayRuns = MAX_RECENT_DISPLAY;
+            if (recentMode && recent.runs >= stats.getMaxRecentEntries()) {
+                displayRuns = stats.getMaxRecentEntries();
             }
             long displayDropped = recentMode ? 0 : stats.getDropped();
             long displayTotalTime = recentMode ? recent.totalTime : stats.getTotalTime();
@@ -549,7 +552,7 @@ public class JobQueueHelper extends HelperBase {
 
             // Add + indicator if we've hit the buffer limit in recent mode
             String runsDisplay = Long.toString(displayRuns);
-            if (recentMode && recent.runs >= MAX_RECENT_DISPLAY) {
+            if (recentMode && recent.runs >= stats.getMaxRecentEntries()) {
                 runsDisplay = displayRuns + "+";
             }
 

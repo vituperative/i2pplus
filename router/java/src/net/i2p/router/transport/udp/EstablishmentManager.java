@@ -2493,6 +2493,10 @@ class EstablishmentManager {
      */
     private void loadTokens() {
         File f = new File(_context.getConfigDir(), TOKEN_FILE);
+        if (!f.exists()) {
+            if (_log.shouldDebug()) {_log.debug("[SSU] Token file does not exist yet, skipping load");}
+            return;
+        }
         String ourV4Port = Integer.toString(_transport.getExternalPort(false));
         String ourV6Port = Integer.toString(_transport.getExternalPort(true));
         String ourV4Addr;

@@ -81,7 +81,7 @@ public final class ECIESAEADEngine {
     private static final String INFO_0 = "SessionReplyTags";
     private static final String INFO_6 = "AttachPayloadKDF";
 
-    private static final long[] RATES = { 60*1000, 10*60*1000l, 60*60*1000l };
+    private static final long[] RATES = new long[] { 60*1000 };
 
     // These are the min sizes for the MLKEM New Session Message.
     // It contains an extra MLKEM key and MAC.

@@ -35,7 +35,7 @@ class ConnectionPacketHandler {
     private static final int IMMEDIATE_ACK_DELAY = SystemVersion.isSlow() ? 100 : 80;
     static final String PROP_IMMEDIATE_ACK_DELAY = "i2p.streaming.immediateAckDelay";
 
-    private static final long[] RATES = RateConstants.SHORT_TERM_RATES;
+    private static final long[] RATES = new long[] { RateConstants.ONE_MINUTE };
 
     public ConnectionPacketHandler(I2PAppContext context) {
         _context = context;

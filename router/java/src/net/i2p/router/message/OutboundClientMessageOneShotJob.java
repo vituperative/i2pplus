@@ -180,7 +180,7 @@ public class OutboundClientMessageOneShotJob extends JobImpl {
 
     private static final int REPLY_REQUEST_INTERVAL = 60*1000;
 
-    private static final long[] RATES = {60*1000l, 60*60*1000l, 24*60*60*1000l };
+    private static final long[] RATES = new long[] { 60*1000l };
 
     /**
      * Send it.

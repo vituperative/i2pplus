@@ -434,9 +434,9 @@ public class InNetMessagePool implements Service {
         _alive.set(true);
         if (_dispatchThreaded) {
             _context.statManager().createRateStat("pool.dispatchDataTime", "How long a tunnel dispatch takes", "Tunnels",
-                    new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR});
+                    new long[] {RateConstants.ONE_MINUTE});
             _context.statManager().createRateStat("pool.dispatchGatewayTime", "How long a tunnel gateway dispatch takes", "Tunnels",
-                    new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR});
+                    new long[] {RateConstants.ONE_MINUTE});
             I2PThread dataThread = new I2PThread(new TunnelDataDispatcher(), "Tunnel Data Dispatcher");
             dataThread.setDaemon(true);
             dataThread.start();

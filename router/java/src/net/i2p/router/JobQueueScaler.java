@@ -1,5 +1,6 @@
 package net.i2p.router;
 
+import net.i2p.stat.RateConstants;
 import net.i2p.util.I2PThread;
 import net.i2p.util.Log;
 import net.i2p.util.SystemVersion;
@@ -140,19 +141,19 @@ class JobQueueScaler implements Runnable {
         // Register rate stats
         context.statManager().createRateStat("jobQueue.runnerScaleUp",
             "Number of runners added in scale-up events", "JobQueue",
-            new long[] {60*1000, 10*60*1000, 60*60*1000});
+            new long[] { RateConstants.ONE_MINUTE });
         context.statManager().createRateStat("jobQueue.runnerScaleDown",
             "Number of runners removed in scale-down events", "JobQueue",
-            new long[] {60*1000, 10*60*1000, 60*60*1000});
+            new long[] { RateConstants.ONE_MINUTE });
         context.statManager().createRateStat("jobQueue.runnerCount",
             "Current number of active job runners", "JobQueue",
-            new long[] {60*1000, 10*60*1000, 60*60*1000});
+            new long[] { RateConstants.ONE_MINUTE });
         context.statManager().createRateStat("jobQueue.scaleRollback",
             "Number of rollback events (scale up made things worse)", "JobQueue",
-            new long[] {60*1000, 10*60*1000, 60*60*1000});
+            new long[] { RateConstants.ONE_MINUTE });
         context.statManager().createRateStat("jobQueue.memoryUsedPercent",
             "Percentage of max memory used", "JobQueue",
-            new long[] {60*1000, 10*60*1000, 60*60*1000});
+            new long[] { RateConstants.ONE_MINUTE });
     }
 
     /**

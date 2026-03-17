@@ -1212,7 +1212,8 @@ public class Router implements RouterClock.ClockShiftListener {
                         RateStat rs = _context.statManager().getRate("tunnel.participatingMessageCountAvgPerTunnel");
                         double messagesPerTunnel = 0;
                         if (rs != null) {
-                            Rate r = rs.getRate(20*RateConstants.ONE_MINUTE);
+                    // 10m period for smoother capacity planning
+                    Rate r = rs.getRate(RateConstants.TEN_MINUTES);
                             if (r != null) {
                                 RateAverages ra = RateAverages.getTemp();
                                 messagesPerTunnel = r.computeAverages(ra, true).getAverage();

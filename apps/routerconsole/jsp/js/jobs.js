@@ -43,7 +43,7 @@
     if (!joblog) return false;
 
     // Add toggle classes and collapse/expand based on stored state
-    const sectionToggles = joblog.querySelectorAll("h3");
+    const sectionToggles = joblog.querySelectorAll("h3:not(.nojobs)");
     sectionToggles.forEach(toggle => {
       toggle.classList.add("sectionToggle");
       toggle.classList.add("toggle");
@@ -138,12 +138,21 @@
   const sorter = new Tablesort(jobs, { descending: true });
   const progressx = window.progressx;
   const theme = window.theme;
+  const header = document.getElementById("totaljobstats");
+  const headerText = header ? header.innerHTML.trim() : "";
 
   let refreshIntervalId = null;
   let oldRowsMap = new Map();
+  let lastQueryParams = window.location.search;
 
   async function fetchJobs() {
     try {
+      // Clear old rows if query param changed (switching between 30s/all mode)
+      if (window.location.search !== lastQueryParams) {
+        oldRowsMap.clear();
+        lastQueryParams = window.location.search;
+      }
+
       const response = await fetch("/jobs" + window.location.search);
       if (!response.ok) throw new Error("Fetch failed");
       const text = await response.text();
@@ -206,27 +215,21 @@
               oldCells.forEach(cell => cell.classList.remove("updated"));
             }, REFRESH_INTERVAL - 500);
           }
-          const footer = jobs.querySelector(".tablefooter");
-          const footerResponse = doc.querySelector(".tablefooter");
-          footer.innerHTML = footerResponse.innerHTML;
         });
 
-        if (fragment.hasChildNodes()) {
-          oldTbody.appendChild(fragment);
+        // Remove rows only in recent mode that are no longer in the data
+        const isRecentMode = !window.location.search.includes("period=all");
+        if (isRecentMode) {
+          const newRowNames = new Set(newRows.map(r => r.cells[0]?.textContent.trim()).filter(n => n));
+          oldRowsMap.forEach((row, name) => {
+            if (!newRowNames.has(name)) {
+              row.remove();
+              oldRowsMap.delete(name);
+            }
+          });
         }
 
-        updatedRows.forEach(row => {
-          const jobName = row.cells[0]?.textContent.trim();
-          if (jobName) oldRowsMap.set(jobName, row);
-        });
-
-        const newJobNames = new Set(newRows.map(row => row.cells[0]?.textContent.trim()).filter(Boolean));
-        oldRowsMap.forEach((row, jobName) => {
-          if (!newJobNames.has(jobName)) {
-            row.remove();
-            oldRowsMap.delete(jobName);
-          }
-        });
+        const footer = jobs.querySelector(".tablefooter");
 
         sorter.refresh();
         setTimeout(() => progressx.hide(), 500);

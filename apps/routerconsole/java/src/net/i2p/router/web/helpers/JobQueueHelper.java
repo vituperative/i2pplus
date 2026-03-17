@@ -31,6 +31,19 @@ public class JobQueueHelper extends HelperBase {
     private static int CORES = SystemVersion.getCores();
     private static boolean isSlow = SystemVersion.isSlow();
     private static int MAX_JOBS_DISPLAYED = 30;
+    private static final long RECENT_WINDOW_MS = 20 * 1000;
+    private static final int MAX_RECENT_DISPLAY = 10000;
+
+    private String _requestURI;
+
+    public void setRequestURI(String uri) {
+        _requestURI = uri;
+    }
+
+    private boolean isRecentMode() {
+        if (_requestURI == null) return true;
+        return !_requestURI.contains("period=all");
+    }
 
     public String getJobQueueSummary() {
         try {
@@ -75,6 +88,10 @@ public class JobQueueHelper extends HelperBase {
         List<Job> justFinishedJobs = new ArrayList<Job>(8);
 
         int numRunners = _context.jobQueue().getJobs(readyJobs, timedJobs, activeJobs, justFinishedJobs);
+        int totalTimedJobs = timedJobs.size();
+
+        // Get dropped count once for both ready and scheduled sections
+        int droppedCount = _context.jobQueue().getAndResetDroppedCount();
 
         StringBuilder buf = new StringBuilder(32*1024);
         buf.append("<div class=joblog>");
@@ -95,10 +112,10 @@ public class JobQueueHelper extends HelperBase {
                 if (avgLag < 0.001) {
                     // Under 1ms - show in microseconds
                     lagStr = " <span id=avgLag class=jobCounter style=float:right>" +
-                             _t("Avg: {0}µs", String.format("%.0f", avgLag * 1000)) + "</span>";
+                             _t("Average: {0}µs", String.format("%.0f", avgLag * 1000)) + "</span>";
                 } else {
                     lagStr = " <span id=avgLag class=jobCounter style=float:right>" +
-                             _t("Avg: {0}", DataHelper.formatDuration2((long)(avgLag * 1000))) + "</span>";
+                             _t("Average: {0}", DataHelper.formatDuration2((long)(avgLag * 1000))) + "</span>";
                 }
             }
         }
@@ -240,18 +257,12 @@ public class JobQueueHelper extends HelperBase {
         }
 
         if (readyJobs.size() != 0) {
-            // Find oldest wait time for header
-            long oldestElapsed = 0;
-            for (Job j : readyJobs) {
-                long elapsed = Math.max(0, now - j.getTiming().getStartAfter());
-                if (elapsed > oldestElapsed) oldestElapsed = elapsed;
-            }
-            String oldestStr = oldestElapsed > 0 ? " <span id=oldest class=jobCounter style=float:right>" +
-                                                    _t("Oldest: {0}", DataHelper.formatDuration2(oldestElapsed)) +
-                                                    "</span>" : "";
+            // Use dropped count from earlier
+            String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
+                                                    _t("Dropped: {0}", droppedCount) + "</span>" : "";
             buf.append("<div class=tablewrap id=ready><h3 id=readyjobs>")
                .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
-               .append(oldestStr)
+               .append(droppedStr)
                .append("</h3>\n<ol class=jobqueue>\n");
 
             // Group ready jobs by name and elapsed time (rounded to nearest second)
@@ -294,9 +305,9 @@ public class JobQueueHelper extends HelperBase {
                         jobDisplay += " <span class=jobsCounter>" + jobsAtTime.size() + "</span>";
                     }
 
-                    buf.append("<li>").append(jobDisplay).append(" &#10140; ");
-                    if (!timeStr.equals("0")) {
-                       buf.append(_t("waiting {0}", timeStr));
+                    buf.append("<li>").append(jobDisplay);
+                    if (elapsedSeconds > 0) {
+                       buf.append(" &#10140; ").append(_t("waiting {0}", timeStr));
                     }
                     buf.append("</li>\n");
                 }
@@ -318,14 +329,14 @@ public class JobQueueHelper extends HelperBase {
             long delay = j.getTiming().getStartAfter() - now;
             boolean isDisabled = jobName.toLowerCase(java.util.Locale.US).contains("disabled");
 
-            // Count eligible jobs (1s to 30s delay, not disabled)
-            if (delay > 1000 && delay <= 30000 && !isDisabled) {
+            // Count eligible jobs (1s to 20s delay, not disabled)
+            if (delay > 1000 && delay <= 20000 && !isDisabled) {
                 totalQueueCounter.increment(jobName);
                 eligibleScheduledCount++;
             }
 
-            // Skip for display: non-positive, disabled, <1s, or >30s
-            if (delay <= 0 || isDisabled || delay < 1000 || delay > 30000) {
+            // Skip for display: non-positive, disabled, <1s, or >20s
+            if (delay <= 0 || isDisabled || delay < 1000 || delay > 20000) {
                 continue;
             }
 
@@ -357,13 +368,14 @@ public class JobQueueHelper extends HelperBase {
 
         // Build scheduled jobs list
         StringBuilder scheduledBuf = new StringBuilder(8192);
-        int droppedCount = _context.jobQueue().getAndResetDroppedCount();
-        String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
-                                                _t("Dropped: {0}", droppedCount) + "</span>" : "";
+        int activeRunners = _context.jobQueue().getActiveRunnerCount();
+        int maxRunners = _context.jobQueue().getMaxRunnerCount();
+        String runnerStr = " <span id=runners class=jobCounter style=float:right>" +
+                          _t("Runners: {0} / {1}", activeRunners, maxRunners) + "</span>";
         scheduledBuf.append("<div class=tablewrap id=scheduled><h3 id=scheduledjobs>")
            .append(_t("Scheduled jobs")).append(": ")
            .append(displayedJobCount).append(" / ").append(eligibleScheduledCount)
-           .append(droppedStr)
+           .append(runnerStr)
            .append("</h3>\n<ol class=jobqueue>\n");
 
         for (JobTimeEntry entry : sortedJobs) {
@@ -406,7 +418,7 @@ public class JobQueueHelper extends HelperBase {
             return;
         } else {
             buf.append(scheduledBuf);
-            getJobCounts(buf, totalQueueCounter);
+            getJobCounts(buf, totalQueueCounter, eligibleScheduledCount);
             out.append(buf);
             buf.setLength(0);
         }
@@ -420,16 +432,19 @@ public class JobQueueHelper extends HelperBase {
     }
 
     /** @since 0.9.5 */
-    private void getJobCounts(StringBuilder buf, ObjectCounterUnsafe<String> counter) {
+    private void getJobCounts(StringBuilder buf, ObjectCounterUnsafe<String> counter, int scheduledCount) {
         List<String> names = new ArrayList<>(counter.objects());
+        int totalJobs = _context.jobQueue().getReadyCount() + scheduledCount;
 
         buf.append("<div class=tablewrap id=totals><table id=schedjobs>\n")
-           .append("<thead><tr><th>").append(_t("Queue Totals")).append("</th></tr></thead>\n");
-        Collections.sort(names, new JobCountComparator(counter));
-        buf.append("<tr><td>\n<ul>\n");
+           .append("<thead><tr><th>")
+           .append(_t("Queue Totals")).append(": ").append(totalJobs)
+           .append("</span></th></tr></thead>\n")
+           .append("<tr><td>\n<ul>\n");
 
         final String TEST_TUNNEL_EN = "Test Local Tunnel";
         int maxTestJobs = TestJob.maxQueuedTests;
+        Collections.sort(names, new JobCountComparator(counter));
 
         for (String name : names) {
             buf.append("<li><span class=jobcount><b>").append(name).append("</b> <span class=jobsCounter>");
@@ -450,13 +465,28 @@ public class JobQueueHelper extends HelperBase {
      *  @since 0.8.9
      */
     private void getJobStats(StringBuilder buf) {
-        buf.append("<div class=widescroll>\n<h3 id=totaljobstats>")
+        boolean recentMode = isRecentMode();
+        long now = System.currentTimeMillis();
+        long cutoff = now - RECENT_WINDOW_MS;
+
+        buf.append("<div class=widescroll>\n");
+        buf.append("<h3 id=totaljobstats>")
            .append(_t("Job Statistics"))
-           .append("</h3>\n<table id=jobstats>\n<thead><tr><th class=jobname data-sort-default data-sort-direction=ascending>")
+           .append(recentMode ? " (" + _t("last 20s") + ")" : "")
+           .append("<span id=toggleJobstats>");
+
+        if (recentMode) {
+            buf.append(" <a href=\"/jobs?period=all\">").append(_t("All Stats")).append("</a>");
+        } else {
+            buf.append(" <a href=\"/jobs?period=recent\">").append(_t("Last 20s")).append("</a>");
+        }
+
+        buf.append("</span></h3>\n")
+           .append("<table id=jobstats>\n<thead><tr><th class=jobname data-sort-default data-sort-direction=ascending>")
            .append(_t("Job"))
            .append("</th><th class=totalRuns data-sort-method=number>")
            .append(_t("Runs"))
-            .append("</th><th class=\"totalDropped dropped\" data-sort-method=number>")
+           .append("</th><th class=totalDropped data-sort-method=number>")
            .append(_t("Dropped"))
            .append("</th><th class=totalRunTime data-sort-method=number>")
            .append(_t("Time"))
@@ -488,73 +518,95 @@ public class JobQueueHelper extends HelperBase {
         Collections.sort(tstats, new JobStatsComparator());
 
         for (JobStats stats : tstats) {
-            // Skip jobs with less than 2 runs and no drops
-            if (stats.getRuns() < 2 && stats.getDropped() < 1) continue;
+            JobStats.RecentStats recent = stats.getRecentStats();
+
+            if (recentMode && recent.runs == 0) continue;
+
+            if ((recentMode ? recent.runs : stats.getRuns()) < 2 && stats.getDropped() < 1) continue;
             if (stats.getName().contains("(disabled)")) continue;
 
-            totRuns += stats.getRuns();
-            totDropped += stats.getDropped();
-            totExecTime += stats.getTotalTime();
-            totPendingTime += stats.getTotalPendingTime();
+            long displayRuns = recentMode ? recent.runs : stats.getRuns();
+            // If we're in recent mode and hit the buffer limit, indicate with +
+            if (recentMode && recent.runs >= MAX_RECENT_DISPLAY) {
+                displayRuns = MAX_RECENT_DISPLAY;
+            }
+            long displayDropped = recentMode ? 0 : stats.getDropped();
+            long displayTotalTime = recentMode ? recent.totalTime : stats.getTotalTime();
+            long displayTotalPending = recentMode ? recent.totalPendingTime : stats.getTotalPendingTime();
+            long displayMaxTime = recentMode ? recent.maxTime : stats.getMaxTime();
+            long displayMinTime = recentMode ? recent.minTime : stats.getMinTime();
+            long displayMaxPending = recentMode ? recent.maxPendingTime : stats.getMaxPendingTime();
+            long displayMinPending = recentMode ? recent.minPendingTime : stats.getMinPendingTime();
+            double displayAvgTime = recentMode ? recent.getAvgTime() : stats.getAvgTime();
+            double displayAvgPending = recentMode ? recent.getAvgPendingTime() : stats.getAvgPendingTime();
 
-            boolean isRunningSlow = stats.getRuns() > 3 && stats.getAvgTime() > 1000;
+            totRuns += displayRuns;
+            totDropped += displayDropped;
+            totExecTime += displayTotalTime;
+            totPendingTime += displayTotalPending;
+
+            boolean isRunningSlow = displayRuns > 3 && displayAvgTime > 1000;
+
+            // Add + indicator if we've hit the buffer limit in recent mode
+            String runsDisplay = Long.toString(displayRuns);
+            if (recentMode && recent.runs >= MAX_RECENT_DISPLAY) {
+                runsDisplay = displayRuns + "+";
+            }
 
             buf.append("<tr")
                .append(isRunningSlow ? " class=slowAvg" : "")
                .append("><td class=jobname><b>")
                .append(stats.getName())
                .append("</b></td><td class=totalRuns><span>")
-               .append(stats.getRuns())
+               .append(runsDisplay)
                .append("</span></td><td class=totalDropped><span>")
-               .append(stats.getDropped())
+               .append(displayDropped)
                .append("</span></td><td class=totalRunTime data-sort=")
-               .append(stats.getTotalTime())
+               .append(displayTotalTime)
                .append("><span>")
-               .append(DataHelper.formatDuration2(stats.getTotalTime()))
+               .append(DataHelper.formatDuration2(displayTotalTime))
                .append("</span></td><td class=avgRunTime data-sort=")
-               .append(stats.getAvgTime())
+               .append((long) displayAvgTime)
                .append("><span>")
-               .append(DataHelper.formatDuration2(stats.getAvgTime()))
+               .append(DataHelper.formatDuration2((long) displayAvgTime))
                .append("</span></td><td class=maxRunTime data-sort=")
-               .append(stats.getMaxTime())
+               .append(displayMaxTime)
                .append("><span>")
-               .append(DataHelper.formatDuration2(stats.getMaxTime()))
+               .append(DataHelper.formatDuration2(displayMaxTime))
                .append("</span></td><td class=minRunTime data-sort=")
-               .append(stats.getMinTime())
+               .append(displayMinTime)
                .append("><span>")
-               .append(DataHelper.formatDuration2(stats.getMinTime()))
+               .append(DataHelper.formatDuration2(displayMinTime))
                .append("</span></td>");
             if (isAdvanced()) {
                 buf.append("<td class=totalPendingTime data-sort=")
-                   .append(stats.getTotalPendingTime())
+                   .append(displayTotalPending)
                    .append("><span>")
-                   .append(DataHelper.formatDuration2(stats.getTotalPendingTime()))
+                   .append(DataHelper.formatDuration2(displayTotalPending))
                    .append("</span></td><td class=avgPendingTime data-sort=")
-                   .append(stats.getAvgPendingTime())
+                   .append((long) displayAvgPending)
                    .append("><span>")
-                   .append(DataHelper.formatDuration2(stats.getAvgPendingTime()))
+                   .append(DataHelper.formatDuration2((long) displayAvgPending))
                    .append("</span></td><td class=maxPendingTime data-sort=")
-                   .append(stats.getMaxPendingTime())
+                   .append(displayMaxPending)
                    .append("><span>")
-                   .append(DataHelper.formatDuration2(stats.getMaxPendingTime()))
+                   .append(DataHelper.formatDuration2(displayMaxPending))
                    .append("</span></td><td class=minPendingTime data-sort=")
-                   .append(stats.getMinPendingTime())
+                   .append(displayMinPending)
                    .append("><span>")
-                   .append(DataHelper.formatDuration2(stats.getMinPendingTime()))
+                   .append(DataHelper.formatDuration2(displayMinPending))
                    .append("</span></td>");
             }
             buf.append("</tr>\n");
 
-            // Update min/max AFTER filtering
-            if (stats.getMaxTime() > maxExecTime) maxExecTime = stats.getMaxTime();
-            if (stats.getMinTime() < minExecTime) minExecTime = stats.getMinTime();
-            if (stats.getMaxPendingTime() > maxPendingTime) maxPendingTime = stats.getMaxPendingTime();
-            if (stats.getMinPendingTime() < minPendingTime) minPendingTime = stats.getMinPendingTime();
+            if (displayMaxTime > maxExecTime) maxExecTime = displayMaxTime;
+            if (displayMinTime >= 0 && displayMinTime < minExecTime) minExecTime = displayMinTime;
+            if (displayMaxPending > maxPendingTime) maxPendingTime = displayMaxPending;
+            if (displayMinPending >= 0 && displayMinPending < minPendingTime) minPendingTime = displayMinPending;
         }
 
-        // Handle edge case: no valid jobs displayed
-        long avgExecTime = (totRuns > 0 && totExecTime > 0) ? totExecTime / totRuns : 0;
-        long avgPendingTime = (totRuns > 0 && totPendingTime > 0) ? totPendingTime / totRuns : 0;
+        long avgExecTime = totRuns > 0 ? totExecTime / totRuns : 0;
+        long avgPendingTime = totRuns > 0 ? totPendingTime / totRuns : 0;
         if (minExecTime == Long.MAX_VALUE) minExecTime = 0;
         if (minPendingTime == Long.MAX_VALUE) minPendingTime = 0;
 

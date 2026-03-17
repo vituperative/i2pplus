@@ -59,6 +59,8 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
     private LookupBanHammer _lookupBanner;
     private final Job _ffMonitor;
     private String tunnelName = "";
+    private final ConcurrentHashMap<Long, List<TimeoutEntry>> _searchTimeouts;
+    private final BatchedSearchTimeoutProcessor _timeoutProcessor;
 
     /**
      *  This is the flood redundancy. Entries are
@@ -97,6 +99,8 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
         super(context, dbid);
         _activeFloodQueries = new ConcurrentHashMap<Hash, FloodSearchJob>();
         _verifiesInProgress = new ConcurrentHashSet<Hash>(8);
+        _searchTimeouts = new ConcurrentHashMap<Long, List<TimeoutEntry>>();
+        _timeoutProcessor = new BatchedSearchTimeoutProcessor();
 
         long[] rate = new long[] { RateConstants.ONE_MINUTE };
         _context.statManager().createRequiredRateStat("netDb.successTime", "Time for successful NetDb lookup", "NetworkDatabase", rate);
@@ -129,6 +133,7 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
             isFF = _context.getBooleanProperty(PROP_FLOODFILL_PARTICIPANT);
             _lookupThrottler = new LookupThrottler(this);
             _lookupBanner = new LookupBanHammer();
+            startTimeoutProcessor();
         }
 
         long down = _context.router().getEstimatedDowntime();
@@ -149,6 +154,80 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
             _context.inNetMessagePool().registerHandlerJobBuilder(DatabaseLookupMessage.MESSAGE_TYPE, new FloodfillDatabaseLookupMessageHandler(_context, this));
             _context.inNetMessagePool().registerHandlerJobBuilder(DatabaseStoreMessage.MESSAGE_TYPE, new FloodfillDatabaseStoreMessageHandler(_context, this));
         }
+    }
+
+    /**
+     * Register a search timeout to be processed in batches.
+     * Instead of creating individual IterativeTimeoutJob for each peer,
+     * we register here and a single BatchedSearchTimeoutJob processes all at once.
+     *
+     * @param peer the peer that didn't respond
+     * @param search the search job to notify on timeout
+     * @param timeoutMs the absolute time when the timeout expires
+     */
+    public void registerSearchTimeout(Hash peer, IterativeSearchJob search, long timeoutMs) {
+        long bucket = (timeoutMs / 1000) * 1000;
+        TimeoutEntry entry = new TimeoutEntry(peer, search);
+        _searchTimeouts.computeIfAbsent(bucket, k -> new ArrayList<>()).add(entry);
+    }
+
+    /**
+     * Process all elapsed search timeouts.
+     * Called by BatchedSearchTimeoutJob.
+     */
+    public void processElapsedTimeouts() {
+        long now = _context.clock().now();
+        long currentBucket = (now / 1000) * 1000;
+        for (Long bucket : _searchTimeouts.keySet()) {
+            if (bucket <= currentBucket) {
+                List<TimeoutEntry> entries = _searchTimeouts.remove(bucket);
+                if (entries != null) {
+                    for (TimeoutEntry entry : entries) {
+                        entry.search.failed(entry.peer, true);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Start the batched timeout processor.
+     * Called from startup().
+     */
+    public void startTimeoutProcessor() {
+        _timeoutProcessor.schedule(2000);
+    }
+
+    /**
+     * Lightweight entry for batched timeout processing.
+     */
+    private static class TimeoutEntry {
+        final Hash peer;
+        final IterativeSearchJob search;
+
+        TimeoutEntry(Hash peer, IterativeSearchJob search) {
+            this.peer = peer;
+            this.search = search;
+        }
+    }
+
+    /**
+     * Batched job that processes all search timeouts periodically.
+     * Instead of having thousands of individual IterativeTimeoutJob in the queue,
+     * we have a single job that processes all elapsed timeouts.
+     * Runs via SimpleTimer2 instead of JobQueue to avoid duplicate execution issues.
+     */
+    private class BatchedSearchTimeoutProcessor extends SimpleTimer2.TimedEvent {
+        public BatchedSearchTimeoutProcessor() {
+            super(SimpleTimer2.getInstance(), 2000);
+        }
+
+        public void timeReached() {
+            processElapsedTimeouts();
+            reschedule(2000);
+        }
+
+        public String getName() { return "BatchedSearchTimeout"; }
     }
 
     /**

@@ -592,10 +592,6 @@ public class IterativeSearchJob extends FloodSearchJob {
             ctx.commSystem().processMessage(m);
         } else {ctx.tunnelDispatcher().dispatchOutbound(outMsg, outTunnel.getSendTunnelId(0), peer);}
 
-        // The timeout job is always run (never cancelled)
-        // Note that the timeout is much shorter than the message expiration (see above)
-        Job j = new IterativeTimeoutJob(ctx, peer, this);
-
         // Set timeout based on resp. time from profile
         PeerProfile prof = getContext().profileOrganizer().getProfileNonblocking(peer);
         long exp = _singleSearchTime;
@@ -614,8 +610,8 @@ public class IterativeSearchJob extends FloodSearchJob {
         }
 
         long expire = Math.min(_expiration, now + exp);
-        j.getTiming().setStartAfter(expire);
-        getContext().jobQueue().addJob(j);
+        // Use batched timeout instead of individual job
+        _facade.registerSearchTimeout(peer, this, expire);
     }
 
     @Override

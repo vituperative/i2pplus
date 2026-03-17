@@ -108,23 +108,26 @@ public class FloodfillDatabaseLookupMessageHandler implements HandlerJobBuilder 
         final boolean isFF = info != null && caps != null && caps.indexOf(FloodfillNetworkDatabaseFacade.CAPABILITY_FLOODFILL) >= 0;
         final boolean shouldThrottle = !isSenderUs && _facade.shouldThrottleLookup(dlm.getFrom(), dlm.getReplyTunnel());
         final boolean shouldBan = !isBanned && _facade.shouldBanLookup(dlm.getFrom(), dlm.getReplyTunnel());
+        if (shouldThrottle && _log.shouldDebug()) {
+            _log.debug("Throttling lookup from " + dlm.getFrom().toBase64().substring(0, 6));
+        }
         final boolean shouldAccept = shouldAcceptLookup(isSenderUs, shouldThrottle, shouldBan, ourRI, floodfillMode, isFF, type);
         final boolean isSelfLookup = ourRouter.equals(dlm.getSearchKey()) || dlm.getFrom().equals(ourRouter);
         final int maxLookups = isFF ? 60 : 30;
         final long uptime = _context.router().getUptime();
+        final long bantime = _context.clock().now() + 30 * 60 * 1000;
 
         DatabaseLookupMessage processedDLM = preProcessDatabaseLookup(dlm, fromHash);
         if (processedDLM == null) {return null;}
 
-        if (shouldBan && uptime > 10*60*1000) {
+        if (shouldBan && uptime > 5*60*1000) {
             if (dlm.getFrom() != null) {
                 String ipPort = getIPFromHash(dlm.getFrom());
                 _context.banlist().banlistRouter(dlm.getFrom(), " <b>➜</b> Excessive lookups" + (isFF ? " (Floodfill)" : ""),
-                                                 null, null, _context.clock().now() + 10 * 60 * 1000);
-                _banLogger.logBan(dlm.getFrom(), ipPort != null ? ipPort : "UNKNOWN", "Excessive lookups" + (isFF ? " (Floodfill)" : ""), 10 * 60 * 1000);
+                                                 null, null, bantime);
+                _banLogger.logBan(dlm.getFrom(), ipPort != null ? ipPort : "UNKNOWN", "Excessive lookups" + (isFF ? " (Floodfill)" : ""), bantime);
                 _context.commSystem().mayDisconnect(dlm.getFrom());
             }
-            _context.statManager().addRateData("netDb.lookupsDropped", 1);
 
             if (_log.shouldWarn() && dlm.getFrom() != null && _loggedBans.add(dlm.getFrom())) {
                 StringBuilder message = new StringBuilder(128);
@@ -135,8 +138,11 @@ public class FloodfillDatabaseLookupMessageHandler implements HandlerJobBuilder 
                 message.append(" and banning for 10m -> Max 60 requests in 30s or 10/s exceeded");
                 _log.warn(message.toString());
             }
+
+            _context.statManager().addRateData("netDb.lookupsDropped", 1);
             return null;
         } else if (shouldBan) {
+            _context.statManager().addRateData("netDb.lookupsDropped", 1);
             return null;
         }
 

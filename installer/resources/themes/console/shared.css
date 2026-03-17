@@ -63,4 +63,5 @@
 #sessionBanned td.expires,#sessionBanned td.hostname,#sessionBanned td.ip,#sessionBanned td.port,#sessionBanned td.reason{font-size:95%}
 #sidebar h3:hover .badge{margin:0;width:0;font-size:0;opacity:0}
 #ssuadv a{display:inline-block;vertical-align:text-top;text-transform:none;letter-spacing:0;font-size:85%}
+#totaljobstats a{float:right}
 #tunnelconfig .tunnelName{margin-right:6px;min-width:240px;display:inline-block}

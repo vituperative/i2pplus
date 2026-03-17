@@ -638,7 +638,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #jobs h2{margin:-16px 0 -15px;display:inline-block;border-radius:0}
 #jobs h3+ol+h3{margin-top:10px}
 #jobs .jobqueue:first-of-type{padding-bottom:4px}
-#jobs .jobqueue{margin-bottom:5px;margin-top:-11px;width:calc(100% - 14px);display:block;border:var(--border);background:#000800}
+#jobs .jobqueue{margin-bottom:0;margin-top:-11px;width:calc(100% - 14px);display:block;border:var(--border);background:#000800}
 #jobs .jobqueue{padding:5px 12px 5px 0;display:inline-block;columns:4 400px;column-gap:4px}
 #jobs #jobrunners{display:none}
 #jobs li,#jobs li:first-child{margin:0 4px;padding:8px 6px;width:calc(100% - 8px);list-style:none;box-shadow:var(--bevel),inset 0 0 0 3px #000;background:linear-gradient(180deg,#000b00,#000600)}
@@ -659,8 +659,9 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #jobs #scheduledjobs+ol,#jobs ol{padding-bottom:5px}
 #totaljobstats{margin-bottom:-2px;margin-top:10px}
 #routerjobqueue li{line-height:1.6}
-#routerjobqueue #active.tablewrap {margin:-5px 0 17px}
-#routerjobqueue .tablewrap:nth-of-type(n+2) {margin-top:15px}
+#routerjobqueue #active.tablewrap,#routerjobqueue #finished.tablewrap,#routerjobqueue #ready.tablewrap,#routerjobqueue #scheduled.tablewrap,#routerjobqueue #totals.tablewrap{margin:-5px 0 17px}
+#routerjobqueue #jobs .tablewrap:first-of-type{margin-top:-5px!important}
+#routerjobqueue .tablewrap#totals{margin-bottom:-1px}
 
 /* queue section toggles */
 #routerjobqueue .toggle{position:relative;cursor:pointer}
@@ -1259,7 +1260,7 @@ p.family{white-space:nowrap;background:var(--family) no-repeat 8px center/28px,l
 .netdbentry .familyname{max-width:140px;overflow:hidden;vertical-align:text-bottom;text-overflow:ellipsis;white-space:nowrap}
 .netdb_addresses ul{margin:0;padding:0;width:100%;display:inline-block;columns:auto;column-gap:5px}
 .netdb_addresses li,.netdb_ouraddresses{margin:2px 5px 2px 0;padding:2px 6px 2px 4px;vertical-align:middle;border:1px solid #020;background:#000b00}
-.netdb_addresses .netdb_info.mtu {display:inline-block;vertical-align:middle}
+.netdb_addresses .netdb_info.mtu{display:inline-block;vertical-align:middle}
 .netdb_addresses .netdb_info.mtu span{margin:-3px 6px -3px 4px;padding:5px;width:40px;display:inline-block;vertical-align:middle;line-height:1.5;text-align:center;font-weight:700;color:var(--ink);border-right:1px solid #020;border-left:1px solid #020;background:#001800}
 .netdb_addresses .netdb_info:hover{max-width:unset;overflow:auto;text-overflow:none;user-select:all}
 .netdb_addresses .netdb_transport{margin:-2px 3px -2px -4px;padding:5px 5px 4px;min-width:28px;line-height:1.6;vertical-align:middle;text-align:center;border-right:1px solid #020;background:#001800}
@@ -2238,8 +2239,8 @@ input[name="logfilename"],input[name="logformat"],input[name="logdateformat"],in
 .buttonDown:active{background:var(--hover) var(--mv_down_active) var(--center)}
 .buttonBottom:active{background:var(--hover) var(--mv_bottom_active) var(--center)}
 .buttonTop,.buttonBottom,.buttonUp,.buttonDown{background-size:11px,100%!important}
-#refreshsidebar input[type=text] {margin:0 3px 0 5px}
-#refreshsidebar input[type=checkbox] {margin:6px 3px 6px 5px}
+#refreshsidebar input[type=text]{margin:0 3px 0 5px}
+#refreshsidebar input[type=checkbox]{margin:6px 3px 6px 5px}
 #refreshsidebar label{margin:4px 0 4px 6px;padding:10px 16px;display:inline-block;white-space:nowrap;vertical-align:middle;border-radius:4px;box-shadow:var(--bevel);background:var(--tr)}
 #refreshsidebar label:hover{box-shadow:var(--outline),var(--highlight),0 0 2px 1px #f60}
 #refreshsidebar label b{display:inline-block;vertical-align:middle;text-align:right}
@@ -2863,8 +2864,8 @@ h2#jsonrpc{padding-left:38px;background:url(../images/i2cp.svg) no-repeat 10px c
 #i2ptunnelframe{margin:1px auto -1px 3px;width:calc(100% - 4px)}
 iframe{height:0}
 iframe.iframed{margin:15px 0 0}
-#jsRequired {margin:20px!important}
-#tunnelmgr #jsRequired {margin:20px 10px!important}
+#jsRequired{margin:20px!important}
+#tunnelmgr #jsRequired{margin:20px 10px!important}
 #main#embedded{padding:0}
 #pageloader{top:-1px;width:100%;height:2px}
 #rawtext_frame{margin:0;height:calc(100vh - 80px)!important;overflow:auto!important}
@@ -3001,7 +3002,7 @@ h3[id*="jobs"]:first-of-type{margin-top:12px}
 #sb_tunnelstatus .tunnelBuildStatus::before{background-size:12px}
 #searchbar div{margin:3px 3px 0}
 #service_logs{height:calc(100vh - 208px)}
-#sessionBanned {margin:9px 4px 8px}
+#sessionBanned{margin:9px 4px 8px}
 #sidebar button.cancel{margin-top:10px}
 #sidebar .reload:hover,#sidebar .reload:focus{background-size:12px,12px,100%}
 #sidebar .reload[value="restartImmediate"],#sidebar .reload[value="restartImmediate"]:hover,#sidebar .reload[value="restartImmediate"]:focus{margin-bottom:-6px}
@@ -3377,8 +3378,8 @@ body.isDown::before{background:linear-gradient(90deg,#000c,#000,#000c);backdrop-
 body.isDown::after{width:80px;height:80px;top:calc(50% - 40px);left:calc(50% - 40px);z-index:9999;background:var(--update) var(--center)/80px;content:"";transform:rotate(0);animation:linear spin 3s forwards infinite;will-change:transform}
 
 /* LS search */
-#netdb #singleLS~.leaseset {margin-bottom:1px;column-span:all;width:100%}
-#searchLS {margin-bottom:10px auto -1px;display:block;column-span:all;text-align:center;box-shadow:var(--border_table),var(--highlight);background:var(--th)}
+#netdb #singleLS~.leaseset{margin-bottom:1px;column-span:all;width:100%}
+#searchLS{margin-bottom:10px auto -1px;display:block;column-span:all;text-align:center;box-shadow:var(--border_table),var(--highlight);background:var(--th)}
 
 /* compact netdb search */
 #compactLookup{margin-top:0;padding:0 13px 3px;width:90%;max-width:900px;min-width:0;display:block;top:-1px;z-index:9999;border:var(--border_hard);border-radius: 0 0 4px 4px;box-shadow:3px 3px 3px #0006,var(--highlight);background: var(--badge)}

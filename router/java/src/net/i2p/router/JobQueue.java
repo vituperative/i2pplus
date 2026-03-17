@@ -94,10 +94,9 @@ public class JobQueue {
     private final static long DEFAULT_WARMUP_TIME = 15*60*1000;
     private long _warmupTime = DEFAULT_WARMUP_TIME;
     /** Max ready and waiting jobs before we start dropping 'em - scale with runner count */
-    private final static int DEFAULT_MAX_WAITING_JOBS = SystemVersion.isSlow() ? Math.max(SystemVersion.getCores() * 8, 128) :
-                                                                                 Math.max(SystemVersion.getCores() * 16, 256);
+    private final static int DEFAULT_MAX_WAITING_JOBS = SystemVersion.isSlow() ? 24 : 48;
     private int _maxWaitingJobs = DEFAULT_MAX_WAITING_JOBS;
-    private final static long MIN_LAG_TO_DROP = SystemVersion.isSlow() ? 100 : 50;
+    private final static long MIN_LAG_TO_DROP = 5;
 
     /**
      *  @since 0.9.52+
@@ -170,7 +169,7 @@ public class JobQueue {
             _log.warn(job + " scheduled far in the future: " + (new Date(start)));
         }
         synchronized (_jobLock) {
-            alreadyExists = _readyJobs.contains(job) || _highPriorityJobs.contains(job) || 
+            alreadyExists = _readyJobs.contains(job) || _highPriorityJobs.contains(job) ||
                            _timedJobsReady.contains(job);
             // Note: Don't check _jobsInFlight here - a job MUST be allowed to requeue itself
             numReady = _readyJobs.size();
@@ -415,6 +414,11 @@ public class JobQueue {
                 if (cls == RepublishLeaseSetJob.class) {return false;}
                 // Don't drop critical tunnel management jobs
                 if (jobName.equals("net.i2p.router.tunnel.pool.TunnelPoolManager$RemoveSlowTunnelsJob")) {return false;}
+                // Drop timeout-based jobs when lagging to reduce queue pressure
+                if (jobName.contains("SendTimeoutJob") || jobName.contains("VerifyTimeout") || jobName.contains("FloodOnlyLookupTimeout")) {return true;}
+                // Drop non-critical verification jobs when lagging
+                if (jobName.contains("DropLookupFoundJob") || jobName.contains("DropLookupFailedJob") || 
+                    jobName.contains("DirectLookupJob") || jobName.contains("DirectLookupMatch")) {return true;}
                 if ((!disableTunnelTests && cls == TestJob.class) || cls == PeerTestJob.class) {
                     return true;
                 }
@@ -599,7 +603,7 @@ public class JobQueue {
      * @return the number of active runners
      * @since 0.9.68+
      */
-    int getActiveRunnerCount() {
+    public int getActiveRunnerCount() {
         return _queueRunners.size();
     }
 
@@ -780,7 +784,6 @@ public class JobQueue {
     void updateStats(Job job, long doStart, long origStartAfter, long duration) {
         // Remove from in-flight tracking when job completes
         _jobsInFlight.remove(job);
-        
         if (_context.router() == null) return;
         String key = job.getName();
         // Fix lag calculation: use actual job start time, not current time

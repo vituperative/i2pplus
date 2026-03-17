@@ -158,7 +158,7 @@ class BanlistRenderer {
                         ipPort = ipField.substring(0, ipField.indexOf(" ("));
                         hostname = ipField.substring(ipField.indexOf(" (") + 2, ipField.length() - 1);
                     }
-                    if (hash.isEmpty() && !ipPort.isEmpty()) {
+                    if ((hash.isEmpty() || hash.equals("UNKNOWN")) && !ipPort.isEmpty()) {
                         long expires = parseDuration(durationStr, now);
                         if (expires > now) {
                             // Store the full IP:PORT string in the ip field

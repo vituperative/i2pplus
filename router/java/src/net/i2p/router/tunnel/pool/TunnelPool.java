@@ -111,7 +111,7 @@ public class TunnelPool {
             // however, we /do/ want a leaseSet, so build one
             LeaseSet ls = null;
             synchronized (_tunnels) {ls = locked_buildNewLeaseSet();}
-            if (ls != null) {requestLeaseSet(ls);}
+            if (ls != null) {requestLeaseSet(ls, true);} // force on reconnect
         }
         String name;
         if (_settings.isExploratory()) {name = "Exploratory tunnels";}
@@ -629,6 +629,12 @@ public class TunnelPool {
      *  Window set to 10 minutes to handle slow tunnel builds.
      */
     private static final long RECENTLY_ADDED_WINDOW = 10 * 60 * 1000;
+    /** Throttle refresh to prevent flooding job queue */
+    private static final long REFRESH_THROTTLE = 30 * 1000;
+    /** Initialize to allow first request immediately */
+    private long _lastRefreshTime = -REFRESH_THROTTLE;
+    /** Track last NetDB publish time */
+    private long _lastNetDbPublish;
     private final Map<TunnelId, Long> _recentlyAddedTunnels = new ConcurrentHashMap<>();
 
     /**
@@ -679,7 +685,13 @@ public class TunnelPool {
                 if (_settings.isInbound() && !_settings.isExploratory()) {ls = locked_buildNewLeaseSet();}
             }
         }
-        if (info.getExpiration() > now + 60*1000 && ls != null) {requestLeaseSet(ls);}
+        if (info.getExpiration() > now + 60*1000 && ls != null) {
+            // Throttle requests per pool to prevent flooding job queue
+            if (now - _lastRefreshTime >= REFRESH_THROTTLE) {
+                _lastRefreshTime = now;
+                requestLeaseSet(ls);
+            }
+        }
     }
 
     /**
@@ -689,13 +701,9 @@ public class TunnelPool {
     void removeTunnel(TunnelInfo info) {
         if (_log.shouldDebug()) {_log.debug(toString() + " -> Removing tunnel " + info);}
         int remaining = 0;
-        LeaseSet ls = null;
         synchronized (_tunnels) {
             boolean removed = _tunnels.remove(info);
             if (!removed) {return;}
-            if (_settings.isInbound() && !_settings.isExploratory()) {
-                ls = locked_buildNewLeaseSet();
-            }
             remaining = _tunnels.size();
         }
 
@@ -709,11 +717,12 @@ public class TunnelPool {
             _context.profileManager().tunnelLifetimePushed(info.getPeer(i), lifetime, lifetimeConfirmed);
         }
         if (_alive && _settings.isInbound() && !_settings.isExploratory()) {
-            if (ls != null) {requestLeaseSet(ls);}
-            else {
+            // Force refresh when at/below minimum - cannot serve dead tunnels
+            boolean forceRefresh = remaining <= _settings.getQuantity();
+            refreshLeaseSet(forceRefresh);
+            if (remaining <= 0) {
                 if (_log.shouldWarn()) {
-                    _log.warn(toString() + "\n* Unable to build a new LeaseSet on removal (" + remaining
-                              + " remaining) -> Requesting a new tunnel...");
+                    _log.warn(toString() + "\n* No tunnels remaining -> Requesting a new tunnel...");
                 }
                 if (_settings.getAllowZeroHop()) {buildFallback();}
             }
@@ -775,6 +784,7 @@ public class TunnelPool {
         updateRate();
 
         if (_settings.isInbound() && !_settings.isExploratory() && ls != null) {
+            // Throttled internally
             requestLeaseSet(ls);
         }
     }
@@ -833,15 +843,78 @@ public class TunnelPool {
 
     /** noop for outbound and exploratory */
     void refreshLeaseSet() {
+        refreshLeaseSet(false);
+    }
+
+    /**
+     * Refresh the LeaseSet, throttled to prevent flooding.
+     * @param force if true, bypass throttle (for critical refresh when below minimum or near expiry)
+     */
+    void refreshLeaseSet(boolean force) {
         if (_settings.isInbound() && !_settings.isExploratory()) {
+            long now = _context.clock().now();
+            if (!force && now - _lastRefreshTime < REFRESH_THROTTLE) {
+                if (_log.shouldDebug()) {
+                    _log.debug(toString() + "\n* Skipping LeaseSet refresh - throttled");
+                }
+                return;
+            }
+            int currentCount = getTunnelCount();
+            int minRequired = _settings.getQuantity();
+            // Always refresh if we're at or below minimum - cannot serve dead tunnels
+            if (!force && currentCount <= minRequired) {
+                force = true;
+            }
+            if (!force && now - _lastRefreshTime < REFRESH_THROTTLE) {
+                if (_log.shouldDebug()) {
+                    _log.debug(toString() + "\n* Skipping LeaseSet refresh - throttled");
+                }
+                return;
+            }
+            _lastRefreshTime = now;
             if (_log.shouldDebug()) {
-                _log.debug(toString() + "\n* Refreshing LeaseSet on tunnel expiration (but prior to grace timeout)");
+                _log.debug(toString() + "\n* Refreshing LeaseSet (force=" + force + ", count=" + currentCount + ")");
             }
             LeaseSet ls;
             synchronized (_tunnels) {ls = locked_buildNewLeaseSet();}
-            if (ls != null) {requestLeaseSet(ls);}
+            if (ls != null && ls.getHash() != null) {
+                requestLeaseSet(ls);
+                // Note: NetDB publish is handled by RepublishLeaseSetJob after client signs
+            } else if (ls != null && _log.shouldWarn()) {
+                _log.warn("Cannot request LeaseSet refresh - LeaseSet not fully initialized");
+            }
         }
     }
+
+    /**
+     * Check if the LeaseSet is expiring soon (within 1 minute).
+     * @param now current time
+     * @return true if refresh should be forced
+     */
+    boolean isExpiringSoon(long now) {
+        synchronized (_tunnels) {
+            LeaseSet ls = locked_buildNewLeaseSet();
+            if (ls != null) {
+                long earliestExpiry = ls.getEarliestLeaseDate();
+                return earliestExpiry > 0 && earliestExpiry < now + 60 * 1000;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build and return current LeaseSet from our tunnels.
+     * Used by TunnelPoolManager to validate NetDB has current data.
+     * @return current LeaseSet or null
+     */
+    LeaseSet getInboundTunnelsAsLeaseSet() {
+        synchronized (_tunnels) {
+            return locked_buildNewLeaseSet();
+        }
+    }
+
+    long getLastNetDbPublish() { return _lastNetDbPublish; }
+    void setLastNetDbPublish(long time) { _lastNetDbPublish = time; }
 
     /**
      *  Request lease set from client for the primary and all aliases.
@@ -850,6 +923,9 @@ public class TunnelPool {
      *  @since 0.9.49
      */
     private void requestLeaseSet(LeaseSet ls) {
+        if (!_settings.isInbound() || _settings.isExploratory()) {
+            return;
+        }
         _context.clientManager().requestLeaseSet(_settings.getDestination(), ls);
         Set<Hash> aliases = _settings.getAliases();
         if (aliases != null && !aliases.isEmpty()) {
@@ -860,6 +936,15 @@ public class TunnelPool {
                 _context.clientManager().requestLeaseSet(h, ls2);
             }
         }
+    }
+
+    /**
+     *  Request LeaseSet with optional force bypass of throttle.
+     *  @param ls non-null
+     *  @param force if true, bypass throttle
+     */
+    private void requestLeaseSet(LeaseSet ls, boolean force) {
+        requestLeaseSet(ls);
     }
 
     /**

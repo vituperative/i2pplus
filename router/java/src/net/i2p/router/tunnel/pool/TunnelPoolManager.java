@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import net.i2p.data.Destination;
 import net.i2p.data.Hash;
+import net.i2p.data.LeaseSet;
 import net.i2p.router.ClientTunnelSettings;
 import net.i2p.router.JobImpl;
 import net.i2p.router.RouterContext;
@@ -52,7 +53,8 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     private static final String PROP_SLOW_TUNNEL_MIN = "router.tunnel.slowThresholdMin";
     private static final String PROP_SLOW_TUNNEL_INTERVAL = "router.tunnel.slowTunnelInterval";
     private static final int DEFAULT_SLOW_THRESHOLD_MS = 0; // 0 means use 1.5x average
-    private static final int DEFAULT_RUN_INTERVAL_MS = 60*1000; // 60s default
+    private static final int DEFAULT_RUN_INTERVAL_MS = 180*1000; // 3m default
+    private static final long REFRESH_DELAY_AFTER_REMOVAL = 5*1000; // wait for new tunnels to build
     private static final double MAX_SHARE_RATIO = 100000d;
 
     public TunnelPoolManager(RouterContext ctx) {
@@ -639,8 +641,9 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 _mgr._log.info("Running Remove Slow Tunnels Job...");
 
             long startTime = System.currentTimeMillis();
+            boolean didRemove = false;
             try {
-                _mgr.replaceSlowTunnels();
+                didRemove = _mgr.replaceSlowTunnels();
             } catch (Exception e) {
                 if (_mgr._log.shouldWarn())
                     _mgr._log.warn("Error replacing slow tunnels", e);
@@ -653,12 +656,28 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 return;
             }
 
+            // Schedule LeaseSet refresh after delay to allow new tunnels to build
+            if (didRemove) {
+                _mgr._context.jobQueue().addJob(new RefreshLeaseSetsJob(_mgr._context, _mgr));
+            }
+
             // Diagnostic logging
             int runNum = _runCount.incrementAndGet();
             _mgr._log.info("RemoveSlowTunnelsJob run #" + runNum + " completed in " + duration + "ms");
 
-            // Use configurable interval (default 30s)
+            // Use configurable interval (default 90s), increase if queue is overloaded
             long interval = _mgr._context.getProperty(PROP_SLOW_TUNNEL_INTERVAL, DEFAULT_RUN_INTERVAL_MS);
+            int maxWaiting = _mgr._context.getProperty("router.maxWaitingJobs", 750);
+            int readyCount = _mgr._context.jobQueue().getReadyCount();
+            long maxLag = _mgr._context.jobQueue().getMaxLag();
+            long avgLag = _mgr._context.jobQueue().getAvgLag();
+            // If queue overloaded, increase interval to reduce load (check both max and avg lag)
+            if (readyCount > maxWaiting || maxLag >= 10 || avgLag >= 10) {
+                interval = 5 * 60 * 1000; // 5 minutes
+                if (_mgr._log.shouldWarn()) {
+                    _mgr._log.warn("Job queue overloaded (Ready jobs: " + readyCount + ", Max lag: " + maxLag + "ms, Avg lag: " + avgLag + "ms) -> Increasing interval to 5min...");
+                }
+            }
             _mgr._log.info("Remove Slow Tunnels Job: Requeueing in " + (interval / 1000) + "s...");
             long start = _mgr._context.clock().now();
             requeue(interval);
@@ -668,16 +687,110 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     }
 
     /**
+     * Job to refresh LeaseSets after slow tunnel removal.
+     * Runs ~5s after RemoveSlowTunnelsJob to allow new tunnels to build.
+     */
+    private static class RefreshLeaseSetsJob extends JobImpl {
+        private final TunnelPoolManager _mgr;
+
+        public RefreshLeaseSetsJob(RouterContext ctx, TunnelPoolManager mgr) {
+            super(ctx);
+            _mgr = mgr;
+            getTiming().setStartAfter(ctx.clock().now() + REFRESH_DELAY_AFTER_REMOVAL);
+        }
+
+        public String getName() { return "Refresh LeaseSets Job"; }
+
+        public void runJob() {
+            if (_mgr.isShutdown()) {
+                return;
+            }
+            if (_mgr._log.shouldInfo()) {
+                _mgr._log.info("Running Refresh LeaseSets Job...");
+            }
+            // For our local server tunnels: refresh LeaseSet and validate NetDB
+            List<TunnelPool> pools = new ArrayList<TunnelPool>();
+            _mgr.listPools(pools);
+            long now = _mgr._context.clock().now();
+            for (TunnelPool pool : pools) {
+                if (pool != null && pool.getSettings().isInbound() && !pool.getSettings().isExploratory()) {
+                    // Force refresh if LeaseSet expires within 1 minute
+                    boolean force = pool.isExpiringSoon(now);
+                    // Refresh local LeaseSet (throttled unless force)
+                    pool.refreshLeaseSet(force);
+                    // Validate NetDB has current LeaseSet, republish if stale
+                    validateAndRepublishNetDB(pool);
+                }
+            }
+        }
+
+        /**
+         * Check if our published LeaseSet in NetDB matches our current tunnels.
+         * Always republish periodically (every 90s) and when tunnels change.
+         */
+        private static final long NETDB_REPUBLISH_INTERVAL = 90 * 1000;
+
+        private void validateAndRepublishNetDB(TunnelPool pool) {
+            long now = _mgr._context.clock().now();
+            // Always republish periodically (every 90s) to keep NetDB fresh
+            if (now - pool.getLastNetDbPublish() > NETDB_REPUBLISH_INTERVAL) {
+                LeaseSet currentLS = pool.getInboundTunnelsAsLeaseSet();
+                if (currentLS != null) {
+                    Hash key = currentLS.getHash();
+                    if (key != null) {
+                        pool.setLastNetDbPublish(now);
+                        _mgr._context.netDb().publish(currentLS);
+                        if (_mgr._log.shouldInfo()) {
+                            _mgr._log.info("Periodic LeaseSet republish: " + key.toBase32().substring(0, 8));
+                        }
+                        return;
+                    }
+                }
+            }
+            // Build current LeaseSet from our tunnels
+            LeaseSet currentLS = pool.getInboundTunnelsAsLeaseSet();
+            if (currentLS == null) {
+                return;
+            }
+            Hash key = currentLS.getHash();
+            if (key == null) {
+                return;
+            }
+            // Lookup what we have published to NetDB
+            LeaseSet netDbLS = _mgr._context.netDb().lookupLeaseSetLocally(key);
+            if (netDbLS == null) {
+                // Not in NetDB yet, publish
+                if (_mgr._log.shouldInfo()) {
+                    _mgr._log.info("LeaseSet not in NetDB, publishing: " + key.toBase32().substring(0, 8));
+                }
+                pool.setLastNetDbPublish(now);
+                _mgr._context.netDb().publish(currentLS);
+                return;
+            }
+            // Compare - if different, republish
+            if (!currentLS.equals(netDbLS)) {
+                if (_mgr._log.shouldInfo()) {
+                    _mgr._log.info("NetDB LeaseSet stale, republishing: " + key.toBase32().substring(0, 8));
+                }
+                pool.setLastNetDbPublish(now);
+                _mgr._context.netDb().publish(currentLS);
+            }
+        }
+    }
+
+    /**
      * Find and remove tunnels exceeding the latency threshold.
      * Does not blame peers for the removal.
      * Removes all such tunnels per pool if pool has more tunnels than configured quantity,
      * but won't go below the configured quantity.
      * Threshold is either the configured property (in ms), or Math.max(minLatency, 1000ms), whichever is larger.
+     * @return true if any tunnels were removed
      * @since 0.9.69+
      */
-    public void replaceSlowTunnels() {
+    public boolean replaceSlowTunnels() {
         List<TunnelPool> pools = new ArrayList<TunnelPool>();
         listPools(pools);
+        boolean didRemove = false;
 
         // First pass: calculate global average and minimum latency
         long totalLatency = 0;
@@ -703,7 +816,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
         if (avg <= 0) {
             if (_log.shouldWarn())
                 _log.warn("Replace slow tunnels: No latency data available (avg <= 0)");
-            return;
+            return false;
         }
 
         // Ensure we have a valid minimum
@@ -791,10 +904,12 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 }
             }
 
-            if (!toRemove.isEmpty() && _log.shouldWarn()) {
+            if (!toRemove.isEmpty()) {
+                didRemove = true;
                 _log.warn("Removed " + toRemove.size() + " slow tunnels from " + pool);
             }
         }
+        return didRemove;
     }
 
     /**

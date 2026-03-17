@@ -52,6 +52,12 @@ public class SidebarHelper extends HelperBase {
 
     static final String THINSP = " / ";
     private static final char S = ',';
+    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,##0");
+    private static final DecimalFormat ONE_DECIMAL = new DecimalFormat("#0.0");
+    private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#0.00");
+    private static final DecimalFormat ZERO_DECIMAL = new DecimalFormat("##0");
+    private static final DecimalFormat ZERO_ONE_DECIMAL = new DecimalFormat("##0.0");
+    private static final DecimalFormat ZERO_TWO_DECIMALS = new DecimalFormat("##0.00");
     net.i2p.I2PAppContext ctx = net.i2p.I2PAppContext.getGlobalContext();
     private static final String PROP_ADVANCED = "routerconsole.advanced";
     private static final String PROP_UNIFIED_SIDEBAR = "routerconsole.unifiedSidebar";
@@ -343,7 +349,6 @@ public class SidebarHelper extends HelperBase {
      * @since 0.9.32 uncommented
      */
     public String getMemory() {
-        DecimalFormat integerFormatter = new DecimalFormat("###,###,##0");
         long tot = SystemVersion.getMaxMemory();
         // This reads much higher than the graph, possibly because it's right in
         // the middle of a console refresh... so get it from the Rate instead.
@@ -356,12 +361,11 @@ public class SidebarHelper extends HelperBase {
         used /= 1024*1024;
         long total = tot / (1024*1024);
         if (used > total) {used = total;}
-        return integerFormatter.format(used) + " / " + total + " M";
+        return INTEGER_FORMAT.format(used) + " / " + total + " M";
     }
 
     /** @since 0.9.32 */
     public String getMemoryBar() {
-        DecimalFormat integerFormatter = new DecimalFormat("###,###,##0");
         long tot = SystemVersion.getMaxMemory();
         // This reads much higher than the graph, possibly because it's right in
         // the middle of a console refresh... so get it from the Rate instead.
@@ -379,8 +383,8 @@ public class SidebarHelper extends HelperBase {
         if (used > total) {used = total;}
         if (usedPc > 100) {usedPc = 100;}
         String bar = "<div class=\"percentBarOuter volatile\" id=sb_memoryBar><div class=percentBarText>RAM: " +
-                      integerFormatter.format(used) + " / " + total + " M</div><div class=percentBarInner style=width:" +
-                      integerFormatter.format(usedPc) + "%></div></div>";
+                      INTEGER_FORMAT.format(used) + " / " + total + " M</div><div class=percentBarInner style=width:" +
+                      INTEGER_FORMAT.format(usedPc) + "%></div></div>";
         return bar;
     }
 
@@ -616,9 +620,8 @@ public class SidebarHelper extends HelperBase {
         }
         // control total width
         DecimalFormat fmt;
-        if ((in >= 1000 || out >= 1000) && mega) {fmt = new DecimalFormat("#0.00");}
-        else if ((in >= 10 || out >= 10) && mega) {fmt = new DecimalFormat("#0.0");}
-        else {fmt = new DecimalFormat("#0.0");}
+        if ((in >= 1000 || out >= 1000) && mega) {fmt = TWO_DECIMALS;}
+        else {fmt = ONE_DECIMAL;}
         return fmt.format(in) + THINSP + fmt.format(out) + "&nbsp;" + (mega ? 'M' : 'K');
     }
 
@@ -895,9 +898,9 @@ public class SidebarHelper extends HelperBase {
     public String getShareRatio() {
         if (_context == null) {return "0";}
         double sr = _context.tunnelManager().getShareRatio();
-        DecimalFormat fmt = new DecimalFormat("##0");
-        if (sr < 1) {fmt = new DecimalFormat("##0.00");}
-        else if (sr < 10) {fmt = new DecimalFormat("##0.0");}
+        DecimalFormat fmt = ZERO_DECIMAL;
+        if (sr < 1) {fmt = ZERO_TWO_DECIMALS;}
+        else if (sr < 10) {fmt = ZERO_ONE_DECIMAL;}
         return fmt.format(sr).replace("0.00", "0");
     }
 
@@ -965,10 +968,10 @@ public class SidebarHelper extends HelperBase {
         Router router = _context.router();
         if (router.getUptime() < 15 * 1000) {return "0 / 0";}
         else {
-            DecimalFormat fmt = new DecimalFormat("##0.0");
+            DecimalFormat fmt = ZERO_ONE_DECIMAL;
             if (cbavg < 0.1 || cbavg > 10) {
-                if (cbavg < 0.1) {fmt = new DecimalFormat("##0.00");}
-                if (cbavg > 10) {fmt = new DecimalFormat("##0");}
+                if (cbavg < 0.1) {fmt = ZERO_TWO_DECIMALS;}
+                if (cbavg > 10) {fmt = ZERO_DECIMAL;}
                 return String.valueOf(fmt.format(cbavg).replace(".00", "")) + " / " + brtavg;
             } else {return String.valueOf(fmt.format(cbavg).replace(".0", "")) + " / " + brtavg;}
         }

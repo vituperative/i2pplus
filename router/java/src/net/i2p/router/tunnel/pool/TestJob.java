@@ -54,8 +54,8 @@ public class TestJob extends JobImpl {
     private static final int MAX_CONCURRENT_TESTS = SystemVersion.isSlow() ? 8 : 16;
 
     // Adaptive testing frequency constants
-    private static final int BASE_TEST_DELAY = 90 * 1000; // 90s base
-    private static final int MIN_TEST_DELAY = 30 * 1000; // 30s minimum
+    private static final int BASE_TEST_DELAY = 120 * 1000; // 120s base
+    private static final int MIN_TEST_DELAY = 60 * 1000; // 60s minimum
     private static final int MAX_TEST_DELAY = 180 * 1000; // 180s maximum
     private static final int SUCCESS_HISTORY_SIZE = 3; // Track last 3 results
 
@@ -63,7 +63,7 @@ public class TestJob extends JobImpl {
      * Maximum number of TestJob instances that should be queued before deferring new ones.
      * Prevents job queue saturation from too many waiting tunnel tests.
      */
-    private static final int MAX_QUEUED_TESTS = SystemVersion.isSlow() ? 32 : 64;
+    private static final int MAX_QUEUED_TESTS = SystemVersion.isSlow() ? 16 : 32;
     public static int maxQueuedTests = MAX_QUEUED_TESTS;
 
     /**
@@ -71,7 +71,7 @@ public class TestJob extends JobImpl {
      * Above this threshold, no new tests are scheduled until count decreases.
      * Prevents ever-increasing backlogs that could cause job lag.
      */
-    public static final int HARD_TEST_JOB_LIMIT = SystemVersion.isSlow() ? 128 : 256;
+    public static final int HARD_TEST_JOB_LIMIT = SystemVersion.isSlow() ? 64 : 128;
 
     /**
      * Static counter tracking the number of currently active tunnel tests.
@@ -175,10 +175,17 @@ public class TestJob extends JobImpl {
 
         // Check if job queue is overloaded - skip scheduling if queue is backing up
         int readyCount = ctx.jobQueue().getReadyCount();
-        if (readyCount > 1000) {
+        long maxLag = ctx.jobQueue().getMaxLag();
+        // Limit TestJobs to max 1/6 of available runners to leave resources for other jobs
+        int activeRunners = ctx.jobQueue().getActiveRunnerCount();
+        int maxTestJobs = Math.max(8, activeRunners / 6);
+        int currentTestJobs = getTotalTestJobCount();
+        // If queue has ANY lag, don't add more test jobs - prevents cascade
+        if (readyCount > 50 || maxLag > 10 || currentTestJobs >= maxTestJobs) {
             Log log = ctx.logManager().getLog(TestJob.class);
             if (log.shouldInfo()) {
-                log.info("Job queue overloaded (" + readyCount + " ready jobs) -> Not scheduling test for " + cfg);
+                log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag + 
+                         "ms, testJobs=" + currentTestJobs + "/" + maxTestJobs + ") -> Not scheduling test for " + cfg);
             }
             return false;
         }
@@ -420,8 +427,8 @@ public class TestJob extends JobImpl {
             // Low lag - moderate increase in queue capacity
             maxQueuedTests = MAX_QUEUED_TESTS * 3 / 2;
         } else {
-            // Normal or high lag - use standard limits
-            maxQueuedTests = MAX_QUEUED_TESTS * 2;
+            // Queue has lag - be conservative and reduce tests
+            maxQueuedTests = MAX_QUEUED_TESTS;
         }
 
         // Cap adaptive queue limit at hard limit to prevent exceeding configured maximum
@@ -829,7 +836,21 @@ public class TestJob extends JobImpl {
 
         final RouterContext ctx = getContext();
 
+        // Check if job queue is overloaded - skip rescheduling if queue is backing up
+        // Don't reschedule ANY test jobs when there's ANY lag to prevent cascade
+        int readyCount = ctx.jobQueue().getReadyCount();
+        long maxLag = ctx.jobQueue().getMaxLag();
+        int activeRunners = ctx.jobQueue().getActiveRunnerCount();
+        int maxTestJobs = Math.max(8, activeRunners / 6);
         int totalCount = getTotalTestJobCount();
+        if (readyCount > 50 || maxLag > 10 || totalCount >= maxTestJobs) {
+            if (_log.shouldInfo()) {
+                _log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag + 
+                         "ms, testJobs=" + totalCount + "/" + maxTestJobs + ") -> Skipping retest for " + _cfg);
+            }
+            return false;
+        }
+
         if (totalCount >= HARD_TEST_JOB_LIMIT) {
             if (_log.shouldInfo()) {
                 _log.info("Hard limit reached during reschedule (" + totalCount + " >= " + HARD_TEST_JOB_LIMIT +

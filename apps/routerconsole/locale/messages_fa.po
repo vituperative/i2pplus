@@ -2552,7 +2552,7 @@ msgstr "کارها را به تازگی تمام کردم"
 msgid "finished {0} ago"
 msgstr "{0} پیش تمام شد"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "مشاغل آماده/انتظار"
 
 msgid "waiting"

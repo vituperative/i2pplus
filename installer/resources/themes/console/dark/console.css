@@ -627,8 +627,8 @@ h3.toggle:active,#graphdisplay:active,#i2pupdates~.tabletitle:active,#miscConfig
 .joblog th:first-child{padding-left:6px;text-align:left}
 .joblog ul li li:last-child{margin-bottom:-15px}
 .joblog ul li li li{margin-bottom:10px}
-#activejobs+ol li::before{background:var(--start) var(--center)}
 #activejobs+ol li::before,#scheduledjobs+ol li::before,#readyjobs+ol li::before,#finishedjobs+ol li::before,#schedjobs li::before{margin:0 6px 0 2px;width:16px;height:16px;display:inline-block;vertical-align:text-top;background:var(--clock) var(--center)/16px;content:""}
+#activejobs+ol li::before{background:var(--start) var(--center)}
 #finishedjobs{margin-top:-5px}
 #finishedjobs+ol li::before{background:var(--yes) var(--center)/12px}
 #finishedjobs+ol li,#scheduledjobs+ol li,#activejobs+ol li,#readyjobs+ol li{list-style:none}
@@ -671,7 +671,8 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #routerjobqueue .toggle:hover .dropdown::after{background:var(--dropdown_hover);content:"";transform:rotate(-90deg)}
 #routerjobqueue .toggle.expanded .dropdown::after{background:var(--dropdown);content:"";transform:none}
 #routerjobqueue .toggle.expanded:hover .dropdown::after{background:var(--dropdown_hover);content:"";transform:none}
-#routerjobqueue .toggle.nojobs{display:none;opacity:0}
+#routerjobqueue .toggle.nojobs:hover{cursor:default;pointer-events:none}
+#routerjobqueue .toggle.nojobs .dropdown{opacity:.5;pointer-events:none;cursor:pointer}
 
 /* job queue stats */
 #jobstats+hr{display:none}
@@ -687,6 +688,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #statCount td.updated:nth-child(n+2) span{animation:updatingTd .1s ease-in-out both,updatingTdRevert 1.5s ease 3s both}
 .advmode #jobstats td:nth-child(n+2){width:6.5%}
 #routerjobqueue #jobs h3 span:not(.dropdown){margin:-3px 22px -3px 0;padding:3px 8px;min-width:140px;text-align:center;border-radius:16px;box-shadow:var(--bevel);background:var(--badge)}
+#schedjobs th{user-select:none}
 #statCount tr{border-top:var(--border_softer)}
 #statTotals td{border-top:var(--border)}
 #totaljobstats{margin-top:0}

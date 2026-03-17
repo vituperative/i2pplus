@@ -2544,7 +2544,7 @@ msgstr "たった今ジョブが終了しました"
 msgid "finished {0} ago"
 msgstr "{0} 前に終了"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "準備完了/待機中のジョブ"
 
 msgid "waiting"

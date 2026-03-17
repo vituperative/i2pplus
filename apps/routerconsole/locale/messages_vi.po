@@ -2544,7 +2544,7 @@ msgstr "Vừa hoàn thành công việc"
 msgid "finished {0} ago"
 msgstr "đã hoàn thành {0} trước"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Công việc đã sẵn sàng/đang chờ"
 
 msgid "waiting"

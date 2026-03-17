@@ -2552,7 +2552,7 @@ msgstr "İşi yenicə bitirdim"
 msgid "finished {0} ago"
 msgstr "{0} əvvəl bitdi"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Hazır/gözləyən işlər"
 
 msgid "waiting"

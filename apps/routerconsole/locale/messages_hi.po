@@ -2552,7 +2552,7 @@ msgstr "हाल ही में पूरा हुए कार्य"
 msgid "finished {0} ago"
 msgstr "{0} पहले पूरा हुआ"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "तैयार/انتظार कर रहे कार्य"
 
 msgid "waiting"

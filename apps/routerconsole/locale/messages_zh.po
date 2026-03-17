@@ -2544,7 +2544,7 @@ msgstr "刚刚完成的任务"
 msgid "finished {0} ago"
 msgstr "{0}前完成"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "已就绪/等待中的任务"
 
 msgid "waiting"

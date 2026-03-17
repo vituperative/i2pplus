@@ -43,7 +43,7 @@
     if (!joblog) return false;
 
     // Add toggle classes and collapse/expand based on stored state
-    const sectionToggles = joblog.querySelectorAll("h3:not(.nojobs)");
+    const sectionToggles = joblog.querySelectorAll("h3");
     sectionToggles.forEach(toggle => {
       toggle.classList.add("sectionToggle");
       toggle.classList.add("toggle");
@@ -183,8 +183,8 @@
 
           const oldRow = oldRowsMap.get(jobName);
           if (!oldRow) {
-            fragment.appendChild(newRow);
-            oldRowsMap.set(jobName, newRow);
+            fragment.appendChild(newRow.cloneNode(true));
+            oldRowsMap.set(jobName, newRow.cloneNode(true));
             return;
           }
 
@@ -227,6 +227,11 @@
               oldRowsMap.delete(name);
             }
           });
+        }
+
+        // Add new rows that didn't exist before
+        if (fragment.hasChildNodes()) {
+          oldTbody.appendChild(fragment);
         }
 
         const footer = jobs.querySelector(".tablefooter");

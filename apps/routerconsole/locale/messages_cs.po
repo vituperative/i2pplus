@@ -2560,7 +2560,7 @@ msgstr "Právě dokončené úlohy"
 msgid "finished {0} ago"
 msgstr "dokončeno před {0}"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Úlohy připravené/čekající"
 
 msgid "waiting"

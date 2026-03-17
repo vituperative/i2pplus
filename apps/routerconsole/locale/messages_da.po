@@ -2552,7 +2552,7 @@ msgstr "Lige afslutet jobs"
 msgid "finished {0} ago"
 msgstr "afslutet {0} siden"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Færdige/ventede jobs"
 
 msgid "waiting"

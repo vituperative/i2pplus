@@ -2553,7 +2553,7 @@ msgstr "Job appena terminato"
 msgid "finished {0} ago"
 msgstr "terminato {0} fa"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Job pronti/in attesa"
 
 msgid "waiting"

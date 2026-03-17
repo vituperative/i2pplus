@@ -2552,7 +2552,7 @@ msgstr ""
 msgid "finished {0} ago"
 msgstr ""
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr ""
 
 msgid "waiting"

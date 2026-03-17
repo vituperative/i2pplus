@@ -2560,7 +2560,7 @@ msgstr "Щойно закінчені роботи"
 msgid "finished {0} ago"
 msgstr "завершено {0} тому"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Готові/очікуючі вакансії"
 
 msgid "waiting"

@@ -2552,7 +2552,7 @@ msgstr "Nyligen slutförda uppgifter"
 msgid "finished {0} ago"
 msgstr "slutförd {0} sedan"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Redo/väntande uppgifter"
 
 msgid "waiting"

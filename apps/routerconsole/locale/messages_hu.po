@@ -2552,7 +2552,7 @@ msgstr "A Közelmúltban Befejezett Munkahelyek"
 msgid "finished {0} ago"
 msgstr "{0} ideje befejeződött"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Kész/várakozó munkák"
 
 msgid "waiting"

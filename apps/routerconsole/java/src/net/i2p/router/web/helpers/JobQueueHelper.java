@@ -256,14 +256,16 @@ public class JobQueueHelper extends HelperBase {
             buf.append("</ol></div>\n");
         }
 
-        if (readyJobs.size() != 0) {
-            // Use dropped count from earlier
-            String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
-                                                    _t("Dropped: {0}", droppedCount) + "</span>" : "";
-            buf.append("<div class=tablewrap id=ready><h3 id=readyjobs>")
-               .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
-               .append(droppedStr)
-               .append("</h3>\n<ol class=jobqueue>\n");
+        boolean hasJobs = readyJobs.size() > 0;
+        String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
+                                                _t("Dropped: {0}", droppedCount) + "</span>" : "";
+        buf.append("<div class=tablewrap id=ready><h3 id=readyjobs")
+           .append(!hasJobs ? " class=nojobs" : "").append(">")
+           .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
+           .append(droppedStr)
+           .append("</h3>\n");
+        if (hasJobs) {
+            buf.append("<ol class=jobqueue>\n");
 
             // Group ready jobs by name and elapsed time (rounded to nearest second)
             Map<String, Map<Long, List<Job>>> groupedReadyJobs = new HashMap<String, Map<Long, List<Job>>>();
@@ -272,7 +274,6 @@ public class JobQueueHelper extends HelperBase {
                 String jobName = j.getName();
                 long elapsed = Math.max(0, now - j.getTiming().getStartAfter());
                 long elapsedSeconds = (elapsed / 1000) * 1000; // Round to nearest second
-
                 if (!groupedReadyJobs.containsKey(jobName)) {
                     groupedReadyJobs.put(jobName, new HashMap<Long, List<Job>>());
                 }
@@ -286,7 +287,6 @@ public class JobQueueHelper extends HelperBase {
             // Sort and display
             List<String> sortedJobNames = new ArrayList<>(groupedReadyJobs.keySet());
             Collections.sort(sortedJobNames);
-
             int displayedJobCount = 0;
             for (String jobName : sortedJobNames) {
                 Map<Long, List<Job>> timeGroups = groupedReadyJobs.get(jobName);
@@ -295,7 +295,6 @@ public class JobQueueHelper extends HelperBase {
 
                 for (Long elapsedSeconds : sortedTimes) {
                     if (displayedJobCount >= MAX_JOBS_DISPLAYED) break;
-
                     List<Job> jobsAtTime = timeGroups.get(elapsedSeconds);
                     displayedJobCount += jobsAtTime.size();
 
@@ -313,10 +312,11 @@ public class JobQueueHelper extends HelperBase {
                 }
                 if (displayedJobCount >= MAX_JOBS_DISPLAYED) break;
             }
-            buf.append("</ol></div>\n");
-            out.append(buf);
-            buf.setLength(0);
+            buf.append("</ol>");
         }
+        buf.append("</div>\n");
+        out.append(buf);
+        buf.setLength(0);
 
         ObjectCounterUnsafe<String> totalQueueCounter = new ObjectCounterUnsafe<String>();
         Map<String, Map<Long, List<Job>>> groupedJobs = new HashMap<String, Map<Long, List<Job>>>();

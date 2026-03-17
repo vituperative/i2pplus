@@ -2544,7 +2544,7 @@ msgstr "Jobs yang baru selesai"
 msgid "finished {0} ago"
 msgstr "Selesai {0} yang lalu"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Job yang siap/sedang menunggu"
 
 msgid "waiting"

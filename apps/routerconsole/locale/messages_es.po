@@ -2552,7 +2552,7 @@ msgstr "Tareas recién finalizadas"
 msgid "finished {0} ago"
 msgstr "finalizada hace {0}"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Listo/Esperando tareas"
 
 msgid "waiting"

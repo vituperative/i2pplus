@@ -2568,7 +2568,7 @@ msgstr "Tako pred kratkim končane posluge"
 msgid "finished {0} ago"
 msgstr "končal {0} pred tem"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Pripravljene/počakaj posluge"
 
 msgid "waiting"

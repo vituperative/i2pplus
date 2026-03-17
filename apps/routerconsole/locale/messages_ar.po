@@ -2584,7 +2584,7 @@ msgstr "انتهيت للتو من المهام"
 msgid "finished {0} ago"
 msgstr "انتهى منذ {0}"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "وظائف جاهزة/منتظرة"
 
 msgid "waiting"

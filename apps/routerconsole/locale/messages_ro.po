@@ -2560,7 +2560,7 @@ msgstr "Sarcină tocmai terminată"
 msgid "finished {0} ago"
 msgstr "terminat {0} în urmă"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Sarcini gata/în așteptare"
 
 msgid "waiting"

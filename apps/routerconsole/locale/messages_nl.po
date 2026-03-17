@@ -2552,7 +2552,7 @@ msgstr "Net voltooide taken"
 msgid "finished {0} ago"
 msgstr "{0} geleden voltooid"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Gereed/wachtende taken"
 
 msgid "waiting"

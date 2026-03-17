@@ -2544,7 +2544,7 @@ msgstr "ད་གཟོད་མཇུག་རྫོགས་ལས་ཀ།"
 msgid "finished {0} ago"
 msgstr "{0} ནས་མཇུག་རྫོགས།"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "གྲ་སྒྲིག/སྒུག་པའི་ལས་ཀ།"
 
 msgid "waiting"

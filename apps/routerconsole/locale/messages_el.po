@@ -2552,7 +2552,7 @@ msgstr "Μόλις τελείωσαν οι εργασίες"
 msgid "finished {0} ago"
 msgstr "ολοκληρώθηκε πριν από {0}"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Εργασίες ετοιμότητας/αναμονής"
 
 msgid "waiting"

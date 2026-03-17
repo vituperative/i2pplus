@@ -2560,7 +2560,7 @@ msgstr "Только что завершенные задачи"
 msgid "finished {0} ago"
 msgstr "завершено {0} назад"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Готовые/ожидающие задачи"
 
 msgid "waiting"

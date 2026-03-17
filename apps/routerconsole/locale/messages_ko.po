@@ -2544,7 +2544,7 @@ msgstr "방금 끝난 일감"
 msgid "finished {0} ago"
 msgstr "{0} 전 완료됨"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "준비/대기중인 일감"
 
 msgid "waiting"

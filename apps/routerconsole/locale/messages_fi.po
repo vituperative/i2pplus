@@ -2552,7 +2552,7 @@ msgstr "Juuri päättyneet työt"
 msgid "finished {0} ago"
 msgstr "valmis {0} sitten"
 
-msgid "Ready/waiting jobs"
+msgid "Ready / waiting jobs"
 msgstr "Valmiit/odottavat työt"
 
 msgid "waiting"

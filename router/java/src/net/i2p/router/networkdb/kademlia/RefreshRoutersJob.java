@@ -1,6 +1,7 @@
 package net.i2p.router.networkdb.kademlia;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -107,13 +108,15 @@ class RefreshRoutersJob extends JobImpl {
      */
     private void initializeRouterListIfNeeded() {
         if (_routers == null || _routers.isEmpty()) {
-            _routers = new ArrayList<Hash>(_facade.getFloodfillPeers());
-            Set<Hash> allRouters = _facade.getAllRouters();
-            allRouters.removeAll(_routers);
+            // Create defensive copies to avoid ConcurrentModificationException
+            List<Hash> floodfills = new ArrayList<Hash>(_facade.getFloodfillPeers());
+            Set<Hash> allRouters = new HashSet<Hash>(_facade.getAllRouters());
+            allRouters.removeAll(floodfills);
+            _routers = new ArrayList<Hash>(floodfills);
             _routers.addAll(allRouters);
 
             if (_log.shouldInfo()) {
-                _log.info("To check: " + _facade.getFloodfillPeers().size()
+                _log.info("To check: " + floodfills.size()
                     + " Floodfills and " + allRouters.size() + " non-Floodfills");
             }
         }

@@ -10,6 +10,7 @@ package net.i2p.router.client;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.i2p.client.I2PClient;
 import net.i2p.client.I2PSessionException;
 import net.i2p.crypto.SessionKeyManager;
@@ -38,6 +39,9 @@ public class ClientManagerFacadeImpl extends ClientManagerFacade implements Inte
     private final Log _log;
     private ClientManager _manager;
     private final RouterContext _context;
+    /** Throttle lease expiration logging - only log once per client per interval */
+    private static final long LOG_THROTTLE = 10 * 60 * 1000; // 10 minutes
+    private final ConcurrentHashMap<Hash, Long> _lastExpiredLogTime = new ConcurrentHashMap<>();
     /** Note that this is different than the property the client side uses, i2cp.tcp.port */
     public final static String PROP_CLIENT_PORT = "i2cp.port";
     public final static int DEFAULT_PORT = I2PClient.DEFAULT_LISTEN_PORT;
@@ -119,21 +123,23 @@ public class ClientManagerFacadeImpl extends ClientManagerFacade implements Inte
 
             long latestLeaseDate = ls.getLatestLeaseDate();
             long earliestLeaseDate = ls.getEarliestLeaseDate();
-            long timeToExpiration = latestLeaseDate - now;
-            long timeSinceExpiration = now - latestLeaseDate;
+            long timeToExpiration = earliestLeaseDate - now; // Use earliest for proactive renewal
+            long timeSinceExpiration = now - latestLeaseDate; // Use latest to check if ALL expired
 
-            // Check if LeaseSet is expired (all leases expired)
+            // Check if ALL leases are expired (use latestLeaseDate)
             if (latestLeaseDate < now) {
                 // All leases have expired
-                if (timeSinceExpiration > 3*MAX_TIME_TO_REBUILD) { // 30m
-                    if (_log.shouldError()) {
-                        _log.error("Client [" + dest.toBase32().substring(0,8) + "] has LeaseSet that expired " +
-                                   DataHelper.formatDuration(timeSinceExpiration) + " ago");
-                    }
-                } else if (timeSinceExpiration > MAX_TIME_TO_REBUILD) {
-                    if (_log.shouldWarn()) {
-                        _log.warn("Client [" + dest.toBase32().substring(0,8) + "] has LeaseSet that expired " +
-                                   DataHelper.formatDuration(timeSinceExpiration) + " ago");
+                Hash destHash = dest.calculateHash();
+                long lastLog = _lastExpiredLogTime.getOrDefault(destHash, 0L);
+                boolean shouldLog = (now - lastLog) > LOG_THROTTLE;
+                
+                if (timeSinceExpiration > MAX_TIME_TO_REBUILD) {
+                    if (shouldLog) {
+                        if (_log.shouldError()) {
+                            _log.error("Client [" + dest.toBase32().substring(0,8) + "] has LeaseSet that expired " +
+                                       DataHelper.formatDuration(timeSinceExpiration) + " ago");
+                        }
+                        _lastExpiredLogTime.put(destHash, now);
                     }
                     lively = false;
                 }

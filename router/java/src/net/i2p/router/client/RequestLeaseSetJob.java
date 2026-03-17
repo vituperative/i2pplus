@@ -25,10 +25,9 @@ import net.i2p.router.RouterContext;
 import net.i2p.util.Log;
 
 /**
- * Async job to walk the client through generating a lease set.  First sends it to the client
- * and then queues up a CheckLeaseRequestStatus job for processing after the expiration.
- * When that CheckLeaseRequestStatus is run, if the client still hasn't provided the signed
- * leaseSet, fire off the onFailed job from the intermediary LeaseRequestState and drop the client.
+ * Async job to walk the client through generating a lease set.
+ * Sends the request to the client and handles the response.
+ * Failure handling is done by verifyClientLiveliness() which checks for expired leases.
  *
  */
 class RequestLeaseSetJob extends JobImpl {
@@ -152,7 +151,6 @@ class RequestLeaseSetJob extends JobImpl {
 
         try {
             _runner.doSend(msg);
-            getContext().jobQueue().addJob(new CheckLeaseRequestStatus());
         } catch (I2CPMessageException ime) {
             getContext().statManager().addRateData("client.requestLeaseSetDropped", 1);
             _log.error("Error sending I2CP message requesting the LeaseSet", ime);
@@ -162,45 +160,6 @@ class RequestLeaseSetJob extends JobImpl {
             }
             _runner.failLeaseRequest(_requestState);
         }
-    }
-
-    /**
-     * Schedule this job to be run after the request's expiration, so that if
-     * it wasn't yet successful, we fire off the failure job and disconnect the
-     * client (but if it was, noop)
-     *
-     */
-    private class CheckLeaseRequestStatus extends JobImpl {
-        public CheckLeaseRequestStatus() {
-            super(RequestLeaseSetJob.this.getContext());
-            getTiming().setStartAfter(_requestState.getExpiration());
-        }
-
-        public void runJob() {
-            if (_runner.isDead()) {
-                if (_log.shouldDebug()) {
-                    _log.debug("Runner is already dead -> Not trying to expire the LeaseSet lookup...");
-                }
-                return;
-            }
-            if (_requestState.getIsSuccessful()) {
-                // we didn't fail
-                getContext().statManager().addRateData("client.requestLeaseSetSuccess", 1);
-                return;
-            } else {
-                getContext().statManager().addRateData("client.requestLeaseSetTimeout", 1);
-                if (_log.shouldWarn()) {
-                    long waited = System.currentTimeMillis() - getTiming().getStartAfter();
-                    _log.warn("Timed out requesting LeaseSet after expiration (" + waited + "ms) -> " + _requestState);
-                }
-                if (_requestState.getOnFailed() != null) {
-                    getContext().jobQueue().addJob(_requestState.getOnFailed());
-                }
-                _runner.failLeaseRequest(_requestState);
-            }
-        }
-
-        public String getName() {return "Check LeaseSet Request Status";}
     }
 
 }

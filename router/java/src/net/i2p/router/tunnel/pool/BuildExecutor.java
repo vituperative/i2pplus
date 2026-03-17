@@ -621,8 +621,7 @@ class BuildExecutor implements Runnable {
         }
         if (result == Result.SUCCESS) {
             _manager.buildComplete(cfg);
-            ExpireJob expireJob = new ExpireJob(_context, cfg);
-            _context.jobQueue().addJob(expireJob);
+            ExpireJob.scheduleExpiration(_context, cfg);
             // Record successful tunnel participation for ghost peer detection
             if (_ghostPeerManager != null) {
                 Hash selfHash = _context.routerHash();

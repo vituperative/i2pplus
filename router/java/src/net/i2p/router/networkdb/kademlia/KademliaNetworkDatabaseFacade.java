@@ -2086,7 +2086,26 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
                 _log.info("Unpublishing LOCAL LeaseSet [" + h.toBase32().substring(0,8) + "]");
             }
         }
-        // now update it if we can to remove any leases
+    }
+
+    /**
+     * Remove a remote LeaseSet from local cache (e.g., after HostChecker has used it).
+     * @param hash the LeaseSet hash to remove
+     */
+    public void removeFromCache(Hash hash) {
+        if (!_initialized || hash == null) return;
+        DatabaseEntry data = _ds.get(hash);
+        if (data != null && data.isLeaseSet()) {
+            LeaseSet ls = (LeaseSet) data;
+            // Only remove remote LeaseSets, not our own local ones
+            if (!_context.clientManager().isLocal(hash)) {
+                _ds.remove(hash);
+                knownLeaseSetsCount.decrementAndGet();
+                if (_log.shouldDebug()) {
+                    _log.debug("Removed remote LeaseSet from cache: " + hash.toBase32().substring(0, 8));
+                }
+            }
+        }
     }
 
     /**

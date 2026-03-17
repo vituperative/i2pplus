@@ -145,6 +145,9 @@
 <tr class=config><th>router.maxJobRunners={n}</th></tr>
 <tr><td><%=intl._t("Defines the maximum number of parallel <a href=/jobs>jobs</a> that can be run. The default value is determined by the amount of memory allocated to the JVM via <code>wrapper.config</code>, and is set at 3 for less than 64MB, 4 for less than 256M, or 5 for more than 256MB. Note: A change to this setting requires a restart of the router.")%></td></tr>
 
+<tr class=config><th>router.minJobRunners={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("Defines the minimum number of parallel <a href=/jobs>job runners</a>. The router will not scale down below this number. Default is max(6, CPU cores / 2). This setting is dynamic and takes effect without restart.")%></td></tr>
+
 <tr class=config><th>router.maxParticipatingTunnels={n}</th></tr>
 <tr><td><%=intl._t("Determines the maximum number of participating tunnels the router can build. To disable participation completely, set to 0. [Default is 8000, or 2000 if running on Arm or Android]")%></td></tr>
 

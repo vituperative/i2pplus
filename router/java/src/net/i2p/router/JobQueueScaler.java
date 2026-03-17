@@ -71,7 +71,7 @@ class JobQueueScaler implements Runnable {
     private static final long DEFAULT_SCALE_CHECK_INTERVAL = 1000; // 1 second (very responsive for sub-μs targets)
     private static final long DEFAULT_SCALE_COOLDOWN = 5000; // 5 seconds (quick recovery)
     private static final int DEFAULT_SCALE_UP_LAG_THRESHOLD = 1; // 1ms = 1000μs (scale up if lag exceeds 1ms)
-    private static final int DEFAULT_SCALE_DOWN_LAG_THRESHOLD = 0; // 0ms (scale down only when lag is essentially zero)
+    private static final int DEFAULT_SCALE_DOWN_LAG_THRESHOLD = 1; // 1ms (scale down when lag is low)
     private static final double DEFAULT_SCALE_UP_JOBS_RATIO = 1.2; // 1.2x (very aggressive - any backlog triggers scale)
     private static final int DEFAULT_SCALE_UP_STEP = 1; // Add 1 at a time (very conservative to avoid disruption)
     private static final int DEFAULT_SCALE_DOWN_STEP = 1;
@@ -177,7 +177,7 @@ class JobQueueScaler implements Runnable {
         int finalMax = Math.min(targetMax, effectiveMax);
 
         // Ensure at least minimum
-        finalMax = Math.max(getMinRunners(), finalMax);
+        finalMax = Math.max(getMinRunnersDynamic(), finalMax);
 
         if (_log.shouldInfo()) {
             _log.info("Max runners calculation: configured=" + configuredMax +
@@ -239,7 +239,7 @@ class JobQueueScaler implements Runnable {
         scalerThread.start();
 
         if (_log.shouldInfo()) {
-            _log.info("JobQueueScaler started. Min runners: " + getMinRunners() +
+            _log.info("JobQueueScaler started. Min runners: " + getMinRunnersDynamic() +
                      ", Max runners: " + _currentMaxRunners +
                      ", Feedback enabled: " + isFeedbackEnabled());
         }
@@ -268,12 +268,12 @@ class JobQueueScaler implements Runnable {
     }
 
     /**
-     * Get the minimum number of runners (floor).
+     * Get the minimum number of runners (floor), dynamic - reads property each time.
      */
-    private int getMinRunners() {
+    int getMinRunnersDynamic() {
         int cores = SystemVersion.getCores();
-        int configuredMin = _context.getProperty(PROP_MIN_RUNNERS, cores);
-        return Math.max(4, configuredMin); // Never below 4
+        int configuredMin = _context.getProperty(PROP_MIN_RUNNERS, cores / 2);
+        return Math.max(6, configuredMin);
     }
 
     /**
@@ -387,7 +387,7 @@ class JobQueueScaler implements Runnable {
         long timeSinceLastScale = now - _lastScaleTime;
         boolean inCooldown = timeSinceLastScale < getCooldownPeriod();
 
-        int minRunners = getMinRunners();
+        int minRunners = getMinRunnersDynamic();
         int maxRunners = _currentMaxRunners;
 
         // Get active job duration for monitoring
@@ -487,11 +487,11 @@ class JobQueueScaler implements Runnable {
         if (!inCooldown && activeRunners > minRunners) {
             int lagThreshold = getScaleDownLagThreshold();
 
-            // Check for sustained low load
-            if (readyJobs < activeRunners && maxLag < lagThreshold && avgLag < lagThreshold) {
+            // Check for sustained low load - require 0 ready jobs and very low lag
+            if (readyJobs == 0 && maxLag < lagThreshold && avgLag < lagThreshold) {
                 _consecutiveScaleDownChecks++;
-                // Require more sustained checks for scale-down (conservative)
-                if (_consecutiveScaleDownChecks >= SUSTAINED_CHECKS_REQUIRED * 2) {
+                // Require sustained evidence for scale-down
+                if (_consecutiveScaleDownChecks >= SUSTAINED_CHECKS_REQUIRED) {
                     int runnersToRemove = Math.min(DEFAULT_SCALE_DOWN_STEP, activeRunners - minRunners);
                     if (runnersToRemove > 0) {
                         scaleDown(runnersToRemove, readyJobs, maxLag);
@@ -538,7 +538,7 @@ class JobQueueScaler implements Runnable {
             }
 
             // Rollback: remove the runners we just added
-            int runnersToRemove = Math.min(snapshot.runnersAdded, currentRunners - getMinRunners());
+            int runnersToRemove = Math.min(snapshot.runnersAdded, currentRunners - getMinRunnersDynamic());
             if (runnersToRemove > 0) {
                 int removed = _jobQueue.removeIdleRunners(runnersToRemove);
                 if (removed > 0) {

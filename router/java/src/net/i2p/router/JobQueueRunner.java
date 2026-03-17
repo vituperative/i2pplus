@@ -100,7 +100,7 @@ class JobQueueRunner extends I2PThread {
                 _lastEnd = lastActive;
             } catch (Throwable t) {_log.log(Log.CRIT, "Error running?", t);}
         }
-        if (_context.router().isAlive()) {_log.log(Log.CRIT, "Queue runner " + _id + " exiting");}
+        if (_context.router().isAlive()) {_log.log(Log.WARN, "Queue runner " + _id + " removed (idle)");}
         _context.jobQueue().removeRunner(_id);
     }
 

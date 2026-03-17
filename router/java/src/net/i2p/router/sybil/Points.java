@@ -13,6 +13,7 @@ import net.i2p.data.DataHelper;
 public class Points implements Comparable<Points> {
     private double points;
     private final List<String> reasons;
+    private static final DecimalFormat TWO_DECIMALS = new DecimalFormat("#0.00");
 
     /**
      *  @since 0.9.38
@@ -49,8 +50,7 @@ public class Points implements Comparable<Points> {
      */
     public void addPoints(double d, String reason) {
         points += d;
-        DecimalFormat format = new DecimalFormat("#0.00");
-        String rsn = format.format(d) + ": " + reason;
+        String rsn = TWO_DECIMALS.format(d) + ": " + reason;
         reasons.add(rsn);
     }
 

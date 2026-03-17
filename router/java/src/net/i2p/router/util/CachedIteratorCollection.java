@@ -52,8 +52,8 @@ public class CachedIteratorCollection<E> extends AbstractCollection<E> {
     // FOR DEBUGGING & LOGGING PURPOSES
     //Log log = I2PAppContext.getGlobalContext().logManager().getLog(CachedIteratorCollection.class);
 
-    // Cached Iterator object
-    private final CachedIterator iterator = new CachedIterator();
+    // Thread-local iterators to avoid concurrent modification when multiple threads iterate
+    private final ThreadLocal<CachedIterator> _iterator = ThreadLocal.withInitial(() -> new CachedIterator());
 
     // Size of the AbstractCollectionTest object
     private transient int size = 0;
@@ -115,19 +115,23 @@ public class CachedIteratorCollection<E> extends AbstractCollection<E> {
         this.first = null;
         this.last = null;
         this.size = 0;
-        iterator.reset();
+        // Reset all thread-local iterators
+        _iterator.remove();
         //log.debug("CachedIteratorAbstractCollection: Cleared");
     }
 
     /**
-     * Returns a new iterator over the elements in this collection.
+     * Returns a thread-local cached iterator over the elements in this collection.
      *
-     * Each iterator has independent state.
+     * Each thread gets its own iterator instance that is reused and reset on each call.
+     * This allows safe concurrent iteration from multiple threads without creating
+     * new iterator objects.
      *
-     * @return a new {@link CachedIterator} instance
+     * @return a thread-local {@link CachedIterator} instance, reset to the beginning
      */
     public Iterator<E> iterator() {
-        return new CachedIterator();
+        _iterator.get().reset();
+        return _iterator.get();
     }
 
     /**

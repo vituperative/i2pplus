@@ -90,7 +90,7 @@ public class IrcOutboundFilter implements Runnable {
                     if (_log.shouldInfo())
                         _log.info("[IRC Client] Outbound Filter: Disconnected", e1);
                     else if (_log.shouldWarn())
-                        _log.warn("[IRC Client] Outbound Filter: Disconnected -> " + e1.getMessage());
+                        _log.warn("[IRC Client] Outbound Filter: Disconnected");
                     break;
                 }
             }

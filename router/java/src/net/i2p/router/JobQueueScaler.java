@@ -271,9 +271,7 @@ class JobQueueScaler implements Runnable {
      * Get the minimum number of runners (floor), dynamic - reads property each time.
      */
     int getMinRunnersDynamic() {
-        int cores = SystemVersion.getCores();
-        int configuredMin = _context.getProperty(PROP_MIN_RUNNERS, cores / 2);
-        return Math.max(6, configuredMin);
+        return Math.max(1, _context.getProperty(PROP_MIN_RUNNERS, 4));
     }
 
     /**

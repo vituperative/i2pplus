@@ -1,5 +1,8 @@
 package net.i2p.router;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -19,9 +22,21 @@ public class JobStats {
     private volatile long _minPendingTime;
     private volatile long _lastRunTime;
 
-    static final int MAX_RECENT_ENTRIES = 10000;
-    private static final long RECENT_WINDOW_MS = 30 * 1000;
-    private final RecentExecution[] _recentExecutions = new RecentExecution[MAX_RECENT_ENTRIES];
+    private static final int DEFAULT_MAX_RECENT_ENTRIES = 500;
+    private static final int HIGH_FREQ_MAX_RECENT_ENTRIES = 5000;
+    private static final Set<String> HIGH_FREQ_JOBS = new HashSet<>(Arrays.asList(
+        "NetDb Direct RouterInfo Lookup",
+        "Direct Lookup Match",
+        "Verify NetDb Lookup for Failing Peer"
+    ));
+    private static final long RECENT_WINDOW_MS = 10 * 1000;
+
+    private static volatile boolean _recentTrackingEnabled;
+    private static volatile long _lastTrackingEnableTime;
+    private static final long TRACKING_TIMEOUT_MS = 60 * 1000;  // Keep tracking for 60s after last view
+
+    private final int _maxRecentEntries;
+    private final RecentExecution[] _recentExecutions;
     private volatile int _recentIndex = 0;
     private volatile int _recentCount = 0;
 
@@ -38,6 +53,37 @@ public class JobStats {
     }
 
     /**
+     * Enable recent execution tracking for a period of time.
+     * Call this when rendering the /jobs page.
+     * Tracking will remain enabled for 60 seconds after last enable.
+     */
+    public static void enableRecentTracking() {
+        _recentTrackingEnabled = true;
+        _lastTrackingEnableTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Check if recent tracking should be active.
+     * Returns true if enabled and within timeout period.
+     */
+    public static boolean isRecentTrackingEnabled() {
+        if (!_recentTrackingEnabled) return false;
+        // Auto-disable after timeout
+        if (System.currentTimeMillis() - _lastTrackingEnableTime > TRACKING_TIMEOUT_MS) {
+            _recentTrackingEnabled = false;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Force disable recent tracking immediately.
+     */
+    public static void disableRecentTracking() {
+        _recentTrackingEnabled = false;
+    }
+
+    /**
      * Create statistics tracker for a named job type.
      *
      * @param name the name identifier for this job type
@@ -48,6 +94,8 @@ public class JobStats {
         _minTime = -1;
         _maxPendingTime = -1;
         _minPendingTime = -1;
+        _maxRecentEntries = HIGH_FREQ_JOBS.contains(name) ? HIGH_FREQ_MAX_RECENT_ENTRIES : DEFAULT_MAX_RECENT_ENTRIES;
+        _recentExecutions = new RecentExecution[_maxRecentEntries];
     }
 
     /**
@@ -67,11 +115,14 @@ public class JobStats {
 
         long now = System.currentTimeMillis();
         _lastRunTime = now;
-        int idx = _recentIndex;
-        _recentExecutions[idx] = new RecentExecution(now, runTime, lag);
-        _recentIndex = (idx + 1) % MAX_RECENT_ENTRIES;
-        if (_recentCount < MAX_RECENT_ENTRIES) {
-            _recentCount++;
+
+        if (isRecentTrackingEnabled()) {
+            int idx = _recentIndex;
+            _recentExecutions[idx] = new RecentExecution(now, runTime, lag);
+            _recentIndex = (idx + 1) % _maxRecentEntries;
+            if (_recentCount < _maxRecentEntries) {
+                _recentCount++;
+            }
         }
     }
 
@@ -96,6 +147,13 @@ public class JobStats {
      * @return the job name
      */
     public String getName() {return _job;}
+
+    /**
+     * Get the maximum number of recent execution entries tracked.
+     *
+     * @return the max recent entries limit
+     */
+    public int getMaxRecentEntries() {return _maxRecentEntries;}
 
     /**
      * Get the total number of times this job type has run.
@@ -183,7 +241,7 @@ public class JobStats {
         int idx = _recentIndex;
 
         for (int i = 0; i < count; i++) {
-            int actualIdx = (idx - count + i + MAX_RECENT_ENTRIES) % MAX_RECENT_ENTRIES;
+            int actualIdx = (idx - count + i + _maxRecentEntries) % _maxRecentEntries;
             RecentExecution re = _recentExecutions[actualIdx];
             if (re == null) continue;
 

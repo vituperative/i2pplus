@@ -85,6 +85,12 @@
 <tr class=config><th>router.blockCountries={countrycode,countrycode2} <span class=plus>I2P+</span></th></tr>
 <tr><td><%=intl._t("This setting enables requests from routers in the specified countries to be blocked and banned as soon as a direct tunnel request is made. Countries must be specified as two letter country codes, separated with commas. e.g. router.blockCountries=cn,ru")%></td></tr>
 
+<tr class=config><th>router.banlogger.maxArchives={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The maximum number of session banlog archive files to keep. When exceeded, older archives are deleted. [Default is 5]")%></td></tr>
+
+<tr class=config><th>router.hashScan.frequency={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The frequency in milliseconds to scan for suspicious hash patterns (potential Sybil attacks). Set to 0 to disable. [Default is 3600000]")%></td></tr>
+
 <tr class=config><th>router.blockOldRouters={true|false}</th></tr>
 <tr><td><%=intl._t("When set to false, the router will not block tunnel build requests from slower or unreachable routers running older versions. [Default is true, restart required]")%></td></tr>
 
@@ -146,7 +152,31 @@
 <tr><td><%=intl._t("Defines the maximum number of parallel <a href=/jobs>jobs</a> that can be run. The default value is determined by the amount of memory allocated to the JVM via <code>wrapper.config</code>, and is set at 3 for less than 64MB, 4 for less than 256M, or 5 for more than 256MB. Note: A change to this setting requires a restart of the router.")%></td></tr>
 
 <tr class=config><th>router.minJobRunners={n} <span class=plus>I2P+</span></th></tr>
-<tr><td><%=intl._t("Defines the minimum number of parallel <a href=/jobs>job runners</a>. The router will not scale down below this number. Default is max(6, CPU cores / 2). This setting is dynamic and takes effect without restart.")%></td></tr>
+<tr><td><%=intl._t("Defines the minimum number of parallel <a href=/jobs>job runners</a>. The router will not scale down below this number. Default is 4, minimum is 1. This setting is dynamic and takes effect without restart.")%></td></tr>
+
+<tr class=config><th>router.dynamicJobScaling={true|false} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("Enable dynamic scaling of job runners based on queue load. When enabled, the router automatically scales the number of job runner threads up or down based on ready job count and lag. [Default is true]")%></td></tr>
+
+<tr class=config><th>router.scaleUpLagThreshold={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The job queue lag threshold in milliseconds that triggers scaling up job runners. When max lag exceeds this value, additional runners are started. [Default is 1]")%></td></tr>
+
+<tr class=config><th>router.scaleDownLagThreshold={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The job queue lag threshold in milliseconds that allows scaling down job runners. When max lag stays below this value, excess runners are stopped. [Default is 1]")%></td></tr>
+
+<tr class=config><th>router.scaleUpJobsRatio={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The ratio of ready jobs to active runners that triggers scaling up. If readyJobs > activeRunners * ratio, additional runners are started. [Default is 1.2]")%></td></tr>
+
+<tr class=config><th>router.scaleCheckInterval={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The interval in milliseconds between job runner scaling checks. [Default is 1000]")%></td></tr>
+
+<tr class=config><th>router.scaleCooldown={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The cooldown period in milliseconds between scale operations. [Default is 5000]")%></td></tr>
+
+<tr class=config><th>router.scaleFeedbackEnabled={true|false} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("Enable the feedback mechanism that automatically rolls back ineffective scale-up operations. If lag increases after adding runners, they will be removed. [Default is true]")%></td></tr>
+
+<tr class=config><th>router.maxWaitingJobs={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The maximum number of waiting jobs in the queue before aggressive job dropping is triggered. When exceeded, non-critical jobs are dropped to reduce queue pressure. [Default is 48]")%></td></tr>
 
 <tr class=config><th>router.maxParticipatingTunnels={n}</th></tr>
 <tr><td><%=intl._t("Determines the maximum number of participating tunnels the router can build. To disable participation completely, set to 0. [Default is 8000, or 2000 if running on Arm or Android]")%></td></tr>
@@ -227,6 +257,15 @@
 
 <tr class=config><th>router.tunnel.slowTunnelInterval={n} <span class=plus>I2P+</span></th></tr>
 <tr><td><%=intl._t("The interval in milliseconds between runs of the Remove Slow Tunnels job. Higher values reduce tunnel churn but may keep slow tunnels longer. [Default is 180000, or 300000 if under load]")%></td></tr>
+
+<tr class=config><th>router.idleTunnelDetectionPeriod={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The period in milliseconds to check for idle tunnels. Tunnels with no traffic for this period may be dropped. [Default is 60000]")%></td></tr>
+
+<tr class=config><th>router.idleTunnelMinMessages={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The minimum number of messages a tunnel must have processed in the detection period to be considered active. Tunnels below this threshold are candidates for removal. [Default is 3]")%></td></tr>
+
+<tr class=config><th>router.idleTunnelScanInterval={n} <span class=plus>I2P+</span></th></tr>
+<tr><td><%=intl._t("The interval in milliseconds between scans for idle transit tunnels. [Default is 180000]")%></td></tr>
 
 <tr class=config><th>router.updateUnsigned={true|false}</th></tr>
 <tr><td><%=intl._t("If you wish to install unsigned (.zip) I2P updates, this should be added to your <code>router.config</code> file unless you have already configured <code>routerconsole.advanced=true</code>, in which case this option is already provisioned. Note: as of I2P+ 0.9.48+, installation of <a href=/configupdate#i2pupdates>unsigned updates</a> is enabled by default.")%></td></tr>

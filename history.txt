@@ -1,3 +1,17 @@
+2026-03-17 dr|z3d
+  * Router:
+    - Batch IterativeTimeoutJob via SimpleTimer2 to reduce queue pressure
+    - Aggressive job dropping when lagging (5ms threshold vs 50ms)
+    - Reduce MAX_WAITING_JOBS to 48 to trigger dropping earlier
+    - Throttle tunnel tests when any lag exists (>10ms)
+    - Limit tunnel tests to 1/6 of runners
+    - Increase test delays (120s base, 60s min vs 90s/30s)
+    - Drop timeout jobs (SendTimeoutJob, VerifyTimeoutJob) when lagging
+    - Drop non-critical NetDb verification jobs when lagging
+  * Console:
+    - Add recent/all stats toggle for /jobs page (20s default)
+    - Show dropped job count in queue sections
+
 2026-03-14 dr|z3d
   * Router: Simplify local tunnel replacement strategy, increase redundancy
   * Streaming:

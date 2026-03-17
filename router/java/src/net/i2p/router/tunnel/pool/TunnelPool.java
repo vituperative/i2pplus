@@ -894,8 +894,9 @@ public class TunnelPool {
             if (ls != null && ls.getHash() != null) {
                 requestLeaseSet(ls);
                 // Note: NetDB publish is handled by RepublishLeaseSetJob after client signs
-            } else if (ls != null && _log.shouldWarn()) {
-                _log.warn("Cannot request LeaseSet refresh - LeaseSet not fully initialized");
+            } else if (ls != null && _log.shouldDebug()) {
+                String dest = _settings.getDestination() != null ? _settings.getDestination().toBase32().substring(0, 8) : "null";
+                _log.debug("Cannot request LeaseSet refresh for [" + dest + "] -> Not fully initialized...");
             }
         }
     }

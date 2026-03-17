@@ -164,6 +164,27 @@
       const newTbody = jobsResponse.querySelector("#statCount");
       if (!oldTbody || !newTbody) return;
 
+      // If no rows in recent mode, show placeholder and force refresh
+      const isRecentMode = !window.location.search.includes("period=all");
+      const hasPlaceholder = oldTbody.querySelector("#init");
+      const isAdvanced = jobs.classList.contains("advmode");
+      const cols = isAdvanced ? "11" : "7";
+      if (isRecentMode && newTbody.rows.length === 0 && !hasPlaceholder) {
+        oldTbody.innerHTML = "<tr id=init><td colspan=" + cols + ">...</td></tr>";
+        requestAnimationFrame(fetchJobs); // Force refresh
+        return;
+      }
+
+      const thead = jobs.querySelector("thead");
+      const tfoot = jobs.querySelector("#statTotals");
+      if (newTbody.rows.length === 0) {
+        thead.style.display = "none";
+        tfoot.style.display = "none";
+      } else {
+        thead.style.display = "";
+        tfoot.style.display = "";
+      }
+
       // Always repopulate oldRowsMap to stay in sync with current DOM
       oldRowsMap.clear();
       Array.from(oldTbody.rows).forEach(row => {

@@ -485,7 +485,9 @@ public class JobQueueHelper extends HelperBase {
         }
 
         buf.append("</span></h3>\n")
-           .append("<table id=jobstats>\n<thead><tr><th class=jobname data-sort-default data-sort-direction=ascending>")
+           .append("<table id=jobstats")
+           .append(isAdvanced() ? " class=advmode" : "")
+           .append(">\n<thead><tr><th class=jobname data-sort-default data-sort-direction=ascending>")
            .append(_t("Job"))
            .append("</th><th class=totalRuns data-sort-method=number>")
            .append(_t("Runs"))

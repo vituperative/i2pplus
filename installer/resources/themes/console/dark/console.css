@@ -645,6 +645,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #jobs ol{column-gap:4px}
 #jobs .tab,#jobs .tab2{min-width:120px}
 #readyjobs+ol li::before{color:#dd3}
+#jobstats #statCount #init td{padding:24px;font-size:0;box-shadow:none;background:var(--update) no-repeat center center/20px;transform:rotate(0);animation:linear spin 3s forwards infinite}
 
 /* queue totals */
 #schedjobs{width:100%;margin:10px 0}

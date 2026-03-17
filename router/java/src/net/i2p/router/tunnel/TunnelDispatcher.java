@@ -135,7 +135,7 @@ public class TunnelDispatcher implements Service {
     /** Location in the tunnel for RED logic */
     public enum Location { OBEP, PARTICIPANT, IBGW }
 
-    private static final long[] RATES = { RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR, RateConstants.ONE_DAY };
+    private static final long[] RATES = { RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR };
 
     /** Lock used when joining tunnels as participant, endpoint, or gateway */
     private final Object _joinParticipantLock = new Object();

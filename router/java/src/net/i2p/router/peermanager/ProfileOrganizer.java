@@ -71,8 +71,7 @@ public class ProfileOrganizer {
         RateConstants.ONE_MINUTE,
         RateConstants.FIVE_MINUTES,
         RateConstants.TEN_MINUTES,
-        RateConstants.ONE_HOUR,
-        RateConstants.ONE_DAY
+        RateConstants.ONE_HOUR
     };
 
     private final ReentrantReadWriteLock _reorganizeLock = new ReentrantReadWriteLock(false);

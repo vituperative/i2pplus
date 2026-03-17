@@ -191,7 +191,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
     private static final int KAD_B = 4;
     static final String PROP_KAD_B = "router.exploreKadB";
 
-    private static final long[] RATES = {RateConstants.ONE_MINUTE, RateConstants.ONE_HOUR, RateConstants.ONE_DAY };
+    private static final long[] RATES = {RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR };
 
     /**
      * Initializes the Kademlia-based network database facade.

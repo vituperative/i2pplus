@@ -32,9 +32,9 @@ public class DBHistory {
         _log = context.logManager().getLog(DBHistory.class);
         _statGroup = statGroup;
         _failedLookupRate = new RateStat("dbHistory.failedLookupRate", "How often peer responds to a lookup",
-                                         statGroup, new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR, RateConstants.ONE_DAY });
+                                         statGroup, new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR });
         _invalidReplyRate = new RateStat("dbHistory.invalidReplyRate", "How often peer sends us a bad RouterInfo?",
-                                         statGroup, new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR, RateConstants.ONE_DAY });
+                                         statGroup, new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR });
     }
 
     /** how many times we have sent them a db lookup and received the value back from them */

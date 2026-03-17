@@ -1224,7 +1224,7 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                 if (dbh != null) {
                     RateStat rs = dbh.getFailedLookupRate();
                     if (rs != null) {
-                        Rate r = rs.getRate(RateConstants.ONE_DAY);
+                        Rate r = rs.getRate(RateConstants.ONE_HOUR);
                         if (r != null) {
                             r.computeAverages(ra, false);
                             if (ra.getTotalEventCount() > 0) {

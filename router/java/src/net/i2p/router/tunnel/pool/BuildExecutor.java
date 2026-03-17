@@ -69,7 +69,7 @@ class BuildExecutor implements Runnable {
     private static final int LOOP_TIME = 1000; // calculate required tunnels to build every 1s
     private static final int TUNNEL_POOLS = SystemVersion.isSlow() ? 24 : 48;
     private static final long GRACE_PERIOD = 60*1000; // accept replies up to a minute after we gave up on them
-    private static final long[] RATES = { RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR, RateConstants.ONE_DAY };
+    private static final long[] RATES = { RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR };
     /** @return true if full statistics are enabled */
     public boolean fullStats() {return _context.getBooleanProperty("stat.full");}
 

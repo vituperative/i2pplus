@@ -29,7 +29,7 @@ public class TunnelHistory {
     private final RateStat _rejectRate;
     private final RateStat _failRate;
     private final String _statGroup;
-    static final long[] RATES = new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR, RateConstants.ONE_DAY };
+    static final long[] RATES = new long[] {RateConstants.TEN_MINUTES, RateConstants.ONE_HOUR };
 
     /** probabalistic tunnel rejection due to a flood of requests - infrequent */
     public static final int TUNNEL_REJECT_PROBABALISTIC_REJECT = 10;

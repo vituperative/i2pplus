@@ -1,3 +1,20 @@
+2026-03-18 dr|z3d
+  * JBIGI:
+    - Clean up jbigi.h: remove outdated nativeDoubleValue declaration, add current
+      JNI functions (nativeModPowCT, nativeModInverse, version getters)
+    - Remove dead code from jbigi.c: commented-out nativeNeg() function
+    - Fix convert_mp2j() dead code: duplicate mpz_export calls, off-by-one loop
+    - Add error handling for patch application in download_gmp.sh
+    - Add jbigi build artifacts to .gitignore (bin/, lib/, gmp-*/, *.tar.bz2)
+    - Rewrite README with comprehensive build documentation
+    - Remove zen4/zen5 from mbuild-all.sh (not supported by GMP 6.3.0)
+    - New jbigi binaries built with GMP 6.3.0: libjbigi-linux-none_64.so,
+      jbigi-windows-none_64.dll
+    - Remove deprecated libjbigi-linux-ppc.so
+    - Add BUILD_MULTIARCH.md with Docker/QEMU build instructions for ARM
+    - Add setup scripts for cross-compilation environments
+    - Convert installer README to markdown
+
 2026-03-17 dr|z3d
   * Router:
     - Batch IterativeTimeoutJob via SimpleTimer2 to reduce queue pressure
@@ -8,16 +25,47 @@
     - Increase test delays (120s base, 60s min vs 90s/30s)
     - Drop timeout jobs (SendTimeoutJob, VerifyTimeoutJob) when lagging
     - Drop non-critical NetDb verification jobs when lagging
+    - Improve LeaseSet refresh timing and tunnel pool throttling
+    - Tunnel Pool - improve pool management and expiry handling
+    - More responsive job runner scaling; document config option
+    - Reduce job stats memory (500 entries default, 5000 for high-freq jobs)
+    - Enable more runners on startup (8 min during first 3 minutes)
+    - Streamline stats collection to reduce ram footprint
+    - Cache DecimalFormat instances to reduce memory footprint
+    - Switch CachedIteratorCollection to ThreadLocal for thread safety
+    - Defensive copy in FloodfillNetworkDatabaseFacade to prevent race condition
+    - JobQueueScaler: relax failure thresholds, circuit breaker auto-reset
   * Console:
-    - Add recent/all stats toggle for /jobs page (20s default)
-    - Show dropped job count in queue sections
+    - Add recent/all stats toggle for /jobs page (10s default)
+    - Show dropped job count in ready/waiting section on /jobqueue
+    - Display session bans for ip-blocked routers without RouterInfo
+    - Fix stale row removal in 10s jobs display
+    - Cache DecimalFormat instances to reduce memory footprint
+
+2026-03-16 dr|z3d
+  * Router:
+    - Drop tunnel test jobs if > 1000 ready/waiting jobs
+    - Increase tunnel test periods to reduce queue pressure
+    - Track in-flight jobs to prevent duplicates and add dropped count for UI
+    - Fix deadlock in getMaxLag() and reduce FloodfillNetworkDatabaseFacade
+      lock contention
+    - Scale max waiting jobs with CPU cores
+    - Fix ConcurrentModificationException in FloodfillPeerSelector
+    - Increase SimpleTimer2 thread pool and tune streaming RTO
+    - Fix ConcurrentModificationException in FloodfillVerifyStoreJob
+    - Add separate _timedJobsReady queue for O(1) job polling
+    - Fix RemoveSlowTunnelsJob to use requeue()
+    - Fix job queue pumper to iterate all timed jobs
+    - Fix job queue issues - prevent in-flight duplicate blocking,
+    - Add and document slowTunnelInterval config for local tunnel removal
+  * Streaming: Optimize flusher timer and use StringBuilder for logging
+  * Console: Group active jobs by name and display avg lag in jobqueue
 
 2026-03-14 dr|z3d
   * Router: Simplify local tunnel replacement strategy, increase redundancy
   * Streaming:
     - Increase max resends from 8 to 30 for more tunnel failover attempts
     - Increase initial window size from 12 to 16 for better throughput
-    - Disable RTO doubling, rely on tunnel failover instead
 
 2026-03-13 dr|z3d
  * Console: Add worker-based sorting for large tables (>100 rows)
@@ -20264,14 +20312,14 @@ I2PSnark: Fix ConnectionAcceptor not restarting after tunnel
 
 2007-03-22 zzz
     * I2PSnark tracker handling tweaks:
-    -   Add link to tracker details page (Postman only for now, requires bytemonsoon patch)
-    -   Add Base URL to tracker list configuration
-    -   Web page links built from tracker list Base URLs
-    -   Only build and sort tracker list once
-    -   Add anonymityWeb tracker to default list
-    -   Add tooltip info for TrackerErrs
-    -   Stop torrent if not registered with tracker
-    -   Mark temp files as delete on exit
+    -  Add link to tracker details page (Postman only for now, requires bytemonsoon patch)
+    -  Add Base URL to tracker list configuration
+    -  Web page links built from tracker list Base URLs
+    -  Only build and sort tracker list once
+    -  Add anonymityWeb tracker to default list
+    -  Add tooltip info for TrackerErrs
+    -  Stop torrent if not registered with tracker
+    -  Mark temp files as delete on exit
 
 2007-03-18 zzz
     * I2PSnark: Cleanup some handling of saved partial pieces

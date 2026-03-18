@@ -35,9 +35,20 @@ extract_tar()
   tar -xjf ${GMP_TAR} > /dev/null 2>&1 || (rm -f ${GMP_TAR} && download_tar && extract_tar || exit 1)
   if [ ! -z $PATCH_GMP ]; then
     cd ${GMP_DIR}
-    for p in $(ls ../patches/*.diff); do
-      echo "applying $p"
-      cat $p | patch -p1
+    for p in $(ls ../patches/*.diff 2>/dev/null); do
+      echo "Applying patch: $p"
+      if ! cat $p | patch -p1 --dry-run 2>/dev/null | grep -q "Reversed"; then
+        if ! cat $p | patch -p1; then
+          echo "WARNING: Failed to apply patch $p, attempting with -R" >&2
+          if ! cat $p | patch -R -p1; then
+            echo "ERROR: Failed to apply patch $p" >&2
+            cd ..
+            exit 1
+          fi
+        fi
+      else
+        echo "Patch $p appears to already be applied, skipping"
+      fi
     done
     cd ..
   fi

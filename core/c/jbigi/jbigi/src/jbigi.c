@@ -268,40 +268,6 @@ JNIEXPORT jbyteArray JNICALL Java_net_i2p_util_NativeBigInteger_nativeModInverse
         return jresult;
 }
 
-/******** nativeNeg() */
-/* since version 3 */
-/*
- * Class:     net_i2p_util_NativeBigInteger
- * Method:    nativeNeg
- * Signature: ([B)[B
- *
- * For testing of the conversion functions only!
- *
- * calculate n mod d
- * @param n big endian twos complement representation
- * @return big endian twos complement representation of -n
- */
-
-/****
-JNIEXPORT jbyteArray JNICALL Java_net_i2p_util_NativeBigInteger_nativeNeg
-        (JNIEnv* env, jclass cls, jbyteArray jn) {
-
-        mpz_t mn;
-        jbyteArray jresult;
-
-        convert_j2mp(env, jn,  &mn);
- 
-        // result to mn
-        mpz_neg(mn, mn);
-
-        convert_mp2j(env, mn, &jresult);
-
-        mpz_clear(mn);
-
-        return jresult;
-}
-****/
-
 /******************************
  *****Conversion methods*******
  ******************************/
@@ -380,7 +346,6 @@ void convert_mp2j(JNIEnv* env, mpz_t mvalue, jbyteArray* jvalue)
         size_t size; 
         jbyte* buffer;
         jboolean copy;
-        int i;
         int neg;
 
         copy = JNI_FALSE;
@@ -399,13 +364,11 @@ void convert_mp2j(JNIEnv* env, mpz_t mvalue, jbyteArray* jvalue)
         buffer = (*env)->GetByteArrayElements(env, *jvalue, &copy);
         buffer[0] = 0x00;
 
-        if (!neg) {
-            mpz_export((void*)&buffer[1], NULL, 1, sizeof(jbyte), 1, 0, mvalue);
-        } else {
-            mpz_export((void*)&buffer[1], NULL, 1, sizeof(jbyte), 1, 0, mvalue);
-            // ... and invert the bits
-            // This could be done all in mpz, the reverse of the above
-            for (i = 0; i <= size; i++) {
+        mpz_export((void*)&buffer[1], NULL, 1, sizeof(jbyte), 1, 0, mvalue);
+
+        if (neg) {
+            int i;
+            for (i = 1; i < size; i++) {
                 buffer[i] = ~buffer[i];
             }
         }

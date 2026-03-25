@@ -21,6 +21,7 @@ import net.i2p.data.MetaLease;
 import net.i2p.data.MetaLeaseSet;
 import net.i2p.data.i2cp.I2CPMessage;
 import net.i2p.data.i2cp.RequestVariableLeaseSetMessage;
+import net.i2p.util.Log;
 import net.i2p.util.OrderedProperties;
 
 import java.util.Properties;
@@ -44,6 +45,12 @@ class RequestVariableLeaseSetMessageHandler extends RequestLeaseSetMessageHandle
         }
         RequestVariableLeaseSetMessage msg = (RequestVariableLeaseSetMessage) message;
         boolean isLS2 = requiresLS2(session);
+        // SubSession options aren't updated via the gui, so use the primary options
+        Properties opts;
+        if (session instanceof SubSession)
+            opts = ((SubSession) session).getPrimaryOptions();
+        else
+            opts = session.getOptions();
         LeaseSet leaseSet;
         if (isLS2) {
             LeaseSet2 ls2;
@@ -58,7 +65,7 @@ class RequestVariableLeaseSetMessageHandler extends RequestLeaseSetMessageHandle
                 session.destroySession();
                 return;
             }
-            if (Boolean.parseBoolean(session.getOptions().getProperty("i2cp.dontPublishLeaseSet"))) {
+            if (Boolean.parseBoolean(opts.getProperty("i2cp.dontPublishLeaseSet")))
                 ls2.setUnpublished();
             }
 
@@ -66,7 +73,7 @@ class RequestVariableLeaseSetMessageHandler extends RequestLeaseSetMessageHandle
             String k = "i2cp.leaseSetOption.0";
             Properties props = null;
             for (int i = 0; i < 10; i++) {
-                String v = session.getOptions().getProperty(k);
+                String v = opts.getProperty(k);
                 if (v == null) {
                     break;
                 }

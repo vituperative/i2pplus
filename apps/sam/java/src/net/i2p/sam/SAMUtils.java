@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import net.i2p.I2PAppContext;
 import net.i2p.I2PException;
@@ -136,8 +137,8 @@ class SAMUtils {
         if (d == null) {
             String msg;
             if (s.length() >= 516) {msg = "Bad Base64 destination: ";}
-            else if (s.length() >= 60 && s.endsWith(".b32.i2p")) {msg = "Lease set not found: ";}
-            else {msg = "Host name not found: ";}
+            else if (s.length() >= 60 && s.endsWith(".b32.i2p")) {msg = "Leaseset not found: ";}
+            else {msg = "Hostname not found: ";}
             throw new DataFormatException(msg + s);
         }
         return d;

@@ -19,8 +19,10 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
+
 import net.i2p.I2PException;
 import net.i2p.client.I2PClient;
 import net.i2p.client.I2PSession;
@@ -30,6 +32,8 @@ import net.i2p.data.Base64;
 import net.i2p.data.DataFormatException;
 import net.i2p.data.DataHelper;
 import net.i2p.data.Destination;
+import net.i2p.data.Hash;
+import net.i2p.util.Log;
 
 /**
  * Class able to handle a SAM version 1 client connections.
@@ -385,8 +389,27 @@ class SAMv1Handler extends SAMHandler implements SAMRawReceiver, SAMDatagramRece
                 }
             } else {
                 try {
+                    if (name.length() >= 516 || !name.toLowerCase(Locale.US).endsWith(".b32.i2p")) {
+                        // out of session
                     dest = SAMUtils.getDest(name);
+                    } else if (streamSession != null) {
+                        // lookup in-session so the router will use the client tunnels to get the LS
+                        // and put the LS in the client's netdb
+                        dest = streamSession.lookupDest(name);
+                    } else if (datagramSession != null) {
+                        dest = datagramSession.lookupDest(name);
+                    } else if (rawSession != null) {
+                        dest = rawSession.lookupDest(name);
+                    } else {
+                        // out of session
+                        // leaseset will end up in the main netdb
+                        // and will have to be looked up again by the router if a message is sent to it.
+                        dest = SAMUtils.getDest(name);
+                    }
+                } catch (I2PSessionException e) {
+                    return writeString("NAMING REPLY RESULT=KEY_NOT_FOUND NAME=" + name, e.getMessage());
                 } catch (DataFormatException e) {
+                    return writeString("NAMING REPLY RESULT=KEY_NOT_FOUND NAME=" + name, e.getMessage());
                 }
             }
 

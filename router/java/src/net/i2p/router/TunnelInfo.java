@@ -149,3 +149,12 @@ public interface TunnelInfo {
      */
     public int getLastLatency();
 }
+
+    /**
+     * Set the tunnel's expiration time.
+     * Allows proactive tunnel cleanup by marking tunnels for expiry.
+     *
+     * @param when expiration time in milliseconds since epoch
+     * @since 0.9.69+
+     */
+    public void setExpiration(long when);

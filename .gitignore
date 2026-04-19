@@ -41,6 +41,7 @@ launchers/macosx/target
 launchers/output
 launchers/project/project
 launchers/project/target
+installer/resources/macosx/target
 
 # Debian-related
 /debian/copyright

@@ -148,7 +148,6 @@ public interface TunnelInfo {
      * @since 0.9.68+
      */
     public int getLastLatency();
-}
 
     /**
      * Set the tunnel's expiration time.
@@ -158,3 +157,4 @@ public interface TunnelInfo {
      * @since 0.9.69+
      */
     public void setExpiration(long when);
+}

@@ -649,6 +649,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 
 /* queue totals */
 #schedjobs{width:100%;margin:10px 0}
+.expanded+#schedjobs{margin-top:-11px;display:table!important}
 #schedjobs ul{columns:250px auto;margin:0 8px 0 0;column-gap:0}
 #schedjobs li{width:calc(100% - 12px);margin:0 4px}
 #schedjobs td:first-child{padding:3px 0}
@@ -657,7 +658,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 #schedjobs tr:hover td{background:#000800}
 #finishedjobs+ol.jobqueue[style*="block"],#scheduledjobs+ol.jobqueue[style*="block"]{margin-bottom:-3px}
 #scheduledjobs+ol li::before,#scheduledjobs+ol li::before{color:#773;opacity:.8}
-#jobs #scheduledjobs+ol,#jobs ol{padding-bottom:5px}
+#scheduledjobs+ol,#jobs ol{padding-bottom:5px}
 #totaljobstats{margin-bottom:-2px;margin-top:10px}
 #routerjobqueue li{line-height:1.6}
 #routerjobqueue #active.tablewrap,#routerjobqueue #finished.tablewrap,#routerjobqueue #ready.tablewrap,#routerjobqueue #scheduled.tablewrap,#routerjobqueue #totals.tablewrap{margin:-5px 0 17px}
@@ -667,6 +668,7 @@ h3[id*="jobs"]{clear:both;margin-top:25px}
 /* queue section toggles */
 #routerjobqueue .toggle{position:relative;cursor:pointer}
 #routerjobqueue .toggle:not(.expanded){margin-bottom:0}
+#routerjobqueue #qtotals.toggle:not(.expanded){margin-bottom:10px}
 #routerjobqueue .toggle:hover{color:var(--hover)}
 #routerjobqueue .toggle .dropdown::after{width:12px;display:inline-block;height:12px;position:absolute;right:10px;top:calc(50% - 6px);background:var(--dropdown);content:"";transform:rotate(-90deg)}
 #routerjobqueue .toggle:hover .dropdown::after{background:var(--dropdown_hover);content:"";transform:rotate(-90deg)}
@@ -1130,7 +1132,7 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 .noresults #tunnelPeerCount .tablefooter td{display:inline-block;padding:8px 12px;vertical-align:text-bottom;font-size:120%;border:0!important}
 .noresults #tunnelPeerCount .tablefooter td:empty{display:none}
 #statusnotes::before{display:inline-block;with:100%;height:1px;position:absolute;top:0;left:0;content:""}
-#statusnotes td{border-top-width:2px;background:var(--th)}
+#statusnotes td{padding:8px;border-top-width:2px;background:var(--th)}
 #statusnotes td,#statusnotes tr:hover td{color:var(--ink);text-shadow:none}
 #tunnels #exploratory{padding-left:35px;background:var(--globe) no-repeat 9px center/18px,var(--title)}
 #tunnels #exploratory a,#tunnels h3.server a,#tunnels h3.client a{margin:-8px 0 -8px 0;padding:7px 4px 14px 10px}
@@ -1162,6 +1164,8 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 #tunnels .percentBarOuter:hover .percentBarInner{background:rgba(0,48,0,.8);opacity:1}
 #tunnels .percentBarOuter,#tunnels .PercentBarInner,#tunnels .percentBarText{display:inline-block;vertical-align:middle}
 #tunnels .percentBarOuter,#tunnels .percentBarText{width:100px;transform:translateY(1px)}
+#transitFast #tunnels .percentBarText{font-size:85%;transform:translateY(-1px)}
+#transitFast #tunnels tr:hover .percentBarInner,#transitFast #tunnels tr:hover .percentBarText{color:var(--ink);opacity:1}
 #tunnels .percentBarOuter{margin:-1px 0 1px;position:relative;text-align:left;background:repeating-linear-gradient(90deg,#0000,#0000 5%,#020 5%,#020 10%) left center/100% 10%,linear-gradient(180deg,#0008,#0204);opacity:.9}
 #tunnels .expiry .percentBarOuter{background:linear-gradient(90deg,#7115,#7304,#9904,#3934),repeating-linear-gradient(90deg,#0000,#0000 5%,#020 5%,#020 10%) left center/100% 10%,linear-gradient(180deg,#0008,#0204)}
 #tunnels span[hidden]{display:none}
@@ -1176,7 +1180,7 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 #tunnels td:not(.rif):not(.rih):not(.rbw):first-child,#tunnels #tunnelPeerCount td:first-child{border-left:var(--border)}
 #tunnels td:not(.rif):not(.rih):not(.rbw):last-child,#tunnels #tunnelPeerCount td:last-child{border-right:var(--border)}
 #tunnels td:not(.rif):not(.rih):not(.rbw).tcount,#tunnels #tunnelPeerCount .bar{width:1%;white-space:nowrap}
-#tunnels td:not(.rif):not(.rih):not(.rbw)>*{vertical-align:middle}
+#tunnels td:not(.rif):not(.rih):not(.rbw)>*{vertical-align:baseline}
 #tunnels td{text-align:center}
 #tunnels th{font-size:85%;position:relative;user-select:none}
 #tunnels th#tier[role="columnheader"]:not([data-sort-method="none"])::after,#tunnels th#router[role="columnheader"]:not([data-sort-method="none"])::after,#tunnels th#version[role="columnheader"]:not([data-sort-method="none"])::after{right:-2px;z-index:999}
@@ -1240,7 +1244,7 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 #netdbversions .version{min-width:48px}
 
 .banlisted,.compressible,.i2pd,.javai2p{width:18px;height:18px;display:inline-block;vertical-align:middle;background:var(--ban)}
-.banlisted{vertical-align:middle;font-size:0}
+.banlisted{vertical-align:middle!important;font-size:0}
 .compressible{background:url(/themes/console/images/clamp.svg)}
 .confignav+table[id^="ls"]{margin-top:11px}
 .leasesets_container .confignav+table[id^="ls"]{margin-top:0}
@@ -1611,9 +1615,12 @@ h3.sybils+div,h3.sybils+a[name]+table{margin-top:-1px}
 /* session bans */
 #banSummary{position:sticky;top:-4px;z-index:999999}
 #banSummary h2{margin:0 auto}
-#banSummary li{margin:2px 0;padding:0;min-width:300px;display:inline-block}
+#banSummary li{margin:2px 0;padding:0;min-width:300px;display:inline-block;cursor:pointer}
+#banSummary li.active,#banSummary li.active .badge{box-shadow:var(--bevel),var(--btn_shadow_active);background:var(--badge)}
 #banSummary ul{padding:5px 8px 4px;columns:300px 5;list-style-type:none;border:var(--border);background:var(--th)}
 #banSummary .badge{margin:0 4px 0 0;padding:2px 4px;min-width:48px;display:inline-block;text-align:center;letter-spacing:0.05em;font-weight:600;box-shadow:var(--bevel);background:var(--badge)}
+#banSummary li:hover,#banSummary li:hover .badge{box-shadow:var(--bevel_hover);background:var(--badge_hover)}
+#banSummary li:active,#banSummary li:active .badge{box-shadow:var(--bevel_hover),var(--btn_shadow_active)}
 #sessionBanned{margin:11px auto 9px}
 #sessionBanned td:nth-child(n+2){border-left:var(--border_softer)}
 #sessionBanned td.hash::before{width:26px;height:20px;display:inline-block;vertical-align:middle;background:var(--client) no-repeat left center/18px;content:""}
@@ -3389,3 +3396,7 @@ body.isDown::after{width:80px;height:80px;top:calc(50% - 40px);left:calc(50% - 4
 #compactLookup table{box-shadow:var(--border_table),0 0 0 4px #000}
 #compactLookup input[type="text"]{width:100%;min-width:0}
 #compactLookup #netdblookup td:nth-child(2n){width:auto;max-width:140px}
+
+/* eeptest */
+#eeptest .main{padding-bottom:14px}
+#eeptest .main h3{margin-bottom:-1px}

@@ -276,6 +276,10 @@ public class ExploreJob extends SearchJob {
             if (ctx.commSystem().isEstablished(from)) {
                 RouterInfo ri = _facade.lookupRouterInfoLocally(from);
                 if (ri != null) {
+                    // Skip direct lookup for banned routers
+                    if (ctx.banlist().isBanlisted(peer)) {
+                        return false;
+                    }
                     if (_log.shouldDebug()) {_log.debug("Direct followup to " + from + " for " + peer);}
                     DirectLookupJob j = new DirectLookupJob(getContext(), (FloodfillNetworkDatabaseFacade) _facade, peer, ri, null, null);
                     j.runJob(); // inline (SearchReplyJob thread)

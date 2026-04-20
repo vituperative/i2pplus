@@ -110,9 +110,30 @@ For the various sub-component licenses, see: [LICENSE.txt](docs/licenses/LICENSE
 
 ### Sub-project READMEs
 
-- [docs/licenses/README.md](docs/licenses/README.md) - Third-party licenses
+- [apps/addressbook/README.md](apps/addressbook/README.md) - Addressbook application
+- [apps/desktopgui/README.md](apps/desktopgui/README.md) - Desktop GUI application
+- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - I2PSnark BitTorrent client
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - I2P Tunnel application
+- [apps/imagegen/README.md](apps/imagegen/README.md) - Image generation tools
+- [apps/jetty/README.md](apps/jetty/README.md) - Jetty HTTP server
+- [apps/jrobin/README.md](apps/jrobin/README.md) - JRobin monitoring library
+- [apps/ministreaming/README.md](apps/ministreaming/README.md) - Minimal streaming library
+- [apps/pack200/README.md](apps/pack200/README.md) - Pack200 compression
+- [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy scripts
+- [apps/README.md](apps/README.md) - Application overview
+- [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router console
+- [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
+- [apps/streaming/README.md](apps/streaming/README.md) - Streaming library
+- [apps/susidns/README.md](apps/susidns/README.md) - DNS server
+- [apps/susimail/README.md](apps/susimail/README.md) - I2P email client
+- [apps/systray/README.md](apps/systray/README.md) - System tray application
+- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Native BigInteger library (GMP)
+- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU detection native library
+- [core/README.md](core/README.md) - Core library documentation
 - [docker/README.md](docker/README.md) - Running I2P+ in Docker
+- [docs/licenses/README.md](docs/licenses/README.md) - Third-party licenses
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)
+- [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
 - [scripts/README.md](scripts/README.md) - Utility scripts for development and administration
 - [scripts/tests/README.md](scripts/tests/README.md) - Validation and testing scripts
-- [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
-- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)

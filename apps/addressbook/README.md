@@ -1,6 +1,27 @@
 # Address Book (`addressbook/`)
 
-Fetches `hosts.txt` files from configured subscription URLs via HTTP and adds new entries to the local naming service database. Also packaged as a standalone JAR for Android.
+Subscription-based destination management. Fetches hosts.txt files and updates the local naming service.
+
+## What It Does
+
+- Fetch remote hosts.txt files via HTTP
+- Parse and validate destinations
+- Update local address book with new entries
+- Package as Android app for mobile use
+
+## How It Works
+
+1. Configure subscription URLs (e.g., `http://example.i2p/hosts.txt`)
+2. Periodic fetch (configurable interval)
+3. Parse destinations from file
+4. Add to local database
+
+## hosts.txt Format
+
+```
+# Comments start with #
+b32addr.b32.i2p=Base64Destination
+```
 
 ## Packages
 

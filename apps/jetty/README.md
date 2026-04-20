@@ -1,6 +1,31 @@
 # Jetty Integration (`jetty/`)
 
-Integration layer that embeds the Jetty web server, manages its lifecycle, configures connectors for the I2P network, and routes all I2P web applications (router console, i2ptunnel, i2psnark, etc.) through it.
+Embedded Jetty web server for I2P web applications.
+
+## What It Does
+
+- Starts Jetty servlet container
+- Configures HTTP listeners on I2P ports
+- Routes requests to webapps (console, i2psnark, etc.)
+- Manages SSL for I2P HTTPS
+
+## Structure
+
+| Layer             | Purpose              |
+| ----------------- | -------------------- |
+| `I2PJettyStartup` | Initializes Jetty    |
+| `I2PHttpServer`   | Main server instance |
+| `I2PHandler`      | Request routing      |
+| Connectors        | Network listeners    |
+
+## Default Ports
+
+| Port   | Application          |
+| ------ | -------------------- |
+| 7657   | Router console       |
+| 7658   | HTTP proxy (clients) |
+| 7659   | I2PSnark             |
+| 7660   | I2PTunnel            |
 
 ## Packages
 

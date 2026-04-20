@@ -15,23 +15,21 @@ public class ProfilesHelper extends HelperBase {
                                             _x("All"),             // 0
                                             _x("High Capacity"),   // 1
                                             _x("Floodfill"),       // 2
-                                            _x("Banned"),          // 3
-                                            _x("Session Bans")     // 4
+                                            _x("Banned")          // 3
                                            };
 
     private static final String links[] =  {
                                             "",                    // 0
                                             "?f=1",                // 1
                                             "?f=2",                // 2
-                                            "?f=3",                // 3
-                                            "?f=4"                 // 4
-                                            };
+                                            "?f=3"                 // 3 (Session Bans)
+                                           };
 
     public void setFull(String f) {
         if (f != null) {
             try {
                 _full = Integer.parseInt(f);
-                if (_full < 0 || _full > 4) {_full = 0;}
+                if (_full < 0 || _full > 3) {_full = 0;}
             } catch (NumberFormatException nfe) {}
         }
     }
@@ -49,8 +47,7 @@ public class ProfilesHelper extends HelperBase {
     public String getSummary() {
         try {renderNavBar();}
         catch (IOException ioe) {}
-        if (_full == 4) getBanlistCompact();
-        if (_full == 3) getBanlistSummary();
+        if (_full == 3) getBanlistCompact();
         else getProfileSummary();
         return "";
     }
@@ -74,7 +71,7 @@ public class ProfilesHelper extends HelperBase {
                .append(_t("Total number of banned peers")).append(": <b>").append(banned).append("</b>");
             if (banned > 300) {
                 buf.append(".&nbsp;").append(_t("Note: \'LU\' class routers have been excluded from the list."))
-                   .append("&nbsp;").append(_t("To view, see {0}Session Bans{1}.", "<a href=\"/profiles?f=4\">", "</a>"));
+                   .append("&nbsp;").append(_t("To view, see {0}Banned{1}.", "<a href=\"/profiles?f=3\">", "</a>"));
             }
             buf.append("</p>\n");
             _out.append(buf);
@@ -99,7 +96,6 @@ public class ProfilesHelper extends HelperBase {
         if (_full == 1) return 1;
         if (_full == 2) return 2;
         if (_full == 3) return 3;
-        if (_full == 4) return 4;
         return 0;
     }
 

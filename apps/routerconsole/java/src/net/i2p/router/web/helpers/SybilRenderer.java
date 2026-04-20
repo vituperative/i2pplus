@@ -148,7 +148,7 @@ public class SybilRenderer {
                    "<li id=reviewStored><a href=\"netdb?f=3\">" + _t("Review stored analysis") + "</a></li>\n" +
                    "<li id=runNew><a href=\"netdb?f=3&amp;m=14\">" + _t("Run new analysis") + "</a></li>\n" +
                    "<li id=configurePeriodic><a href=\"netdb?f=3&amp;m=15\">" + _t("Configure periodic analysis") + "</a></li>\n" +
-                   "<li id=banlisted><a href=\"/profiles?f=3\">" + _t("Review current bans") + "</a></li>\n");
+                   "<li id=banlisted><a href=\"/profiles?f=3\">" + _t("Review session bans") + "</a></li>\n");
         if (blocklistFileExists) {
             buf.append("<li id=purgeBans><a href=\"netdb?f=3&amp;m=100\">" + _t("Delete Sybil Blocklist") + "</a></li>\n");
         }

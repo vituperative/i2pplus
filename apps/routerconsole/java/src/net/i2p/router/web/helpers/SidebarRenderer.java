@@ -987,15 +987,15 @@ class SidebarRenderer {
            .append("</b></a></td><td class=digits><span class=volatile>")
            .append(_helper.getUnreachablePeers())
            .append("</span></td></tr>\n");
-       if (_helper.getBanlistedPeers() > 1) {
-           buf.append("<tr title=\"")
-              .append(_t("The number of banned peers"))
-              .append("\"><td><a href=\"/profiles?f=3\"><b>")
-              .append(_t("Banned"))
-              .append("</b></a></td><td class=digits><span class=volatile>")
-              .append(_helper.getBanlistedPeers())
-              .append("</span></td></tr>\n");
-       }
+        if (_helper.getBanlistedPeers() > 1) {
+            buf.append("<tr title=\"")
+               .append(_t("The number of banned peers"))
+               .append("\"><td><a href=\"/profiles?f=3\"><b>")
+               .append(_t("Banned"))
+               .append("</b></a></td><td class=digits><span class=volatile>")
+               .append(_helper.getBanlistedPeers())
+               .append("</span></td></tr>\n");
+        }
 
         buf.append("<tr title=\"")
            .append(_t("The total number of peers in our network database"))

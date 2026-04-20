@@ -19,9 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import net.i2p.data.DataHelper;
 import net.i2p.data.Hash;
+import net.i2p.data.router.RouterInfo;
 import net.i2p.router.Banlist;
+import net.i2p.router.NetworkDatabaseFacade;
 import net.i2p.router.RouterContext;
 import net.i2p.router.transport.TransportImpl;
 import net.i2p.router.web.Messages;
@@ -352,11 +356,13 @@ class BanlistRenderer {
             return;
         }
 
-        // Column order: Country Flag, Router Hash, IP Address, Port, Hostname, Reason, Expiry
+        // Column order: Country Flag, Router Hash, Version, IP Address, Port, Hostname, Reason, Expiry
         buf.append("<div class=tablewrap id=sessionBanned>\n<table id=sbans>\n<thead><tr><th class=country>")
            .append(_t("Country"))
            .append("</th><th class=hash data-sort-use-group=true>")
            .append(_t("Router"))
+           .append("</th><th class=routerversion>")
+           .append(_t("Version"))
            .append("</th><th class=ip>")
            .append(_t("IP Address"))
            .append("</th><th class=port data-sort-method=number>")
@@ -483,24 +489,28 @@ class BanlistRenderer {
                 countryCode = "xx";
             }
 
-            String countryName =  _context.commSystem().getCountryName(countryCode);
+String countryName =  _context.commSystem().getCountryName(countryCode);
+            // Get router version from NetDB or reason, then clean reason
+            String routerVersion = getRouterVersion(key, reason);
+            String cleanedReason = cleanReason(reason, routerVersion);
             buf.append("<td class=country data-sort=").append(countryCode).append(">")
                .append("<img width=28 height=21 title=\"").append(countryName)
                .append("\" src=\"/flags.jsp?c=").append(countryCode).append("\">")
                .append("</td><td class=hash>")
                .append(key != null ? "<span class=b64>" + key.toBase64() + "</span>" : "")
+               .append("</td><td class=routerversion>").append(routerVersion != null ? routerVersion : "")
                .append("</td><td class=ip>")
                .append(ip != null ? ip : "")
                .append("</td><td class=port data-sort=").append(port != null ? port : "0").append(">")
                .append(port != null ? port : "")
                .append("</td>");
-             if (enableReverseLookups()) {
+              if (enableReverseLookups()) {
                 buf.append("<td class=hostname>")
                    .append(hostname != null && !hostname.isEmpty() && !"unknown".equals(hostname) ? hostname : "")
                    .append("</td>");
             }
             buf.append("<td class=reason>")
-               .append(reason)
+               .append(cleanedReason)
                .append("</td><td class=expires data-sort=").append(expires).append(">")
                .append(expireString)
                .append("</td></tr>\n");
@@ -561,7 +571,7 @@ class BanlistRenderer {
         }
 
         buf.append("</tbody>\n<tfoot id=sessionBanlistFooter><tr><th colspan=")
-           .append(enableReverseLookups() ? "7" : "6")
+           .append(enableReverseLookups() ? "8" : "7")
            .append(">")
            .append(_t("Total session-only bans"))
            .append(": ").append(tempBanned)
@@ -589,5 +599,50 @@ class BanlistRenderer {
      */
     private String _t(String s, Object o) {
         return Messages.getString(s, o, _context);
+    }
+
+    private String getRouterVersion(Hash hash, String reason) {
+        if (hash == null) {
+            return null;
+        }
+        // First try NetDB
+        try {
+            NetworkDatabaseFacade netDb = _context.netDb();
+            if (netDb != null) {
+                RouterInfo ri = netDb.lookupRouterInfoLocally(hash);
+                if (ri != null) {
+                    return ri.getVersion();
+                }
+            }
+        } catch (Exception e) {
+            // Ignore errors
+        }
+        // Fallback: extract from reason string (e.g., "LU Router (0.9.56)" or "0.9.57 / LU")
+        if (reason != null && !reason.isEmpty()) {
+            Pattern p = Pattern.compile("(?:^|\\()(\\d+\\.\\d+(?:\\.\\d+)?(?:-\\d+)?)");
+            Matcher m = p.matcher(reason);
+            if (m.find()) {
+                return m.group(1);
+            }
+        }
+        return null;
+    }
+
+    private String cleanReason(String reason, String routerVersion) {
+        if (reason == null) {
+            return reason;
+        }
+        String cleaned = reason;
+        // First, try to remove version patterns like "(0.9.57 / LU)" or "(0.9.57)"
+        cleaned = cleaned.replaceAll("\\s*\\(0\\.9\\.\\d+(?:\\.\\d+)?(?:-\\d+)?\\s*/\\s*LU\\)\\s*$", "");
+        cleaned = cleaned.replaceAll("\\s*\\(0\\.9\\.\\d+(?:\\.\\d+)?(?:-\\d+)?\\)\\s*$", "");
+        // Also try removing "/ version" at end (e.g., "Old / 0.9.57")
+        cleaned = cleaned.replaceAll("\\s*/\\s*0\\.9\\.\\d+(?:\\.\\d+)?(?:-\\d+)?\\s*$", "");
+        // If we have routerVersion from NetDB, use that too
+        if (routerVersion != null) {
+            cleaned = cleaned.replaceAll("\\s*\\(" + Pattern.quote(routerVersion) + "\\)\\s*$", "");
+            cleaned = cleaned.replaceAll("\\s*/\\s*" + Pattern.quote(routerVersion) + "\\s*$", "");
+        }
+        return cleaned.isEmpty() ? reason : cleaned;
     }
 }

@@ -13,13 +13,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import net.i2p.data.DatabaseEntry;
 import net.i2p.data.Hash;
 import net.i2p.data.LeaseSet;
 import net.i2p.data.LeaseSet2;
+import net.i2p.data.router.RouterAddress;
 import net.i2p.data.router.RouterInfo;
+import net.i2p.router.Router;
+import net.i2p.router.BanLogger;
 import net.i2p.router.RouterContext;
+import net.i2p.router.networkdb.kademlia.KademliaNetworkDatabaseFacade;
 import net.i2p.router.transport.CommSystemFacadeImpl;
 import net.i2p.util.Log;
 
@@ -42,11 +47,14 @@ class TransientDataStore implements DataStore {
     protected final Log _log;
     private final ConcurrentHashMap<Hash, DatabaseEntry> _data;
     protected final RouterContext _context;
+    private final BanLogger _banLogger;
 
     public TransientDataStore(RouterContext ctx) {
         _context = ctx;
         _log = ctx.logManager().getLog(getClass());
         _data = new ConcurrentHashMap<Hash, DatabaseEntry>(1024);
+        _banLogger = new BanLogger();
+        _banLogger.initialize(ctx);
     }
 
     public boolean isInitialized() {return true;}
@@ -134,6 +142,46 @@ class TransientDataStore implements DataStore {
             RouterInfo ri = (RouterInfo)data;
             String v = ri.getVersion();
             String caps = ri.getCapabilities();
+            String routerId = key.toBase64().substring(0, 6);
+            boolean isFF = caps != null && caps.contains("f");
+            boolean isUs = _context.routerHash().equals(ri.getIdentity().getHash());
+            boolean isLTier = containsCapability(ri, Router.CAPABILITY_BW12) ||
+                              containsCapability(ri, Router.CAPABILITY_BW32);
+            boolean isUnreachable = containsCapability(ri, Router.CAPABILITY_UNREACHABLE) ||
+                                    !containsCapability(ri, Router.CAPABILITY_REACHABLE);
+            boolean isLU = !isUs && isLTier && isUnreachable;
+            boolean isXTier = containsCapability(ri, Router.CAPABILITY_BW_UNLIMITED);
+            boolean isG = containsCapability(ri, Router.CAPABILITY_NO_TUNNELS);
+            boolean isXG = !isUs && isXTier && isG;
+
+            if (isLU) {
+                if (!_context.banlist().isBanlisted(key)) {
+                    if (_log.shouldWarn()) {
+                        _log.warn("Banning " + (!caps.isEmpty() ? caps : "") + ' ' + (isFF ? "Floodfill" : "Router") +
+                                  " [" + routerId + "] for 1h -> LU");
+                    }
+                    _context.banlist().banlistRouter(key, "➜ LU Router", null, null,
+                                                     _context.clock().now() + 60 * 60 * 1000);
+                    String ipPort = getRouterIPPort(ri);
+                    _banLogger.logBan(key, ipPort, "LU Router", 60 * 60 * 1000L);
+                }
+                rv = false;
+            }
+
+            if (isXG) {
+                if (!_context.banlist().isBanlisted(key)) {
+                    if (_log.shouldWarn()) {
+                        _log.warn("Banning " + (!caps.isEmpty() ? caps : "") + ' ' + (isFF ? "Floodfill" : "Router") +
+                                  " [" + routerId + "] for 1h -> XG");
+                    }
+                    _context.banlist().banlistRouter(key, "➜ XG Router", null, null,
+                                                     _context.clock().now() + 60 * 60 * 1000);
+                    String ipPort = getRouterIPPort(ri);
+                    _banLogger.logBan(key, ipPort, "XG Router", 60 * 60 * 1000L);
+                }
+                rv = false;
+            }
+
             if (old != null) {
                 RouterInfo ori = (RouterInfo) old;
                 if (ri.getPublished() > ori.getPublished()) {
@@ -240,5 +288,46 @@ class TransientDataStore implements DataStore {
 
     public DatabaseEntry remove(Hash key) {
         return _data.remove(key);
+    }
+
+    private String getRouterIPPort(RouterInfo router) {
+        if (router == null) { return "UNKNOWN"; }
+        try {
+            byte[] ip = net.i2p.router.transport.CommSystemFacadeImpl.getCompatibleIP(router);
+            if (ip != null) {
+                int port = 0;
+                for (RouterAddress addr : router.getAddresses()) {
+                    if (addr != null && addr.getIP() != null && java.util.Arrays.equals(addr.getIP(), ip)) {
+                        port = addr.getPort();
+                        break;
+                    }
+                }
+                return formatIPPort(ip, port);
+            }
+            for (RouterAddress addr : router.getAddresses()) {
+                if (addr != null && addr.getHost() != null) {
+                    String ipAddr = addr.getHost();
+                    int port = addr.getPort();
+                    if (port > 0) {
+                        if (ipAddr.contains(":") && !ipAddr.startsWith("[")) {
+                            ipAddr = "[" + ipAddr + "]";
+                        }
+                        return ipAddr + ":" + port;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+        return "UNKNOWN";
+    }
+
+    private String formatIPPort(byte[] ip, int port) {
+        String ipStr = ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3];
+        return ipStr + ":" + port;
+    }
+
+    private boolean containsCapability(RouterInfo ri, char capability) {
+        if (ri == null) return false;
+        String caps = ri.getCapabilities();
+        return caps != null && caps.indexOf(capability) >= 0;
     }
 }

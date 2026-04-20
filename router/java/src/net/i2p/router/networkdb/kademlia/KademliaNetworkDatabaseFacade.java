@@ -89,7 +89,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
     protected final int _networkID;
     private final BlindCache _blindCache;
     private final Hash _dbid;
-    private final Job _elj, _erj;
+    private final Job _elj, _erj, _lurj;
     static final String PROP_MIN_ROUTER_VERSION = "router.minVersionAllowed";
     public static final String PROP_BLOCK_MY_COUNTRY = "i2np.blockMyCountry";
     public static final String PROP_IP_COUNTRY = "i2np.lastCountry";
@@ -221,6 +221,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
             _peerSelector = createPeerSelector();
         }
 
+        _lurj = new CleanupLURoutersJob(_context, this);
         _elj = new ExpireLeasesJob(_context, this);
         _banLogger = new BanLogger();
         _banLogger.initialize(context);
@@ -756,7 +757,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         if (onFindJob != null) {_context.jobQueue().addJob(onFindJob);}
         if (shouldBanlistBasedOnCountry(ri, key)) {handleBanlistAndRemove(ri, key, onFailedLookupJob);}
         else if (shouldBanlistXG(ri, key)) {handleBanlistAndRemove(ri, key, onFailedLookupJob);}
-        else if (shouldBanlistLUM(ri, key)) {handleBanlistAndRemove(ri, key, onFailedLookupJob);}
+        else if (shouldBanlistLU(ri, key)) {handleBanlistAndRemove(ri, key, onFailedLookupJob);}
         else if (isPermanentlyBlocklisted(key)) {handlePermanentBlocklist(ri, key, onFailedLookupJob);}
         else if (isHostileBlocklisted(key)) {handleHostileBlocklist(ri, key, onFailedLookupJob);}
         else if (isNegativeCached(key)) {handleNegativeCache(ri, key, onFailedLookupJob);}
@@ -797,9 +798,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
 
     /**
      * Determine whether the given router should be banlisted due to being:
-     * - an L-tier or M-tier router (CAPABILITY_BW12 or CAPABILITY_BW32),
-     * - currently unreachable (or lacking a 'R' capability),
-     * - and running an outdated version (older than MIN_VERSION).
+     * - an unreachable L-tier router (CAPABILITY_BW12),
      *
      * This is typically used to filter out low-performing routers.
      *
@@ -807,19 +806,14 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
      * @param key the hash of the router (unused in this method, but kept for consistency)
      * @return true if the router matches the LU banlist criteria
      *
-     * @since 0.9.67+
+     * @since 0.9.69+
      */
-    private boolean shouldBanlistLUM(RouterInfo ri, Hash key) {
-        boolean isLTier = containsCapability(ri, Router.CAPABILITY_BW12) ||
-                          containsCapability(ri, Router.CAPABILITY_BW32);
-
+    private boolean shouldBanlistLU(RouterInfo ri, Hash key) {
+        boolean isLTier = containsCapability(ri, Router.CAPABILITY_BW12);
+        boolean isUs = _context.routerHash().equals(ri.getIdentity().getHash());
         boolean isUnreachable = containsCapability(ri, Router.CAPABILITY_UNREACHABLE) ||
                                 !containsCapability(ri, Router.CAPABILITY_REACHABLE);
-
-        boolean isOld = VersionComparator.comp(ri.getVersion(), MIN_VERSION) < 0;
-        boolean isUs = _context.routerHash().equals(ri.getIdentity().getHash());
-
-        return !isUs && isLTier && isUnreachable && isOld;
+        return !isUs && isLTier && isUnreachable;
     }
 
     private boolean isPermanentlyBlocklisted(Hash key) {
@@ -837,14 +831,14 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
 
         if (_log.shouldWarn()) {
             _log.warn("Banning " + (!caps.isEmpty() ? caps : "") + ' ' + (isFF ? "Floodfill" : "Router") +
-                      " [" + routerId + "] for 4h -> LU and older than " + MIN_VERSION);
+                      " [" + routerId + "] for 1h -> LU and older than " + MIN_VERSION);
         }
 
         _context.banlist().banlistRouter(key, "➜ LU and older than " + MIN_VERSION, null, null,
-                                         _context.clock().now() + 4 * 60 * 60 * 1000);
+                                         _context.clock().now() + 60 * 60 * 1000);
         // Log to sessionbans.txt with IP address
         String ipPort = getRouterIPPort(ri);
-        _banLogger.logBan(key, ipPort, "LU and older than " + MIN_VERSION, 4 * 60 * 60 * 1000L);
+        _banLogger.logBan(key, ipPort, "LU and older than " + MIN_VERSION, 60 * 60 * 1000L);
 
         _ds.remove(key);
         _kb.remove(key);
@@ -989,7 +983,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         }
 
         RepublishLeaseSetJob job = new RepublishLeaseSetJob(_context, this, hash);
-        
+
         // Try to register the job - if it fails, another job is already active
         if (!job.registerSelf()) {
             if (_log.shouldDebug()) {
@@ -1445,6 +1439,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         if (banInvalidNTCPAddresses(routerInfo, now, caps, routerId)) {return "Invalid NTCP address";}
         if (_context.banlist().isBanlisted(h)) {return null;}
         if (checkXG(routerInfo, caps, routerId, h)) {return null;}
+        if (checkLU(routerInfo, caps, routerId, h)) {return null;}
 
         long uptime = _context.router().getUptime();
         boolean upLongEnough = isUptimeLongEnough(uptime);
@@ -1649,11 +1644,70 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
                 _context.banlist().banlistRouter(h, " <b>➜</b> XG " + (isFF ? "Floodfill" : "Router"), null, null, _context.clock().now() + 60*60*1000);
             }
             return true;
-        }
+}
         return false;
     }
 
     /**
+     * Ban LU (low bandwidth) routers unconditionally for 1 hour.
+     * These routers flood the network with no meaningful bandwidth contribution.
+     * @since 0.9.67+
+     */
+    private boolean checkLU(RouterInfo routerInfo, String caps, String routerId, Hash h) {
+        if (caps == null) return false;
+        boolean isLowTier = caps.indexOf(Router.CAPABILITY_BW12) >= 0 ||
+                            caps.indexOf(Router.CAPABILITY_BW32) >= 0;
+        boolean isUnreachable = caps.indexOf('U') >= 0 || caps.indexOf('R') < 0;
+        if (isLowTier && isUnreachable) {
+            if (!_context.banlist().isBanlisted(h)) {
+                String ipPort = getRouterIPPort(routerInfo);
+                _log.warn("Banning Router [" + routerId + "] -> LU Router");
+                _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
+                _context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, _context.clock().now() + 60*60*1000);
+            }
+            return true;
+        }
+        return false;
+     }
+
+    /**
+     * Clean up existing LU routers loaded before the ban was added.
+     * Called at startup to remove LU routers from the netdb.
+     * @since 0.9.67+
+     */
+    public void cleanupLURouters() {
+        int removed = 0;
+        int total = 0;
+        for (DatabaseEntry entry : _ds.getEntries()) {
+            if (!entry.isRouterInfo()) continue;
+            total++;
+            RouterInfo ri = (RouterInfo) entry;
+            String caps = ri.getCapabilities();
+            boolean isLowTier = caps != null && (caps.indexOf(Router.CAPABILITY_BW12) >= 0 ||
+                                                 caps.indexOf(Router.CAPABILITY_BW32) >= 0);
+            boolean isUnreachable = caps != null && (caps.indexOf('U') >= 0 || caps.indexOf('R') < 0);
+            if (isLowTier && isUnreachable) {
+                Hash h = ri.getIdentity().getHash();
+                if (_context.banlist().isBanlisted(h)) continue;
+                String routerId = h.toBase64().substring(0, 6);
+                String ipPort = getRouterIPPort(ri);
+                if (_log.shouldWarn()) {
+                    _log.warn("Removing existing LU Router from netDb: " + routerId);
+                }
+                _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
+                _context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, _context.clock().now() + 60*60*1000);
+                _ds.remove(h);
+                _kb.remove(h);
+                removed++;
+            }
+        }
+
+        if (_log.shouldWarn()) {
+            _log.warn("LU Router cleanup: scanned " + total + " routers, removed " + removed + " LU routers");
+        }
+    }
+
+     /**
      * Determines whether the given router qualifies as an XG router that should be blocked.
      *
      * An XG router is defined as:
@@ -2299,7 +2353,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
      * @param router the RouterInfo to extract from
      * @return IP:PORT string or "UNKNOWN" if not available
      */
-    private String getRouterIPPort(RouterInfo router) {
+    public String getRouterIPPort(RouterInfo router) {
         if (router == null) { return "UNKNOWN"; }
         try {
             // Try getCompatibleIP first - returns IP for our supported protocols

@@ -1031,7 +1031,7 @@ public class ProfileOrganizer {
         double ratio = (double) agreed / totalRequests;
 
         if (totalRequests < MIN_TUNNEL_REQUESTS) {
-            double threshold = MIN_TUNNEL_ACCEPTANCE_RATIO * 2;
+            double threshold = 0.2;
             if (ratio >= threshold) return false;
             if (_log.shouldDebug()) {
                 _log.debug("Demoting peer from fast tier (startup): " +

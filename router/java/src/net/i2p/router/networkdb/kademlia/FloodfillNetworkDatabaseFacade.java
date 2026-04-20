@@ -771,6 +771,12 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
       */
     @Override
     protected void lookupBeforeDropping(Hash peer, RouterInfo info) {
+        // Skip lookup for banned routers - no point looking up before dropping
+        if (_context.banlist().isBanlisted(peer)) {
+            dropAfterLookupFailed(peer);
+            return;
+        }
+
         if (_context.commSystem().isEstablished(peer)) {
             // see DirectLookupJob
             boolean isNew = false;
@@ -891,12 +897,16 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
         // the MAX_DB_BEFORE_SKIPPING_SEARCH check above,
         // that value is pretty small compared to typical netdb sizes.
 
-        if (caps.indexOf(Router.CAPABILITY_UNREACHABLE) >= 0 ||
-            caps.indexOf(Router.CAPABILITY_BW32) >= 0 ||
-            caps.indexOf(Router.CAPABILITY_BW64) >= 0) {
-            super.lookupBeforeDropping(peer, info);
+        // Skip lookup for low tier routers - we ban them anyway
+        boolean isLowTier = caps.indexOf(Router.CAPABILITY_BW12) >= 0 ||
+                          caps.indexOf(Router.CAPABILITY_BW32) >= 0 ||
+                          caps.indexOf(Router.CAPABILITY_BW64) >= 0;
+        boolean isUnreachable = caps.indexOf(Router.CAPABILITY_UNREACHABLE) >= 0;
+        if (isLowTier && isUnreachable) {
+            dropAfterLookupFailed(peer);
             return;
         }
+
         if (caps.indexOf(CAPABILITY_FLOODFILL) >= 0) {
             PeerProfile prof = _context.profileOrganizer().getProfile(peer);
             if (prof == null) {

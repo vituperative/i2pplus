@@ -181,10 +181,10 @@ public class TestJob extends JobImpl {
         int maxTestJobs = Math.max(8, activeRunners / 6);
         int currentTestJobs = getTotalTestJobCount();
         // If queue has ANY lag, don't add more test jobs - prevents cascade
-        if (readyCount > 50 || maxLag > 10 || currentTestJobs >= maxTestJobs) {
+        if (readyCount > 0 || maxLag > 50 || currentTestJobs >= maxTestJobs) {
             Log log = ctx.logManager().getLog(TestJob.class);
             if (log.shouldInfo()) {
-                log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag + 
+                log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag +
                          "ms, testJobs=" + currentTestJobs + "/" + maxTestJobs + ") -> Not scheduling test for " + cfg);
             }
             return false;

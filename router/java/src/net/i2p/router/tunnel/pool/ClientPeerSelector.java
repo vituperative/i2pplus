@@ -120,8 +120,8 @@ class ClientPeerSelector extends TunnelPeerSelector {
                 else {exclude = new OBEPExcluder(exclude);}
                 // 1-hop, IP restrictions not required here
                 if (hiddenInbound) {
-                    // Priority: Fast > HighCap > Active > NotFailing > All
-                    ctx.profileOrganizer().selectFastPeers(1, exclude, matches);
+                    // Priority: HighCap > Fast > Active > NotFailing
+                    ctx.profileOrganizer().selectHighCapacityPeers(1, exclude, matches);
                     if (matches.isEmpty()) {
                         ctx.profileOrganizer().selectHighCapacityPeers(1, exclude, matches);
                     }
@@ -130,17 +130,11 @@ class ClientPeerSelector extends TunnelPeerSelector {
                     }
                 }
                 if (matches.isEmpty()) {
-                    // No connected peers found, fall back to all fast peers
-                    // Throttle warnings to reduce log spam during network stress
-                    // Suppress warnings during startup
-                    long now = ctx.clock().now();
-                    long uptime = ctx.router() != null ? ctx.router().getUptime() : 0;
-                    if (log.shouldWarn() && uptime > STARTUP_WARNING_SUPPRESS_MS && _lastFallbackWarn.getAndSet(now) < now - WARNING_THROTTLE_MS) {
-                        log.warn("No eligible non-failing peers available for " + (isInbound ? "Inbound" : "Outbound") + " connection -> Falling back to fast pool...");
-                    }
-                    ctx.profileOrganizer().selectFastPeers(length, exclude, matches);
+                    // Fallback tiers: HighCap > Fast > Active > NotFailing > All
+                    // Priority: HighCap (bandwidth) > Fast (low latency) > Active > NotFailing
+                    ctx.profileOrganizer().selectHighCapacityPeers(length, exclude, matches);
                     if (matches.isEmpty()) {
-                        ctx.profileOrganizer().selectHighCapacityPeers(length, exclude, matches);
+                        ctx.profileOrganizer().selectFastPeers(length, exclude, matches);
                     }
                     if (matches.isEmpty()) {
                         ctx.profileOrganizer().selectActiveNotFailingPeers(length, exclude, matches);
@@ -183,10 +177,10 @@ class ClientPeerSelector extends TunnelPeerSelector {
                     if (log.shouldInfo()) {
                         log.info("Selecting fast/non-failing peer for (hidden) closest Inbound... \n* Excluding: " + formatExcludedPeers(lastHopExclude));
                     }
-                    // Priority: Fast > HighCap > Active > NotFailing > All
-                    ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
+                    // Priority: HighCap > Fast > Active > NotFailing
+                    ctx.profileOrganizer().selectHighCapacityPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
                     if (matches.isEmpty()) {
-                        ctx.profileOrganizer().selectHighCapacityPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
+                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
                     }
                     if (matches.isEmpty()) {
                         ctx.profileOrganizer().selectActiveNotFailingPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
@@ -263,10 +257,10 @@ class ClientPeerSelector extends TunnelPeerSelector {
                         if (log.shouldInfo()) {
                             log.info("Selecting non-failing peer for OutboundEndpoint... " + lastHopExclude);
                         }
-                        // Priority: Fast > HighCap > Active > NotFailing > All
-                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
+                        // Priority: HighCap > Fast > Active > NotFailing
+                        ctx.profileOrganizer().selectHighCapacityPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
                         if (matches.isEmpty()) {
-                            ctx.profileOrganizer().selectHighCapacityPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
+                            ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
                         }
                         if (matches.isEmpty()) {
                             ctx.profileOrganizer().selectActiveNotFailingPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
@@ -286,7 +280,7 @@ class ClientPeerSelector extends TunnelPeerSelector {
                             ctx.commSystem().exemptIncoming(matches.get(0));
                         }
                     } else {
-                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, randomKey, length == 2 ? SLICE_0_1 : SLICE_0, ipRestriction, ipSet);
+                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, ipRestriction, ipSet);
                     }
                 } else {
                     // Use Exploratory-style selection for better build success on unreliable networks
@@ -295,25 +289,35 @@ class ClientPeerSelector extends TunnelPeerSelector {
                     ArraySet<Hash> highCapMatches = new ArraySet<Hash>(1);
                     ctx.profileOrganizer().selectHighCapacityPeers(1, lastHopExclude, highCapMatches, ipRestriction, ipSet);
 
-                    // Filter to prefer peers with good tunnel acceptance ratio and recent successful tests
+                    // Filter HighCap peers through reliability scoring
                     if (!highCapMatches.isEmpty()) {
-                        Hash bestPeer = selectBestReliablePeer(highCapMatches, lastHopExclude);
-                        if (bestPeer != null) {
-                            matches.add(bestPeer);
+                        List<Hash> filtered = filterByReliability(highCapMatches, lastHopExclude, 1);
+                        if (!filtered.isEmpty()) {
+                            matches.addAll(filtered);
                         }
                     }
 
                     if (matches.isEmpty()) {
-                        // Fallback: try fast peers
-                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, matches, randomKey, length == 2 ? SLICE_0_1 : SLICE_0, ipRestriction, ipSet);
+                        // Fallback: try fast peers with reliability filter
+                        ArraySet<Hash> fastMatches = new ArraySet<Hash>(1);
+                        ctx.profileOrganizer().selectFastPeers(1, lastHopExclude, fastMatches, ipRestriction, ipSet);
+                        List<Hash> filtered = filterByReliability(fastMatches, lastHopExclude, 1);
+                        if (!filtered.isEmpty()) {
+                            matches.addAll(filtered);
+                        }
+                    }
+                    if (matches.isEmpty()) {
+                        // Fallback: try active not-failing peers with reliability filter
+                        ArraySet<Hash> activeMatches = new ArraySet<Hash>(1);
+                        ctx.profileOrganizer().selectActiveNotFailingPeers(1, lastHopExclude, activeMatches, ipRestriction, ipSet);
+                        List<Hash> filtered = filterByReliability(activeMatches, lastHopExclude, 1);
+                        if (!filtered.isEmpty()) {
+                            matches.addAll(filtered);
+                        }
                     }
                     if (matches.isEmpty()) {
                         // Fallback: try not-failing peers (broader pool)
                         ctx.profileOrganizer().selectNotFailingPeers(1, lastHopExclude, matches, false, ipRestriction, ipSet);
-                    }
-                    if (matches.isEmpty()) {
-                        // Fallback: try connected (active not-failing) peers
-                        ctx.profileOrganizer().selectActiveNotFailingPeers(1, lastHopExclude, matches);
                     }
                 }
 
@@ -327,19 +331,20 @@ class ClientPeerSelector extends TunnelPeerSelector {
                     if (log.shouldInfo()) {
                         log.info("Selecting middle hop peers (Client style)... \n* Excluding: " + formatExcludedPeers(exclude));
                     }
-                    // Use selectBestReliablePeer for consistent quality filtering
+                    // Use filterByReliability for consistent quality filtering
                     int middleCount = length - 2;
 
-                    // First try high capacity peers through quality filter
+                    // First try high capacity peers through reliability filter
                     ArraySet<Hash> middleCandidates = new ArraySet<Hash>(middleCount);
                     ctx.profileOrganizer().selectHighCapacityPeers(Math.max(1, middleCount), exclude, middleCandidates, ipRestriction, ipSet);
 
-                    // Use selectBestReliablePeer to pick best peers from candidates
+                    // Filter HighCap peers through reliability scoring
                     if (!middleCandidates.isEmpty()) {
-                        Hash best = selectBestReliablePeer(middleCandidates, exclude);
-                        if (best != null) {
-                            matches.add(best);
-                            exclude.add(best);
+                        List<Hash> filtered = filterByReliability(middleCandidates, exclude, middleCount);
+                        for (Hash peer : filtered) {
+                            if (matches.size() >= middleCount) break;
+                            matches.add(peer);
+                            exclude.add(peer);
                         }
                     }
 
@@ -347,10 +352,11 @@ class ClientPeerSelector extends TunnelPeerSelector {
                     if (matches.size() < middleCount) {
                         ArraySet<Hash> nfCandidates = new ArraySet<Hash>(middleCount - matches.size());
                         ctx.profileOrganizer().selectNotFailingPeers(middleCount - matches.size(), exclude, nfCandidates, false, ipRestriction, ipSet);
-                        Hash best = selectBestReliablePeer(nfCandidates, exclude);
-                        if (best != null) {
-                            matches.add(best);
-                            exclude.add(best);
+                        List<Hash> filtered = filterByReliability(nfCandidates, exclude, middleCount - matches.size());
+                        for (Hash peer : filtered) {
+                            if (matches.size() >= middleCount) break;
+                            matches.add(peer);
+                            exclude.add(peer);
                         }
                     }
 
@@ -395,17 +401,27 @@ class ClientPeerSelector extends TunnelPeerSelector {
 
                 // Filter through reliability check
                 if (!firstHopCandidates.isEmpty()) {
-                    Hash best = selectBestReliablePeer(firstHopCandidates, exclude);
-                    if (best != null) {
-                        matches.add(best);
+                    List<Hash> filtered = filterByReliability(firstHopCandidates, exclude, 1);
+                    if (!filtered.isEmpty()) {
+                        matches.addAll(filtered);
                     }
                 }
 
                 if (matches.isEmpty()) {
-                    ctx.profileOrganizer().selectNotFailingPeers(1, exclude, matches, false, ipRestriction, ipSet);
+                    ArraySet<Hash> nfCandidates = new ArraySet<Hash>(1);
+                    ctx.profileOrganizer().selectNotFailingPeers(1, exclude, nfCandidates, false, ipRestriction, ipSet);
+                    List<Hash> filtered = filterByReliability(nfCandidates, exclude, 1);
+                    if (!filtered.isEmpty()) {
+                        matches.addAll(filtered);
+                    }
                 }
                 if (matches.isEmpty()) {
-                    ctx.profileOrganizer().selectFastPeers(1, exclude, matches, randomKey, length == 2 ? SLICE_2_3 : SLICE_1, ipRestriction, ipSet);
+                    ArraySet<Hash> fastCandidates = new ArraySet<Hash>(1);
+                    ctx.profileOrganizer().selectFastPeers(1, exclude, fastCandidates, randomKey, length == 2 ? SLICE_2_3 : SLICE_1, ipRestriction, ipSet);
+                    List<Hash> filtered = filterByReliability(fastCandidates, exclude, 1);
+                    if (!filtered.isEmpty()) {
+                        matches.addAll(filtered);
+                    }
                 }
                 matches.remove(ctx.routerHash());
                 rv.addAll(matches);
@@ -443,23 +459,23 @@ class ClientPeerSelector extends TunnelPeerSelector {
                                 log.info("Network stress (" + (int) (buildSuccess * 100) + "% success) -> Trying relaxed fallback peer selection...");
                             }
 
-                            // Priority: Fast > HighCap > Active > NotFailing > All
+                            // Priority: HighCap > Fast > Active > NotFailing (under network stress, prioritize bandwidth)
                             ArraySet<Hash> fallback = new ArraySet<Hash>(min);
-                            ctx.profileOrganizer().selectFastPeers(min, exclude, fallback, 0, null);
+                            ctx.profileOrganizer().selectHighCapacityPeers(min, exclude, fallback, 0, null);
                             fallback.remove(ctx.routerHash());
 
                             if (!fallback.isEmpty()) {
                                 rv.clear();
                                 rv.addAll(fallback);
                                 if (log.shouldDebug()) {
-                                    log.debug("Fast fallback successful: found " + rv.size() + " connected peers for tunnel");
+                                    log.debug("HighCap fallback successful: found " + rv.size() + " peers for tunnel");
                                 }
                             }
 
-                            // If still not enough, try high capacity
+                            // If still not enough, try fast peers
                             if (rv.size() < min) {
                                 fallback.clear();
-                                ctx.profileOrganizer().selectHighCapacityPeers(min, exclude, fallback, 0, null);
+                                ctx.profileOrganizer().selectFastPeers(min, exclude, fallback, 0, null);
                                 fallback.remove(ctx.routerHash());
                                 if (!fallback.isEmpty()) {
                                     rv.clear();
@@ -477,7 +493,7 @@ class ClientPeerSelector extends TunnelPeerSelector {
                                     rv.clear();
                                     rv.addAll(fallback);
                                     if (log.shouldDebug()) {
-                                        log.debug("Active fallback successful: found " + rv.size() + " connected peers for tunnel");
+                                        log.debug("Active fallback successful: found " + rv.size() + " peers for tunnel");
                                     }
                                 }
                             }
@@ -797,6 +813,72 @@ class ClientPeerSelector extends TunnelPeerSelector {
         }
 
         return bestPeer;
+    }
+
+    /**
+     * Filter candidates through reliability scoring (acceptance ratio, recent test, activity, connection).
+     * Applies consistent quality filtering to any tier selection.
+     *
+     * @param candidates peers to filter
+     * @param exclude peers to exclude
+     * @param max max peers to return
+     * @return list of best peers filtered by reliability
+     */
+    protected List<Hash> filterByReliability(ArraySet<Hash> candidates, Set<Hash> exclude, int max) {
+        if (candidates == null || candidates.isEmpty() || max <= 0) {
+            return Collections.emptyList();
+        }
+        List<Hash> result = new ArrayList<>();
+        long now = ctx.clock().now();
+        long tenMinutes = 10 * 60 * 1000L;
+        long thirtyMinutes = 30 * 60 * 1000L;
+
+        for (Hash peer : candidates) {
+            if (exclude != null && exclude.contains(peer)) {
+                continue;
+            }
+            PeerProfile profile = ctx.profileOrganizer().getProfile(peer);
+            if (profile == null) {
+                continue;
+            }
+
+            double score = scorePeer(profile, now, tenMinutes, thirtyMinutes);
+            if (score > 0) {
+                result.add(peer);
+            }
+        }
+
+        result.sort((p1, p2) -> {
+            PeerProfile prof1 = ctx.profileOrganizer().getProfile(p1);
+            PeerProfile prof2 = ctx.profileOrganizer().getProfile(p2);
+            double s1 = scorePeer(prof1, now, tenMinutes, thirtyMinutes);
+            double s2 = scorePeer(prof2, now, tenMinutes, thirtyMinutes);
+            return Double.compare(s2, s1);
+        });
+
+        return result.subList(0, Math.min(max, result.size()));
+    }
+
+    private double scorePeer(PeerProfile profile, long now, long tenMinutes, long thirtyMinutes) {
+        if (profile == null) return 0;
+        double score = 0;
+        double acceptanceRatio = profile.getTunnelAcceptanceRatio();
+        if (acceptanceRatio < 0.3) return 0;
+        if (acceptanceRatio > 0.5) score += 30;
+        else if (acceptanceRatio > 0.3) score += 10;
+
+        long lastTested = profile.getLastTestedSuccessfully();
+        if (lastTested > 0 && now - lastTested < tenMinutes) score += 40;
+
+        long lastHeardFrom = profile.getLastHeardFrom();
+        long lastSendSuccessful = profile.getLastSendSuccessful();
+        if ((lastHeardFrom > 0 && now - lastHeardFrom < thirtyMinutes) ||
+            (lastSendSuccessful > 0 && now - lastSendSuccessful < thirtyMinutes)) {
+            score += 20;
+        }
+
+        if (ctx.commSystem().isEstablished(profile.getPeer())) score += 20;
+        return score;
     }
 
     private void sortByPeerQuality(List<Hash> peers, Set<Hash> exclude) {

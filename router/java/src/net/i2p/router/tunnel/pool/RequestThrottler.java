@@ -107,6 +107,25 @@ class RequestThrottler {
         String routerId = h.toBase64().substring(0, 6);
         RouterInfo ri = context.netDb().lookupRouterInfoLocally(h);
 
+        // Ban LU routers unconditionally at throttler level too
+        if (ri != null) {
+            String caps = ri.getCapabilities();
+            boolean isLowTier = caps != null && (caps.indexOf(Router.CAPABILITY_BW12) >= 0 ||
+                                            caps.indexOf(Router.CAPABILITY_BW32) >= 0);
+            boolean isUnreachable = caps != null && (caps.indexOf('U') >= 0 || caps.indexOf('R') < 0);
+            if (isLowTier && isUnreachable) {
+                if (!context.banlist().isBanlisted(h)) {
+                    if (_log.shouldWarn()) {
+                        _log.warn("Banning LU Router at throttle: " + routerId);
+                    }
+                    String ipPort = getRouterIPPort(ri);
+                    _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
+                    context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, context.clock().now() + 60*60*1000);
+                }
+                return true;
+            }
+        }
+
         // Extract router capabilities once for efficiency
         boolean isUnreachable = isUnreachable(ri);
         boolean isLowShare = isLowShare(ri);
@@ -194,30 +213,13 @@ class RequestThrottler {
         boolean isFF = false;
         String v = "unknown";
         String country = "unknown";
-        boolean isOld = false;
         long uptime = context.router().getUptime();
         long lag = context.jobQueue().getMaxLag();
         boolean highload = lag > 1000 && SystemVersion.getCPULoadAvg() > 95;
-        boolean isXG = false;
         if (ri != null) {
             isFF = ri.getCapabilities().contains("f");
             v = ri.getVersion();
             country = context.commSystem().getCountry(h);
-            isOld = VersionComparator.comp(v, "0.9.67") < 0;
-            isXG = ri.getCapabilities().contains("X") && ri.getCapabilities().contains("G");
-        }
-
-        // Early return: Blocked countries
-        Set<String> blockedCountries = getBlockedCountries();
-        if (blockedCountries.contains(country)) {
-            if (_log.shouldWarn()) {
-                _log.warn("Banning and disconnecting from [" + routerId + "] -> Blocked country: " + country);
-            }
-            String ipPort = getRouterIPPort(ri);
-            _banLogger.logBan(h, ipPort, "Blocked country: " + country, 8*60*60*1000L);
-            context.banlist().banlistRouter(h, " <b>➜</b> Blocked country: " + country, null, null, context.clock().now() + 8*60*60*1000);
-            context.commSystem().forceDisconnect(h);
-            return true;
         }
 
         // Early return: High system load
@@ -228,36 +230,10 @@ class RequestThrottler {
             return rv;
         }
 
-        // Early return: XG routers (probable botnet participants)
-        if (isXG) {
-            if (_log.shouldInfo() && !context.banlist().isBanlisted(h)) {
-                _log.info("Banning for 1h and disconnecting from [" + routerId + "] -> XG / " + v);
-            }
-            String ipPort = getRouterIPPort(ri);
-            _banLogger.logBan(h, ipPort, "XG " + (isFF ? "Floodfill " : "Router") + " (" + v + ")", 60*60*1000L);
-            context.banlist().banlistRouter(h, " <b>➜</b> XG " + (isFF ? "Floodfill " : "Router") + " (" + v + ")",
-                                            null, null, context.clock().now() + 60*60*1000);
-            context.commSystem().forceDisconnect(h);
-            return true;
-        }
-
-        // Early return: Old, low-tier, unreachable routers
-        if (isLTier && isUnreachable && isOld) {
-            if (_log.shouldInfo() && !context.banlist().isBanlisted(h)) {
-                _log.info("Banning for 1h and disconnecting from [" + routerId + "] -> Old and slow / " + v);
-            }
-            String ipPort = getRouterIPPort(ri);
-            _banLogger.logBan(h, ipPort, "Old and slow (" + v + ")", 60*60*1000L);
-            context.banlist().banlistRouter(h, " <b>➜</b> Old and slow (" + v + ")", null, null, context.clock().now() + 60*60*1000);
-            _banLogger.logBan(h, ipPort, "Old and slow (" + v + ")", 60*60*1000L);
-            context.commSystem().forceDisconnect(h);
-            return true;
-        }
-
-        // Early return: Old, unreachable or low-share routers when blocking is enabled
-        if (isOld && (isUnreachable || isLowShare) && shouldBlockOldRouters) {
+        // Early return: Low-share routers when blocking is enabled
+        if (isLowShare && shouldBlockOldRouters) {
             if (_log.shouldInfo()) {
-                _log.info("Dropping all connections from [" + routerId + "] -> Unreachable / Slow / " + v);
+                _log.info("Dropping all connections from [" + routerId + "] -> Low share / " + v);
             }
             context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);
             return true;

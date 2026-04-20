@@ -34,6 +34,7 @@ installer/resources/locale/mo
 *_jsp.java
 *.class
 ./gradle/
+./apps/i2psnark/java/i2psnark
 
 # OSX temp dirs
 launchers/common/target

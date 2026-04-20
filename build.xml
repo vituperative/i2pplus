@@ -1910,7 +1910,7 @@
       <copy quiet="true" file="installer/lib/wrapper/wrapper.config" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/lib/wrapper/wrapper.config.commented" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/resources/hosts.txt" todir="pkg-temp/"/>
-      <copy quiet="true" file="docs/INSTALL-headless.txt" todir="pkg-temp/"/>
+      <copy quiet="true" file="docs/INSTALL-headless.md" todir="pkg-temp/"/>
 
       <!-- Proxy script, windows icons etc -->
       <copy quiet="true" file="apps/proxyscript/i2pProxy.pac" todir="pkg-temp/scripts/"/>
@@ -2775,7 +2775,7 @@
     <delete dir="pkg-temp/locale/"/>
     <delete dir="pkg-temp/man/"/>
     <delete dir="pkg-temp/Start I2P Router.app/"/>
-    <delete dir="pkg-temp" includes="eepget eephead i2ping hostping graceful_update i2prouter INSTALL-headless.txt osid postinstall.sh runplain.sh"/>
+    <delete dir="pkg-temp" includes="eepget eephead i2ping hostping graceful_update i2prouter INSTALL-headless.md osid postinstall.sh runplain.sh"/>
   </target>
 
   <!-- IzPack 4 -->
@@ -3070,7 +3070,7 @@
     </path>
     <pathconvert refid="spotbugs.auxclasspath" property="spotbugs.auxclasspath.path" pathsep=":"/>
 
-    <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="config/spotbugs-exclude.xml">
+    <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="tools/spotbugs/config/spotbugs-exclude.xml">
       <auxAnalyzepath path="./build"/>
       <auxClasspath path="${spotbugs.auxclasspath.path}"/>
       <!-- Only analyze core I2P JAR files, exclude third-party heavy libraries -->
@@ -3594,7 +3594,7 @@
           <pathelement location="${system.ant.path}"/>
         </path>
         <pathconvert refid="spotbugs.auxclasspath" property="spotbugs.auxclasspath.path" pathsep=":"/>
-        <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="config/spotbugs-exclude.xml">
+        <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="tools/spotbugs/config/spotbugs-exclude.xml">
           <auxAnalyzepath path="./build"/>
           <auxClasspath path="${spotbugs.auxclasspath.path}"/>
           <class location="./build/i2p.jar"/>

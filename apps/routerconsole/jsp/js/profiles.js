@@ -162,9 +162,9 @@ import { refreshElements } from "./refreshElements.js";
       return a[0].localeCompare(b[0]);
     });
 
-    // Auto-disable categories with >= 1000 entries for performance
+    // Auto-disable categories with >= 500 entries for performance
     sorted.forEach(([reason, count]) => {
-      if (count >= 1000) { disabledReasons.add(reason); }
+      if (count >= 500) { disabledReasons.add(reason); }
     });
 
     let summaryDiv = document.getElementById("banSummary");

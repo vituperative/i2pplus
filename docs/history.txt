@@ -1,3 +1,19 @@
+2026-04-20 dr|z3d
+  * Router:
+    - Acceptance ratio for peers: demote peers with low tunnel acceptance
+    - ClientPeerSelector: add selectBestReliablePeer() for peer quality filtering;
+      enhance last hop, middle hop, and first hop selection with reliability checks;
+      improve stress fallback chain with progressive fallbacks
+    - Add setExpiration for proactive tunnel cleanup
+    - Add tunnel acceptance tracking to TunnelHistory: getAcceptanceRatio(),
+      getLastTestedSuccessfully(), incrementTestSucceeded(); add decay mechanism
+  * Console:
+    - Consolidate banned pages: remove old banned page, rely on session bans page
+    - Session bans: toggle ban reasons on page, hide by default if >=1000 bans
+  * Build:
+    - Add pmd, codeql ant targets; update ant help
+    - Refactor repo folder structure
+
 2026-03-21 dr|z3d
   * JBIGI:
     - Parallelize builds: per-CPU GMP dirs, build_one.sh helper

@@ -63,6 +63,13 @@ public class ProfileOrganizer {
     public static final int DEFAULT_MINIMUM_HIGH_CAPACITY_PEERS = 500;
     private static final int ABSOLUTE_MAX_HIGHCAP_PEERS = 800;
 
+    /** Minimum tunnel acceptance ratio (40%) to remain in high-capacity/fast tiers */
+    private static final double MIN_TUNNEL_ACCEPTANCE_RATIO = 0.4;
+    /** Minimum tunnel requests for statistical confidence */
+    private static final int MIN_TUNNEL_REQUESTS = 50;
+    /** Maximum tunnel test RTT (ms) to be eligible for fast tier */
+    private static final long MAX_RTT_FOR_FAST_TIER = 8000;
+
     public static final String PROP_MAX_PROFILES = "profileOrganizer.maxProfiles";
     public static final int DEFAULT_MAX_PROFILES = SystemVersion.isSlow() ? 800 : 1200;
     public static final int ABSOLUTE_MAX_PROFILES = 2000;
@@ -975,16 +982,24 @@ public class ProfileOrganizer {
         boolean isStrictCountry = _context.commSystem() != null && _context.commSystem().isInStrictCountry(peer);
         boolean isPeerSelectable = isSelectable(peer);
 
+        // Check tunnel acceptance ratio - demote peers with < 40% acceptance from high-cap/fast tiers
+        boolean lowTunnelAcceptance = isLowTunnelAcceptance(profile);
+        boolean highTunnelTestRTT = isHighTunnelTestRTT(profile);
+
         // Decide if peer qualifies for high-capacity tier
-        if (profile.getCapacityValue() >= effectiveCapThreshold && isPeerSelectable && !isStrictCountry) {
+        if (profile.getCapacityValue() >= effectiveCapThreshold && isPeerSelectable && !isStrictCountry && !lowTunnelAcceptance && !highTunnelTestRTT) {
             _highCapacityPeers.put(peer, profile);
 
             // Also check if peer qualifies for fast tier
-            if (profile.getSpeedValue() >= effectiveSpeedThreshold && profile.getIsActive()) {
+            if (profile.getSpeedValue() >= effectiveSpeedThreshold && profile.getIsActive() && !lowTunnelAcceptance) {
                 _fastPeers.put(peer, profile);
             }
-        } else if (_highCapacityPeers.size() < minHighCap && isPeerSelectable && !isStrictCountry) {
+        } else if (_highCapacityPeers.size() < minHighCap && isPeerSelectable && !isStrictCountry && !lowTunnelAcceptance && !highTunnelTestRTT) {
             _highCapacityPeers.put(peer, profile);
+        } else if (lowTunnelAcceptance) {
+            if (_log.shouldDebug()) {
+                _log.debug("Peer skipped from high-cap tier due to low tunnel acceptance: " + peer.toBase32().substring(0, 6));
+            }
         }
 
         // Integration tier
@@ -995,6 +1010,75 @@ public class ProfileOrganizer {
 
     private boolean shouldDrop(PeerProfile profile) {
         return false;
+    }
+
+    /**
+     * Check if peer has low tunnel acceptance ratio (< 40%)
+     * Uses persisted accept/reject counts even with low sample sizes at startup
+     */
+    private boolean isLowTunnelAcceptance(PeerProfile profile) {
+        TunnelHistory th = profile.getTunnelHistory();
+        if (th == null) return false;
+
+        long agreed = th.getLifetimeAgreedTo();
+        long rejected = th.getLifetimeRejected();
+        long totalRequests = agreed + rejected;
+
+        if (totalRequests <= 0) {
+            return false;
+        }
+
+        double ratio = (double) agreed / totalRequests;
+
+        if (totalRequests < MIN_TUNNEL_REQUESTS) {
+            double threshold = MIN_TUNNEL_ACCEPTANCE_RATIO * 2;
+            if (ratio >= threshold) return false;
+            if (_log.shouldDebug()) {
+                _log.debug("Demoting peer from fast tier (startup): " +
+                           profile.getPeer().toBase32().substring(0, 6) +
+                           " ratio: " + String.format("%.2f", ratio * 100) + "% below " + String.format("%.0f", threshold * 100) + "% threshold");
+            }
+            return true;
+        }
+
+        if (ratio >= MIN_TUNNEL_ACCEPTANCE_RATIO) return false;
+
+        if (_log.shouldDebug()) {
+            _log.debug("Demoting peer from high-cap tier due to low tunnel acceptance: " +
+                       profile.getPeer().toBase32().substring(0, 6) +
+                       " ratio: " + String.format("%.2f", ratio * 100) + "% (" + agreed + " accept / " +
+                       rejected + " reject)");
+        }
+        return true;
+    }
+
+    /**
+     * Check if peer has high tunnel test latency (> MAX_RTT_FOR_FAST_TIER ms)
+     * These peers should be excluded from fast tier to improve tunnel build success
+     */
+    private boolean isHighTunnelTestRTT(PeerProfile profile) {
+        if (profile == null) return false;
+        RateStat rs = profile.getTunnelTestResponseTime();
+        if (rs == null) return false;
+        Rate r = rs.getRate(RateConstants.ONE_MINUTE);
+        if (r == null) return false;
+        double avg = r.getAverageValue();
+        if (avg <= 0) return false;
+        return avg > MAX_RTT_FOR_FAST_TIER;
+    }
+
+    /**
+     * Get tunnel acceptance ratio for a peer
+     * @return ratio (0.0 to 1.0), or 1.0 if no data
+     */
+    private double getAcceptanceRatio(PeerProfile profile) {
+        TunnelHistory th = profile.getTunnelHistory();
+        if (th == null) return 1.0;
+        long agreed = th.getLifetimeAgreedTo();
+        long rejected = th.getLifetimeRejected();
+        long total = agreed + rejected;
+        if (total <= 0) return 1.0;
+        return (double) agreed / total;
     }
 
     protected int getMinimumFastPeers() {

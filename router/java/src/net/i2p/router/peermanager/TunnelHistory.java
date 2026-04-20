@@ -26,6 +26,8 @@ public class TunnelHistory {
     private volatile long _lastRejectedProbabalistic;
     private final AtomicLong _lifetimeFailed = new AtomicLong();
     private volatile long _lastFailed;
+    private volatile long _lastTestedSuccessfully;
+    private long _lastCoalesce = System.currentTimeMillis();
     private final RateStat _rejectRate;
     private final RateStat _failRate;
     private final String _statGroup;
@@ -39,6 +41,8 @@ public class TunnelHistory {
     public static final int TUNNEL_REJECT_BANDWIDTH = 30;
     /** tunnel rejection due to system failure - not currently used */
     public static final int TUNNEL_REJECT_CRIT = 50;
+    /** Streaming NACK - peer accepted tunnel but can't deliver data */
+    public static final int TUNNEL_REJECT_STREAMING_NACK = 100;
 
     public TunnelHistory(RouterContext context, String statGroup) {
         _context = context;
@@ -66,6 +70,31 @@ public class TunnelHistory {
     public long getLastRejectedProbabalistic() {return _lastRejectedProbabalistic;}
     /** when the last tunnel the peer participated in failed */
     public long getLastFailed() {return _lastFailed;}
+
+    /** when the peer last passed a tunnel test */
+    public long getLastTestedSuccessfully() {return _lastTestedSuccessfully;}
+
+    /**
+     * Record that a tunnel test through this peer succeeded.
+     * This indicates the peer is actively participating in working tunnels.
+     */
+    public void incrementTestSucceeded() {
+        _lastTestedSuccessfully = _context.clock().now();
+    }
+
+    /**
+     * Calculate the ratio of accepted to rejected tunnel requests.
+     * @return ratio (0.0 to 1.0), or 1.0 if no data available
+     */
+    public double getAcceptanceRatio() {
+        long agreed = _lifetimeAgreedTo.get();
+        long rejected = _lifetimeRejected.get();
+        long total = agreed + rejected;
+        if (total <= 0) {
+            return 1.0;
+        }
+        return (double) agreed / total;
+    }
 
     public void incrementProcessed(int processedSuccessfully, int failedProcessing) {} // old strict speed calculator
 
@@ -107,6 +136,23 @@ public class TunnelHistory {
         if (_log.shouldDebug()) {_log.debug("Coalescing Profile Manager stats...");}
         _rejectRate.coalesceStats();
         _failRate.coalesceStats();
+
+        long now = System.currentTimeMillis();
+        long elapsed = now - _lastCoalesce;
+        if (elapsed >= 60 * 60 * 1000) {
+            long agreed = _lifetimeAgreedTo.get();
+            long rejected = _lifetimeRejected.get();
+            if (rejected > 0) {
+                long newRejected = Math.max(0, rejected / 3);
+                if (newRejected != rejected) {
+                    _lifetimeRejected.set(newRejected);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Decayed lifetime rejected: " + rejected + " -> " + newRejected);
+                    }
+                }
+            }
+            _lastCoalesce = now;
+        }
     }
 
     private final static String NL = System.getProperty("line.separator");

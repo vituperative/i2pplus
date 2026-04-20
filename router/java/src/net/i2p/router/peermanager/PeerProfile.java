@@ -272,6 +272,26 @@ public class PeerProfile {
     public synchronized TunnelHistory getTunnelHistory() {return _tunnelHistory;}
     public synchronized void setTunnelHistory(TunnelHistory history) {_tunnelHistory = history;}
 
+    /**
+     * Tunnel acceptance ratio from tunnel history.
+     * @return ratio (0.0 to 1.0), or 1.0 if no data available
+     */
+    public double getTunnelAcceptanceRatio() {
+        TunnelHistory th = getTunnelHistory();
+        if (th == null) {return 1.0;}
+        return th.getAcceptanceRatio();
+    }
+
+    /**
+     * When the peer last passed a tunnel test successfully.
+     * @return timestamp, or 0 if never
+     */
+    public long getLastTestedSuccessfully() {
+        TunnelHistory th = getTunnelHistory();
+        if (th == null) {return 0;}
+        return th.getLastTestedSuccessfully();
+    }
+
     /** history of db activity with the peer
         Warning - may return null if !getIsExpandedDB() */
     public synchronized DBHistory getDBHistory() {return _dbHistory;}

@@ -1,5 +1,8 @@
 package net.i2p.client.naming;
 
+import net.i2p.I2PAppContext;
+import net.i2p.data.Destination;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
@@ -13,8 +16,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
-import net.i2p.I2PAppContext;
-import net.i2p.data.Destination;
 
 /**
  * A naming service of multiple naming services.
@@ -23,9 +24,8 @@ import net.i2p.data.Destination;
  */
 public class MetaNamingService extends DummyNamingService {
 
-    private final static String PROP_NAME_SERVICES = "i2p.nameservicelist";
-    private final static String DEFAULT_NAME_SERVICES =
-        "net.i2p.client.naming.HostsTxtNamingService";
+    private static final String PROP_NAME_SERVICES = "i2p.nameservicelist";
+    private static final String DEFAULT_NAME_SERVICES = "net.i2p.client.naming.HostsTxtNamingService";
 
     protected final List<NamingService> _services;
 
@@ -41,7 +41,7 @@ public class MetaNamingService extends DummyNamingService {
             try {
                 Class<?> cls = Class.forName(tok.nextToken());
                 Constructor<?> con = cls.getConstructor(I2PAppContext.class);
-                addNamingService((NamingService)con.newInstance(), false);
+                addNamingService((NamingService) con.newInstance(), false);
             } catch (Exception ex) {
             }
         }
@@ -63,11 +63,9 @@ public class MetaNamingService extends DummyNamingService {
     }
 
     @Override
-    public boolean addNamingService(NamingService ns, boolean head) {
-        if (head)
-            _services.add(0, ns);
-        else
-            _services.add(ns);
+    public final boolean addNamingService(NamingService ns, boolean head) {
+        if (head) _services.add(0, ns);
+        else _services.add(ns);
         return true;
     }
 
@@ -78,7 +76,7 @@ public class MetaNamingService extends DummyNamingService {
 
     @Override
     public boolean removeNamingService(NamingService ns) {
-        return  _services.remove(ns);
+        return _services.remove(ns);
     }
 
     @Override
@@ -99,11 +97,9 @@ public class MetaNamingService extends DummyNamingService {
     public Destination lookup(String hostname, Properties lookupOptions, Properties storedOptions) {
         // cache check is in super()
         Destination d = super.lookup(hostname, null, null);
-        if (d != null)
-            return d;
+        if (d != null) return d;
         // Base32 failed?
-        if (hostname.length() >= BASE32_HASH_LENGTH + 8 && hostname.toLowerCase(Locale.US).endsWith(".b32.i2p"))
-            return null;
+        if (hostname.length() >= BASE32_HASH_LENGTH + 8 && hostname.toLowerCase(Locale.US).endsWith(".b32.i2p")) return null;
 
         for (NamingService ns : _services) {
             d = ns.lookup(hostname, lookupOptions, storedOptions);
@@ -131,12 +127,10 @@ public class MetaNamingService extends DummyNamingService {
      */
     @Override
     public boolean put(String hostname, Destination d, Properties options) {
-        if (_services.isEmpty())
-            return false;
+        if (_services.isEmpty()) return false;
         boolean rv = _services.get(_services.size() - 1).put(hostname, d, options);
         // overwrite any previous entry in case it changed
-        if (rv)
-            putCache(hostname, d);
+        if (rv) putCache(hostname, d);
         return rv;
     }
 
@@ -145,11 +139,9 @@ public class MetaNamingService extends DummyNamingService {
      */
     @Override
     public boolean putIfAbsent(String hostname, Destination d, Properties options) {
-        if (_services.isEmpty())
-            return false;
+        if (_services.isEmpty()) return false;
         boolean rv = _services.get(_services.size() - 1).putIfAbsent(hostname, d, options);
-        if (rv)
-            putCache(hostname, d);
+        if (rv) putCache(hostname, d);
         return rv;
     }
 
@@ -160,11 +152,9 @@ public class MetaNamingService extends DummyNamingService {
     public boolean remove(String hostname, Properties options) {
         boolean rv = false;
         for (NamingService ns : _services) {
-            if (ns.remove(hostname, options))
-                rv = true;
+            if (ns.remove(hostname, options)) rv = true;
         }
-        if (rv)
-            removeCache(hostname);
+        if (rv) removeCache(hostname);
         return rv;
     }
 
@@ -175,7 +165,7 @@ public class MetaNamingService extends DummyNamingService {
     public Map<String, Destination> getEntries(Properties options) {
         Map<String, Destination> rv = new HashMap<String, Destination>();
         for (NamingService ns : _services) {
-             rv.putAll(ns.getEntries(options));
+            rv.putAll(ns.getEntries(options));
         }
         return rv;
     }
@@ -188,7 +178,7 @@ public class MetaNamingService extends DummyNamingService {
     public Map<String, String> getBase64Entries(Properties options) {
         Map<String, String> rv = new HashMap<String, String>();
         for (NamingService ns : _services) {
-             rv.putAll(ns.getBase64Entries(options));
+            rv.putAll(ns.getBase64Entries(options));
         }
         return rv;
     }
@@ -200,7 +190,7 @@ public class MetaNamingService extends DummyNamingService {
     public Set<String> getNames(Properties options) {
         Set<String> rv = new HashSet<String>();
         for (NamingService ns : _services) {
-             rv.addAll(ns.getNames(options));
+            rv.addAll(ns.getNames(options));
         }
         return rv;
     }
@@ -210,9 +200,10 @@ public class MetaNamingService extends DummyNamingService {
      *  Duplicates not removed (for efficiency)
      *  @since 0.9.20
      */
+    @Override
     public void export(Writer out, Properties options) throws IOException {
         for (NamingService ns : _services) {
-             ns.export(out, options);
+            ns.export(out, options);
         }
     }
 
@@ -223,13 +214,13 @@ public class MetaNamingService extends DummyNamingService {
     public int size(Properties options) {
         int rv = 0;
         for (NamingService ns : _services) {
-             int s = ns.size(options);
-             if (s > 0)
-                 rv += s;
+            int s = ns.size(options);
+            if (s > 0) rv += s;
         }
         return rv;
     }
 
+    @Override
     public void shutdown() {
         for (NamingService ns : _services) {
             ns.shutdown();

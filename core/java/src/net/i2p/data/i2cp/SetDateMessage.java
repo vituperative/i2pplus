@@ -9,13 +9,15 @@ package net.i2p.data.i2cp;
  *
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
 import net.i2p.data.DataFormatException;
 import net.i2p.data.DataHelper;
 import net.i2p.util.ByteArrayStream;
 import net.i2p.util.Clock;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.Date;
 
 /**
  * Tell the other side what time it is.
@@ -24,13 +26,13 @@ import net.i2p.util.Clock;
  * Since 0.8.7, optionally include a version string.
  */
 public class SetDateMessage extends I2CPMessageImpl {
-    public final static int MESSAGE_TYPE = 33;
+    public static final int MESSAGE_TYPE = 33;
     private Date _date;
     private String _version;
 
     public SetDateMessage() {
         super();
-        _date = new Date(Clock.getInstance().now());
+        _date = Date.from(Instant.ofEpochMilli(Clock.getInstance().now()));
     }
 
     /**
@@ -42,23 +44,31 @@ public class SetDateMessage extends I2CPMessageImpl {
         _version = version;
     }
 
-    public Date getDate() {return _date;}
+    public Date getDate() {
+        return _date;
+    }
 
-    public void setDate(Date date) {_date = date;}
+    public void setDate(Date date) {
+        _date = date;
+    }
 
     /**
-      *  Gets the protocol version.
-      *
-      *  @return may be null
-      *  @since 0.8.7
-      */
-    public String getVersion() {return _version;}
+     *  Gets the protocol version.
+     *
+     *  @return may be null
+     *  @since 0.8.7
+     */
+    public String getVersion() {
+        return _version;
+    }
 
     @Override
     protected void doReadMessage(InputStream in, int size) throws I2CPMessageException, IOException {
         try {
             _date = DataHelper.readDate(in);
-            if (size > DataHelper.DATE_LENGTH) {_version = DataHelper.readString(in);}
+            if (size > DataHelper.DATE_LENGTH) {
+                _version = DataHelper.readString(in);
+            }
         } catch (DataFormatException dfe) {
             throw new I2CPMessageException("Unable to load the message data", dfe);
         }
@@ -72,7 +82,9 @@ public class SetDateMessage extends I2CPMessageImpl {
         ByteArrayStream os = new ByteArrayStream(8 + 1 + 6);
         try {
             DataHelper.writeDate(os, _date);
-            if (_version != null) {DataHelper.writeString(os, _version);}
+            if (_version != null) {
+                DataHelper.writeString(os, _version);
+            }
         } catch (DataFormatException dfe) {
             throw new I2CPMessageException("Error writing out the message data", dfe);
         }
@@ -80,15 +92,16 @@ public class SetDateMessage extends I2CPMessageImpl {
     }
 
     @Override
-    public int getType() {return MESSAGE_TYPE;}
+    public int getType() {
+        return MESSAGE_TYPE;
+    }
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append("SetDateMessage: ");
         buf.append(_date);
         buf.append(" [Version: ").append(_version).append("]");
         return buf.toString();
     }
-
 }

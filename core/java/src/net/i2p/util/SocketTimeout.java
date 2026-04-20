@@ -2,7 +2,7 @@ package net.i2p.util;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  *  Implements one or two timers; one for inactivity, that is reset by resetTimer(),
@@ -33,7 +33,9 @@ public class SocketTimeout extends SimpleTimer2.TimedEvent {
     /**
      *  @param delay The inactivity delay, greater than zero
      */
-    public SocketTimeout(long delay) { this(null, delay); }
+    public SocketTimeout(long delay) {
+        this(null, delay);
+    }
 
     /**
      *  If socket is non-null, or is set later by setSocket(),
@@ -50,16 +52,16 @@ public class SocketTimeout extends SimpleTimer2.TimedEvent {
         schedule(delay);
     }
 
+    @Override
     public void timeReached() {
         if (_cancelled) return;
         long now = System.currentTimeMillis();
-        if ((_totalTimeoutTime > 0 && _totalTimeoutTime <= now) ||
-            (_inactivityDelay + _lastActivity <= now)) {
+        if ((_totalTimeoutTime > 0 && _totalTimeoutTime <= now) || (_inactivityDelay + _lastActivity <= now)) {
             if (_targetSocket != null) {
                 try {
-                    if (!_targetSocket.isClosed())
-                        _targetSocket.close();
-                } catch (IOException ioe) {}
+                    if (!_targetSocket.isClosed()) _targetSocket.close();
+                } catch (IOException ioe) {
+                }
             }
             if (_command != null) _command.run();
         } else {
@@ -76,6 +78,7 @@ public class SocketTimeout extends SimpleTimer2.TimedEvent {
      *  0.9.3 accidentally broke Syndie, sorry.
      *  Recompile Syndie to fix it.
      */
+    @Override
     public boolean cancel() {
         _cancelled = true;
         return super.cancel();
@@ -84,19 +87,25 @@ public class SocketTimeout extends SimpleTimer2.TimedEvent {
     /**
      *  If non-null, will be closed when the timer expires.
      */
-    public void setSocket(Socket s) { _targetSocket = s; }
+    public void setSocket(Socket s) {
+        _targetSocket = s;
+    }
 
     /**
      *  Call when there is activity
      */
-    public void resetTimer() { _lastActivity = System.currentTimeMillis();  }
+    public void resetTimer() {
+        _lastActivity = System.currentTimeMillis();
+    }
 
     /**
      *  Changes the delay provided in the constructor
      *
      *  @param delay greater than zero
      */
-    public void setInactivityTimeout(long delay) { _inactivityDelay = delay; }
+    public void setInactivityTimeout(long delay) {
+        _inactivityDelay = delay;
+    }
 
     /**
      *  If greater than zero, must be greater than the inactivity timeout.
@@ -104,27 +113,26 @@ public class SocketTimeout extends SimpleTimer2.TimedEvent {
      *  @param timeoutPeriod Time since constructed, or less than or equal to zero to disable
      */
     public void setTotalTimeoutPeriod(long timeoutPeriod) {
-        if (timeoutPeriod > 0)
-            _totalTimeoutTime = _startTime + timeoutPeriod;
-        else
-            _totalTimeoutTime = 0;
+        if (timeoutPeriod > 0) _totalTimeoutTime = _startTime + timeoutPeriod;
+        else _totalTimeoutTime = 0;
     }
 
     /**
      *  If non-null, will be run when the timer expires.
      */
-    public void setTimeoutCommand(Runnable job) { _command = job; }
+    public void setTimeoutCommand(Runnable job) {
+        _command = job;
+    }
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append("SocketTimeout started on ");
-        buf.append(new Date(_startTime));
+        buf.append(Instant.ofEpochMilli(_startTime));
         buf.append(" idle for ");
         buf.append(System.currentTimeMillis() - _lastActivity);
         buf.append("ms ");
-        if (_totalTimeoutTime > 0)
-            buf.append("total timeout at ").append(new Date(_totalTimeoutTime));
+        if (_totalTimeoutTime > 0) buf.append("total timeout at ").append(Instant.ofEpochMilli(_totalTimeoutTime));
         buf.append("cancelled? ").append(_cancelled);
         return buf.toString();
     }

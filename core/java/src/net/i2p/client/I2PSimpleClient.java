@@ -5,16 +5,17 @@ package net.i2p.client;
  * with no warranty of any kind, either expressed or implied.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
 import net.i2p.I2PAppContext;
 import net.i2p.I2PException;
 import net.i2p.client.impl.I2PSimpleSession;
 import net.i2p.crypto.SigType;
 import net.i2p.data.Certificate;
 import net.i2p.data.Destination;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 
 /**
  * Simple client implementation with no Destination,
@@ -27,6 +28,7 @@ public class I2PSimpleClient implements I2PClient {
      *  @throws UnsupportedOperationException always
      */
     @Deprecated
+    @Override
     public Destination createDestination(OutputStream destKeyStream) throws I2PException, IOException {
         throw new UnsupportedOperationException();
     }
@@ -37,6 +39,7 @@ public class I2PSimpleClient implements I2PClient {
      *  @since 0.9.12
      */
     @Deprecated
+    @Override
     public Destination createDestination(OutputStream destKeyStream, SigType type) throws I2PException, IOException {
         throw new UnsupportedOperationException();
     }
@@ -46,6 +49,7 @@ public class I2PSimpleClient implements I2PClient {
      *  @throws UnsupportedOperationException always
      */
     @Deprecated
+    @Override
     public Destination createDestination(OutputStream destKeyStream, Certificate cert) throws I2PException, IOException {
         throw new UnsupportedOperationException();
     }
@@ -54,6 +58,7 @@ public class I2PSimpleClient implements I2PClient {
      * Create a new session (though do not connect it yet)
      *
      */
+    @Override
     public I2PSession createSession(InputStream destKeyStream, Properties options) throws I2PSessionException {
         return createSession(I2PAppContext.getGlobalContext(), options);
     }

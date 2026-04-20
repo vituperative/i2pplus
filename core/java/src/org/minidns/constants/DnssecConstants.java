@@ -25,8 +25,7 @@ public final class DnssecConstants {
     /**
      * Do not allow to instantiate DNSSECConstants
      */
-    private DnssecConstants() {
-    }
+    private DnssecConstants() {}
 
     private static final Map<Byte, SignatureAlgorithm> SIGNATURE_ALGORITHM_LUT = new HashMap<>();
 

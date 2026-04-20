@@ -31,8 +31,11 @@ class MessagePayloadMessageHandler extends HandlerImpl {
         super(context, MessagePayloadMessage.MESSAGE_TYPE);
     }
 
+    @Override
     public void handleMessage(I2CPMessage message, I2PSessionImpl session) {
-        if (_log.shouldDebug()) {_log.debug("Handling " + message + "\n* Session: " + session);}
+        if (_log.shouldDebug()) {
+            _log.debug("Handling " + message + "\n* Session: " + session);
+        }
         try {
             MessagePayloadMessage msg = (MessagePayloadMessage) message;
             long id = msg.getMessageId();
@@ -67,18 +70,18 @@ class MessagePayloadMessageHandler extends HandlerImpl {
      */
     private Payload decryptPayload(MessagePayloadMessage msg, I2PSessionImpl session) throws DataFormatException {
         Payload payload = msg.getPayload();
-        //if (!I2CPMessageProducer.END_TO_END_CRYPTO) {
-            payload.setUnencryptedData(payload.getEncryptedData());
-            return payload;
-        //}
+        // if (!I2CPMessageProducer.END_TO_END_CRYPTO) {
+        payload.setUnencryptedData(payload.getEncryptedData());
+        return payload;
+        // }
 
-        //byte[] data = _context.elGamalAESEngine().decrypt(payload.getEncryptedData(), session.getDecryptionKey());
-        //if (data == null) {
+        // byte[] data = _context.elGamalAESEngine().decrypt(payload.getEncryptedData(), session.getDecryptionKey());
+        // if (data == null) {
         //    if (_log.shouldWarn())
         //        _log.warn("Error decrypting the payload");
         //    throw new DataFormatException("Unable to decrypt the payload");
-        //}
-        //payload.setUnencryptedData(data);
-        //return payload;
+        // }
+        // payload.setUnencryptedData(data);
+        // return payload;
     }
 }

@@ -10,6 +10,7 @@ package net.i2p.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -39,8 +40,7 @@ public class DateAndFlags extends DataStructureImpl {
      *  @param flags 0 - 65535
      */
     public DateAndFlags(long date, int flags) {
-        if (flags < 0 || flags > 65535)
-            throw new IllegalArgumentException();
+        if (flags < 0 || flags > 65535) throw new IllegalArgumentException();
         _flags = flags;
         _date = date;
     }
@@ -49,8 +49,7 @@ public class DateAndFlags extends DataStructureImpl {
      *  @param flags 0 - 65535
      */
     public DateAndFlags(Date date, int flags) {
-        if (flags < 0 || flags > 65535)
-            throw new IllegalArgumentException();
+        if (flags < 0 || flags > 65535) throw new IllegalArgumentException();
         _flags = flags;
         _date = date.getTime();
     }
@@ -60,13 +59,12 @@ public class DateAndFlags extends DataStructureImpl {
     }
 
     /**
-      *  Sets the flags value.
-      *
-      *  @param flags 0 - 65535
-      */
+     *  Sets the flags value.
+     *
+     *  @param flags 0 - 65535
+     */
     public void setFlags(int flags) {
-        if (flags < 0 || flags > 65535)
-            throw new IllegalArgumentException();
+        if (flags < 0 || flags > 65535) throw new IllegalArgumentException();
         _flags = flags;
     }
 
@@ -75,7 +73,7 @@ public class DateAndFlags extends DataStructureImpl {
      *  Use getTime() if you only need the long value.
      */
     public Date getDate() {
-        return new Date(_date);
+        return Date.from(Instant.ofEpochMilli(_date));
     }
 
     public long getTime() {
@@ -132,7 +130,6 @@ public class DateAndFlags extends DataStructureImpl {
         if ((object == null) || !(object instanceof DateAndFlags)) return false;
         DateAndFlags daf = (DateAndFlags) object;
         return _date == daf._date && _flags == daf._flags;
-
     }
 
     @Override
@@ -142,9 +139,9 @@ public class DateAndFlags extends DataStructureImpl {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(64);
+        StringBuilder buf = new StringBuilder(64); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append("[DateAndFlags: ");
-        buf.append("\n\tDate: ").append((new Date(_date)).toString());
+        buf.append("\n\tDate: ").append(Instant.ofEpochMilli(_date));
         buf.append("\n\tFlags: 0x").append(Integer.toHexString(_flags));
         buf.append("]");
         return buf.toString();

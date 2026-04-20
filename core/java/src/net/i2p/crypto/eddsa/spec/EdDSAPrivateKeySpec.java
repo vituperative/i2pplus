@@ -11,11 +11,12 @@
  */
 package net.i2p.crypto.eddsa.spec;
 
+import net.i2p.crypto.eddsa.math.GroupElement;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import net.i2p.crypto.eddsa.math.GroupElement;
 
 /**
  * EdDSA private key specification.
@@ -36,8 +37,7 @@ public class EdDSAPrivateKeySpec implements KeySpec {
      */
     public EdDSAPrivateKeySpec(byte[] seed, EdDSAParameterSpec spec) {
         int bd8 = spec.getCurve().getField().getb() / 8;
-        if (seed.length != bd8)
-            throw new IllegalArgumentException("seed length is wrong");
+        if (seed.length != bd8) throw new IllegalArgumentException("seed length is wrong");
 
         this.spec = spec;
         this.seed = seed;
@@ -49,7 +49,7 @@ public class EdDSAPrivateKeySpec implements KeySpec {
             h = hash.digest(seed);
 
             /*a = BigInteger.valueOf(2).pow(b-2);
-            for (int i=3;i<(b-2);i++) {
+            for (int i=3; i<(b-2); i++) {
                 a = a.add(BigInteger.valueOf(2).pow(i).multiply(BigInteger.valueOf(Utils.bit(h,i))));
             }*/
             // Saves ~0.4ms per key when running signing tests.
@@ -76,13 +76,12 @@ public class EdDSAPrivateKeySpec implements KeySpec {
      */
     public EdDSAPrivateKeySpec(EdDSAParameterSpec spec, byte[] h) {
         int bd4 = spec.getCurve().getField().getb() / 4;
-        if (h.length != bd4)
-            throw new IllegalArgumentException("hash length is wrong");
+        if (h.length != bd4) throw new IllegalArgumentException("hash length is wrong");
         int bd8 = bd4 / 2;
 
-	this.seed = null;
-	this.h = h;
-	this.spec = spec;
+        this.seed = null;
+        this.h = h;
+        this.spec = spec;
 
         h[0] &= 248;
         h[bd8 - 1] &= 63;
@@ -115,14 +114,14 @@ public class EdDSAPrivateKeySpec implements KeySpec {
      *  @throws IllegalArgumentException if a not clamped or reduced
      */
     public EdDSAPrivateKeySpec(byte[] seed, byte[] h, byte[] a, GroupElement A, EdDSAParameterSpec spec) {
-/**
-        // TODO if we move RedDSA to a different spec
-        int bd8m1 = (spec.getCurve().getField().getb() / 8) - 1;
-        if ((a[0] & 0x07) != 0 ||
-            (a[bd8m1] & 0xc0) != 0x40)
-            throw new IllegalArgumentException("a not clamped: a[0]=0x" + Integer.toString(a[0] & 0xff, 16) +
-                                                             " a[31]=0x" + Integer.toString(a[31] & 0xff, 16));
-**/
+        /**
+         * // TODO if we move RedDSA to a different spec
+         * int bd8m1 = (spec.getCurve().getField().getb() / 8) - 1;
+         * if ((a[0] & 0x07) != 0 ||
+         * (a[bd8m1] & 0xc0) != 0x40)
+         * throw new IllegalArgumentException("a not clamped: a[0]=0x" + Integer.toString(a[0] & 0xff, 16) +
+         * " a[31]=0x" + Integer.toString(a[31] & 0xff, 16));
+         **/
         this.seed = seed;
         this.h = h;
         this.a = a;

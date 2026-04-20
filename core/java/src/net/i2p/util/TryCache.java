@@ -52,9 +52,8 @@ public class TryCache<T> {
     public void release(T item) {
         if (DEBUG_DUP) {
             for (T existing : items) {
-                if (existing == item) {
-                    net.i2p.I2PAppContext.getGlobalContext().logManager().getLog(TryCache.class).log(Log.CRIT,
-                        "Duplicate release of " + item.getClass(), new Exception("Duplicate release"));
+                if (existing == item) { // NOPMD - CompareObjectsWithEquals (identity check for duplicate release)
+                    net.i2p.I2PAppContext.getGlobalContext().logManager().getLog(TryCache.class).log(Log.CRIT, "Duplicate release of " + item.getClass(), new Exception("Duplicate release"));
                     return;
                 }
             }

@@ -1,22 +1,24 @@
 package net.i2p.crypto;
 
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.concurrent.LinkedBlockingQueue;
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import net.i2p.I2PAppContext;
 import net.i2p.data.DataHelper;
 import net.i2p.data.SessionKey;
 
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+
 /**
  * HMAC-SHA256 message authentication code generator for I2P cryptographic operations.
- * 
+ *
  * This class provides HMAC-SHA256 calculation using the standard JCA Mac interface,
  * ensuring compatibility with {@code javax.crypto.Mac.getInstance("HmacSHA256")}.
  * It offers both one-shot calculation and streaming operations for different use cases.
- * 
+ *
  * <p>Key features:</p>
  * <ul>
  *   <li>HMAC-SHA256 algorithm implementation for message authentication</li>
@@ -95,8 +97,7 @@ public final class HMAC256Generator extends HMACGenerator {
      *  @since 0.9.12 overrides HMACGenerator
      */
     @Override
-    public boolean verify(SessionKey key, byte curData[], int curOffset, int curLength,
-                          byte origMAC[], int origMACOffset, int origMACLength) {
+    public boolean verify(SessionKey key, byte curData[], int curOffset, int curLength, byte origMAC[], int origMACOffset, int origMACLength) {
         byte calc[] = acquireTmp();
         calculate(key, curData, curOffset, curLength, calc, 0);
         boolean eq = DataHelper.eq(calc, 0, origMAC, origMACOffset, origMACLength);
@@ -129,8 +130,8 @@ public final class HMAC256Generator extends HMACGenerator {
      *  @since 0.9.48
      */
     void release(Mac mac) {
-         if (CACHE) {
-             try {
+        if (CACHE) {
+            try {
                 mac.init(ZERO_KEY);
             } catch (GeneralSecurityException e) {
                 return;
@@ -141,12 +142,12 @@ public final class HMAC256Generator extends HMACGenerator {
 
     /**
      * Performance-optimized SecretKey implementation for HMAC operations.
-     * 
+     *
      * This class provides an efficient SecretKey implementation that avoids
      * unnecessary key data copying during construction for improved performance.
      * Unlike standard SecretKeySpec, this implementation maintains a direct reference
      * to the key data while maintaining compatibility with Mac operations.
-     * 
+     *
      * <p><strong>Implementation Note:</strong> getEncoded() returns a copy of the
      * first 32 bytes because the Mac class requires this behavior for proper
      * operation. The full key data may be longer than 32 bytes.</p>
@@ -156,14 +157,23 @@ public final class HMAC256Generator extends HMACGenerator {
     static final class HMACKey implements SecretKey {
         private final byte[] _data;
 
-        public HMACKey(byte[] data) { _data = data; }
+        public HMACKey(byte[] data) {
+            _data = data;
+        }
 
         @Override
-        public String getAlgorithm() { return "HmacSHA256"; }
+        public String getAlgorithm() {
+            return "HmacSHA256";
+        }
+
         @Override
-        public byte[] getEncoded() { return Arrays.copyOf(_data, 32); }
+        public byte[] getEncoded() {
+            return Arrays.copyOf(_data, 32);
+        }
+
         @Override
-        public String getFormat() { return "RAW"; }
+        public String getFormat() {
+            return "RAW";
+        }
     }
-
 }

@@ -5,14 +5,6 @@ package net.i2p.client.impl;
  * with no warranty of any kind, either expressed or implied.
  */
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
-import java.util.Properties;
 import net.i2p.CoreVersion;
 import net.i2p.I2PAppContext;
 import net.i2p.client.I2PClient;
@@ -30,6 +22,15 @@ import net.i2p.util.I2PSSLSocketFactory;
 import net.i2p.util.OrderedProperties;
 import net.i2p.util.SystemVersion;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.util.Properties;
+
 /**
  * Create a new session for doing naming and bandwidth queries only. Do not create a Destination.
  * Don't create a producer. Do not send/receive messages to other Destinations.
@@ -38,6 +39,7 @@ import net.i2p.util.SystemVersion;
  *
  * @author zzz
  */
+@SuppressWarnings("PMD.CloseResource")
 public class I2PSimpleSession extends I2PSessionImpl2 {
 
     private static final int BUF_SIZE = 1024;
@@ -66,13 +68,12 @@ public class I2PSimpleSession extends I2PSessionImpl2 {
         boolean success = false;
         try {
             // protect w/ closeSocket()
-            synchronized(_stateLock) {
+            synchronized (_stateLock) {
                 // If we are in the router JVM, connect using the interal queue
                 if (_context.isRouterContext()) {
                     // _socket and _writer remain null
                     InternalClientManager mgr = _context.internalClientManager();
-                    if (mgr == null)
-                        throw new I2PSessionException("Router is not ready for connections");
+                    if (mgr == null) throw new I2PSessionException("Router is not ready for connections");
                     // the following may throw an I2PSessionException
                     _queue = mgr.connect();
                     _reader = new QueuedI2CPMessageReader(_queue, this);
@@ -132,8 +133,7 @@ public class I2PSimpleSession extends I2PSessionImpl2 {
             // we do not receive payload messages, so we do not need an AvailabilityNotifier
             // ... or an Idle timer, or a VerifyUsage
             success = true;
-            if (_log.shouldInfo())
-                _log.info(getPrefix() + " -> SimpleSession connected");
+            if (_log.shouldInfo()) _log.info(getPrefix() + " -> SimpleSession connected");
         } catch (InterruptedException ie) {
             throw new I2PSessionException("Interrupted", ie);
         } catch (UnknownHostException uhe) {
@@ -141,13 +141,9 @@ public class I2PSimpleSession extends I2PSessionImpl2 {
         } catch (IOException ioe) {
             // Generate the best error message as this will be logged
             String msg;
-            if (_context.isRouterContext())
-                msg = "Failed internal router binding";
-            else if (SystemVersion.isAndroid() &&
-                    Boolean.parseBoolean(getOptions().getProperty(PROP_DOMAIN_SOCKET)))
-                msg = "Failed to bind to the router";
-            else
-                msg = "Cannot connect to the router on " + _hostname + ':' + _portNum;
+            if (_context.isRouterContext()) msg = "Failed internal router binding";
+            else if (SystemVersion.isAndroid() && Boolean.parseBoolean(getOptions().getProperty(PROP_DOMAIN_SOCKET))) msg = "Failed to bind to the router";
+            else msg = "Cannot connect to the router on " + _hostname + ':' + _portNum;
             throw new I2PSessionException(getPrefix() + msg, ioe);
         } finally {
             changeState(success ? State.OPEN : State.CLOSED);

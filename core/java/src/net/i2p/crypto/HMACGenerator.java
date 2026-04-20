@@ -6,12 +6,12 @@ import net.i2p.util.SimpleByteCache;
 
 /**
  * Abstract base class for HMAC (Hash-based Message Authentication Code) operations.
- * 
+ *
  * This class provides the foundation for HMAC algorithm implementations
  * used throughout I2P for message authentication and integrity verification.
  * It defines the standard interface for calculating and verifying HMAC values
  * with various hash algorithms.
- * 
+ *
  * <p>Key operations include:</p>
  * <ul>
  *   <li>HMAC calculation with given key and message data</li>
@@ -56,9 +56,7 @@ public abstract class HMACGenerator {
      * @param origMACLength how much of the MAC do we want to verify
      * @throws IllegalArgumentException for bad key
      */
-    public abstract boolean verify(SessionKey key, byte curData[], int curOffset, int curLength,
-                                   byte origMAC[], int origMACOffset, int origMACLength);
-
+    public abstract boolean verify(SessionKey key, byte curData[], int curOffset, int curLength, byte origMAC[], int origMACOffset, int origMACLength);
 
     /**
      * 32 bytes from the byte array cache.

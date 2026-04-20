@@ -9,11 +9,11 @@ import net.i2p.data.SimpleDataStructure;
 
 /**
  * SHA-512 secure hash algorithm implementation.
- * 
+ *
  * This class provides the SHA-512 hash algorithm as specified in FIPS PUB 180-4,
  * producing a 64-byte (512-bit) message digest. SHA-512 offers the highest
  * security level in the SHA-2 family with excellent performance characteristics.
- * 
+ *
  * <p>Common uses in I2P include:</p>
  * <ul>
  *   <li>Maximum security requirements for sensitive operations</li>
@@ -26,7 +26,7 @@ import net.i2p.data.SimpleDataStructure;
  */
 public class Hash512 extends SimpleDataStructure {
 
-    public final static int HASH_LENGTH = 64;
+    public static final int HASH_LENGTH = 64;
 
     public Hash512() {
         super();
@@ -37,6 +37,7 @@ public class Hash512 extends SimpleDataStructure {
         super(data);
     }
 
+    @Override
     public int length() {
         return HASH_LENGTH;
     }

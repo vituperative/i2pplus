@@ -9,6 +9,8 @@
 
 package net.i2p.util;
 
+import net.i2p.I2PAppContext;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,7 +20,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import net.i2p.I2PAppContext;
 
 /**
  * Passes a command to the OS shell for execution and manages the input and
@@ -28,19 +29,20 @@ import net.i2p.I2PAppContext;
  *
  * @author hypercubus
  */
+@SuppressWarnings("PMD.CloseResource")
 public class ShellCommand {
 
-    private static final boolean CONSUME_OUTPUT    = true;
+    private static final boolean CONSUME_OUTPUT = true;
     private static final boolean NO_CONSUME_OUTPUT = false;
 
-    private static final boolean WAIT_FOR_EXIT_STATUS    = true;
+    private static final boolean WAIT_FOR_EXIT_STATUS = true;
     private static final boolean NO_WAIT_FOR_EXIT_STATUS = false;
 
     // Following are unused, only for NO_CONSUME_OUTPUT;
     // need synchronization or volatile or something if we start using it.
-    private InputStream   _errorStream;
-    private InputStream   _inputStream;
-    private OutputStream  _outputStream;
+    private InputStream _errorStream;
+    private InputStream _inputStream;
+    private OutputStream _outputStream;
 
     /** @since 0.9.3 */
     private static class Result {
@@ -106,7 +108,7 @@ public class ShellCommand {
         }
     }
 
-    private final static int BUFFER_SIZE = 1024;
+    private static final int BUFFER_SIZE = 1024;
 
     /**
      * Reads data from a <code>java.io.InputStream</code> and writes it to
@@ -127,14 +129,11 @@ public class ShellCommand {
 
         @Override
         public void run() {
-            char[] buffer    = new char[BUFFER_SIZE];
-            int    bytesRead;
+            char[] buffer = new char[BUFFER_SIZE];
+            int bytesRead;
 
             try {
-                while (true)
-                    while ((bytesRead = bufferedReader.read(buffer, 0, BUFFER_SIZE)) != -1)
-                        for (int i = 0; i < bytesRead; i++)
-                            System.out.print(buffer[i]);  // TODO Pipe this to the calling thread instead of STDOUT
+                while (true) while ((bytesRead = bufferedReader.read(buffer, 0, BUFFER_SIZE)) != -1) for (int i = 0; i < bytesRead; i++) System.out.print(buffer[i]); // TODO Pipe this to the calling thread instead of STDOUT
 
             } catch (IOException e) {
                 // Don't bother.
@@ -246,9 +245,8 @@ public class ShellCommand {
         commandThread.start();
         try {
             if (seconds > 0) {
-                commandThread.join(seconds * 1000);
-                if (commandThread.isAlive())
-                    return true;
+                commandThread.join(seconds * 1000L);
+                if (commandThread.isAlive()) return true;
             }
         } catch (InterruptedException e) {
             // Wake up, time to die.
@@ -376,16 +374,14 @@ public class ShellCommand {
             if (seconds > 0) {
                 commandThread.join(seconds * 1000);
                 if (commandThread.isAlive()) {
-                    if (log.shouldDebug())
-                        log.debug("ShellCommand gave up waiting for \"" + name + "\" after " + seconds + " seconds");
+                    if (log.shouldDebug()) log.debug("ShellCommand gave up waiting for \"" + name + "\" after " + seconds + " seconds");
                     return true;
                 }
             }
         } catch (InterruptedException e) {
             // Wake up, time to die.
         }
-        if (log.shouldDebug())
-            log.debug("ShellCommand returning " + result.commandSuccessful + " for \"" + name + "\" after " + (System.currentTimeMillis() - begin) + " ms");
+        if (log.shouldDebug()) log.debug("ShellCommand returning " + result.commandSuccessful + " for \"" + name + "\" after " + (System.currentTimeMillis() - begin) + " ms");
         return result.commandSuccessful;
     }
 
@@ -415,9 +411,11 @@ public class ShellCommand {
             System.err.println("Usage: ShellCommand commandline");
             return;
         }
-	try {
+        try {
             Runtime.getRuntime().exec(args);
-	} catch (IOException ioe) { ioe.printStackTrace(); }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
         return;
     }
 
@@ -427,14 +425,13 @@ public class ShellCommand {
      */
     private boolean execute(Object shellCommand, boolean consumeOutput, boolean waitForExitStatus) {
         Process process;
-        String name = null;  // for debugging only
+        String name = null; // for debugging only
         Log log = I2PAppContext.getGlobalContext().logManager().getLog(ShellCommand.class);
         try {
             // easy way so we don't have to copy this whole method
             if (shellCommand instanceof String) {
                 name = (String) shellCommand;
-                if (log.shouldDebug())
-                    log.debug("ShellCommand exec \"" + name + "\" consume? " + consumeOutput + " wait? " + waitForExitStatus);
+                if (log.shouldDebug()) log.debug("ShellCommand exec \"" + name + "\" consume? " + consumeOutput + " wait? " + waitForExitStatus);
                 process = Runtime.getRuntime().exec(name);
             } else if (shellCommand instanceof String[]) {
                 String[] arr = (String[]) shellCommand;
@@ -444,7 +441,7 @@ public class ShellCommand {
                 }
                 process = Runtime.getRuntime().exec(arr);
             } else {
-               throw new ClassCastException("shell command must be a String or a String[]");
+                throw new ClassCastException("shell command must be a String or a String[]");
             }
             if (consumeOutput) {
                 Thread processStderrConsumer = new StreamConsumer(process.getErrorStream());
@@ -464,26 +461,21 @@ public class ShellCommand {
                 processStdoutReader.start();
             }
             if (waitForExitStatus) {
-                if (log.shouldDebug())
-                    log.debug("ShellCommand waiting for \"" + name + '\"');
+                if (log.shouldDebug()) log.debug("ShellCommand waiting for \"" + name + '\"');
                 try {
                     process.waitFor();
                 } catch (InterruptedException e) {
                     if (log.shouldWarn()) {
                         log.warn("ShellCommand exception waiting for \"" + name + '"', e);
                     }
-                    if (!consumeOutput)
-                        killStreams();
+                    if (!consumeOutput) killStreams();
                     return false;
                 }
 
-                if (!consumeOutput)
-                    killStreams();
+                if (!consumeOutput) killStreams();
 
-                if (log.shouldDebug())
-                    log.debug("ShellCommand exit value is " + process.exitValue() + " for \"" + name + '\"');
-                if (process.exitValue() > 0)
-                    return false;
+                if (log.shouldDebug()) log.debug("ShellCommand exit value is " + process.exitValue() + " for \"" + name + '\"');
+                if (process.exitValue() > 0) return false;
             }
         } catch (IOException e) {
             // probably IOException, file not found from exec()

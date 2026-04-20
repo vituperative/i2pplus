@@ -12,6 +12,7 @@ import java.util.Comparator;
  */
 public class VersionComparator implements Comparator<String>, Serializable {
 
+    @Override
     public int compare(String l, String r) {
         return comp(l, r);
     }
@@ -21,54 +22,48 @@ public class VersionComparator implements Comparator<String>, Serializable {
      *  @since 0.9.7
      */
     public static int comp(String l, String r) {
-        if (l.equals(r))
-            return 0;
+        if (l.equals(r)) return 0;
 
         final int ll = l.length();
         final int rl = r.length();
         int il = 0, ir = 0;
         int nl = 0, nr = 0;
 
-        while(true) {
+        while (true) {
 
             // are we at end of strings?
             if (il >= ll) {
-                if (ir >= rl)
-                    return 0;
+                if (ir >= rl) return 0;
                 return -1;
-            } else if (ir >= rl)
-                return 1;
+            } else if (ir >= rl) return 1;
 
             long lv = -1;
-            while(lv == -1 && il < ll) {
+            while (lv == -1 && il < ll) {
                 nl = nextSeparator(l, il);
-                lv = parseLong(l,il,nl);
+                lv = parseLong(l, il, nl);
                 il = nl + 1;
             }
 
             long rv = -1;
-            while(rv == -1 && ir < rl) {
+            while (rv == -1 && ir < rl) {
                 nr = nextSeparator(r, ir);
-                rv = parseLong(r,ir,nr);
+                rv = parseLong(r, ir, nr);
                 ir = nr + 1;
             }
 
-            if (lv < rv)
-                return -1;
-            else if (lv > rv)
-                return 1;
-
+            if (lv < rv) return -1;
+            else if (lv > rv) return 1;
         }
     }
 
     private static boolean isSeparator(char c) {
-        switch(c) {
-        case '.':
-        case '_':
-        case '-':
-            return true;
-        default :
-            return false;
+        switch (c) {
+            case '.':
+            case '_':
+            case '-':
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -86,9 +81,8 @@ public class VersionComparator implements Comparator<String>, Serializable {
      * @return the index of the next separator character, or end of string.
      */
     private static int nextSeparator(String s, int start) {
-        while( start < s.length()) {
-            if (isSeparator(s.charAt(start)))
-                return start;
+        while (start < s.length()) {
+            if (isSeparator(s.charAt(start))) return start;
             start++;
         }
         return start;
@@ -106,13 +100,11 @@ public class VersionComparator implements Comparator<String>, Serializable {
         boolean parsedAny = false;
         for (int i = start; i < end && rv >= 0; i++) {
             final char c = s.charAt(i);
-            if (!isDigit(c))
-                continue;
+            if (!isDigit(c)) continue;
             parsedAny = true;
             rv = rv * 10 + getDigit(c);
         }
-        if (!parsedAny)
-            return -1;
+        if (!parsedAny) return -1;
         return rv;
     }
 }

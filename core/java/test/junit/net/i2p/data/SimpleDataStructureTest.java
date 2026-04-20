@@ -1,4 +1,5 @@
 package net.i2p.data;
+
 /*
  * free (adj.): unencumbered; not under the control of others
  * Written by jrandom in 2003 and released into the public domain
@@ -28,7 +29,7 @@ public class SimpleDataStructureTest {
         struct.setData(null);
 
         // set data to something
-        struct.setData(new byte[3]);
+        struct.setData(new byte[4]);
 
         // now setting it to null should fail
         try {
@@ -48,11 +49,11 @@ public class SimpleDataStructureTest {
         struct.setData(null);
 
         // set data to something
-        struct.setData(new byte[3]);
+        struct.setData(new byte[4]);
 
         // setting it to something non-null should fail.
         try {
-            struct.setData(new byte[3]);
+            struct.setData(new byte[4]);
             fail("exception not thrown");
         } catch (RuntimeException expected) {
             assertEquals("Data already set", expected.getMessage());
@@ -65,13 +66,13 @@ public class SimpleDataStructureTest {
         TestStruct struct = new TestStruct();
 
         // load some data using setData
-        struct.setData(new byte[3]);
+        struct.setData(new byte[4]);
 
         // now try to load via readBytes
         try {
             struct.readBytes(null);
             fail("blah blah blah..");
-        } catch(RuntimeException exc) {
+        } catch (RuntimeException exc) {
             // all good
         }
     }
@@ -96,8 +97,9 @@ public class SimpleDataStructureTest {
 
     @Test
     public void testHashCodeSafe() throws Exception {
-        // create new test subject
+        // create new test subject with non-zero data (needs >= 4 bytes for hashCode)
         TestStruct struct = new TestStruct();
+        struct.setData(new byte[] {1, 2, 3, 4});
 
         // just make sure it doesn't explode in our face
         assertNotEquals(0, struct.hashCode());
@@ -106,7 +108,7 @@ public class SimpleDataStructureTest {
     public class TestStruct extends SimpleDataStructure {
         @Override
         public int length() {
-            return 3;
+            return 4;
         }
     }
 }

@@ -959,6 +959,64 @@
     </jar>
   </target>
 
+  <target name="buildJbigi-win64" description="Build Windows 64-bit jbigi DLLs using MinGW, copy to installer/lib/jbigi/">
+    <exec executable="./build-win64.sh" dir="core/c/jbigi" failonerror="true">
+      <arg value="-a"/>
+    </exec>
+    <copy todir="installer/lib/jbigi" flatten="true">
+      <fileset dir="core/c/jbigi/lib/net/i2p/util" includes="*windows*_64.dll"/>
+    </copy>
+  </target>
+
+  <target name="buildJbigi-linux64" description="Build Linux 64-bit jbigi .so files, copy to installer/lib/jbigi/">
+    <exec executable="./build-linux64.sh" dir="core/c/jbigi" failonerror="true">
+      <arg value="-a"/>
+    </exec>
+    <copy todir="installer/lib/jbigi" flatten="true">
+      <fileset dir="core/c/jbigi/lib/net/i2p/util" includes="*linux*_64.so"/>
+    </copy>
+  </target>
+
+  <target name="buildJbigi-arm64" description="Build Linux ARM64 jbigi .so files, copy to installer/lib/jbigi/">
+    <exec executable="./build-arm64.sh" dir="core/c/jbigi" failonerror="true">
+      <arg value="-a"/>
+    </exec>
+    <copy todir="installer/lib/jbigi" flatten="true">
+      <fileset dir="core/c/jbigi/lib/net/i2p/util" includes="*linux-*_64.so" excludes="*linux-core*,*linux-skylake*,*linux-zen*,*linux-k10*,*linux-bulldozer*,*linux-piledriver*,*linux-steamroller*,*linux-excavator*,*linux-bobcat*,*linux-jaguar*,*linux-silvermont*,*linux-goldmont*,*linux-atom*,*linux-athlon64*,*linux-none*"/>
+    </copy>
+  </target>
+
+  <target name="buildJbigi" description="Build all jbigi native libraries (Win64 + Linux64 + ARM64), copy to installer/lib/jbigi/">
+    <parallel>
+      <antcall target="buildJbigi-win64"/>
+      <antcall target="buildJbigi-linux64"/>
+      <antcall target="buildJbigi-arm64"/>
+    </parallel>
+    <exec executable="./list-jbigi.sh" dir="core/c/jbigi" failonerror="false"/>
+  </target>
+
+  <target name="listJbigi" description="List built jbigi native libraries">
+    <exec executable="ls" dir="installer/lib/jbigi">
+      <arg value="-1"/>
+    </exec>
+  </target>
+
+<target name="testJbigi" description="Benchmark jbigi: modPow/modPowCT/modInverse (native vs pure Java)">
+    <exec executable="ant" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="buildCore"/>
+    </exec>
+    <exec executable="ant" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="jbigi"/>
+    </exec>
+    <java classname="net.i2p.util.NativeBigInteger" fork="true" maxmemory="256m" failonerror="true">
+      <classpath>
+        <pathelement location="core/java/build/i2p.jar"/>
+        <pathelement location="build/jbigi.jar"/>
+      </classpath>
+      <jvmarg value="-Djava.library.path=installer/lib/jbigi:core/c/jbigi/lib/net/i2p/util"/>
+    </java>
+  </target>
+
   <!-- end jbigi targets -->
 
   <target name="poupdate-source" depends="set-lg2-en, poupdate"/>
@@ -1022,7 +1080,7 @@
       failonerror="false"
       charset="utf-8"
       author="no"
-      additionalparam="-notimestamp -stylesheetFile ./javadoc.css -quiet -Xmaxwarns 1000 -nodeprecated -nosince"
+      additionalparam="-notimestamp -stylesheetFile tools/javadoc/javadoc.css -quiet -Xmaxwarns 1000 -nodeprecated -nosince"
       doctitle="I2P+ Javadocs [${release.number}-${i2p.build.number}${build.extra}]"
       windowtitle="Javadocs [I2P+ ${release.number}+] - API Version ${api.version}+"
       excludepackagenames="com.mpatric.mp3agic">
@@ -1108,7 +1166,7 @@
     <mkdir dir="./build/javadoc/resources/fonts"/>
     <echo message="/* intentionally empty */" file="build/javadoc/resources/fonts/dejavu.css"/>
     <!-- copy our fixed JavaScript file to replace the default script.js -->
-    <copy quiet="true" file="./javadoc-jav8-fix.js" tofile="./build/javadoc/script.js"/>
+    <copy quiet="true" file="tools/javadoc/javadoc-jav8-fix.js" tofile="./build/javadoc/script.js"/>
     <move todir="./dist/javadoc" quiet="true">
       <fileset dir="./build/javadoc">
         <include name="**/*"/>
@@ -1142,7 +1200,7 @@
       failonerror="false"
       charset="utf-8"
       author="no"
-      additionalparam="-notimestamp -stylesheetFile ./javadoc.css -quiet -Xmaxwarns 1000 -nodeprecated -nosince"
+      additionalparam="-notimestamp -stylesheetFile tools/javadoc/javadoc.css -quiet -Xmaxwarns 1000 -nodeprecated -nosince"
       doctitle="I2P+ Javadocs [${release.number}-${i2p.build.number}${build.extra}]"
       windowtitle="Javadocs [I2P+ ${release.number}+] - API Version ${api.version}+"
       excludepackagenames="com.mpatric.mp3agic">
@@ -2839,25 +2897,7 @@
   <!-- both junit and scala -->
   <target name="test" depends="testCore, testRouter, testMinistreaming, testStreaming, testI2PTunnel"/>
 
-  <target name="testCore" depends="buildProperties, jbigi">
-    <ant dir="core/java/" target="test"/>
-  </target>
 
-  <target name="testRouter" depends="buildProperties, jbigi">
-    <ant dir="router/java/" target="test"/>
-  </target>
-
-  <target name="testMinistreaming" depends="buildProperties, jbigi">
-    <ant dir="apps/ministreaming/java/" target="test"/>
-  </target>
-
-  <target name="testStreaming" depends="buildProperties">
-    <ant dir="apps/streaming/java/" target="test"/>
-  </target>
-
-  <target name="testI2PTunnel" depends="buildStreaming">
-    <ant dir="apps/i2ptunnel/java/" target="test"/>
-  </target>
 
   <target name="scalatest.report" depends="buildProperties">
     <ant dir="core/java/" target="scalatest.report"/>
@@ -4704,6 +4744,36 @@
   <target name="echo.torblocklistfail" if="${condition}">
     <property name="message" value="Failed to update the Tor blocklist."/>
     <echo level="error" message="${message}"/>
+  </target>
+
+<target name="testCore">
+    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+      <arg value="core"/>
+    </exec>
+  </target>
+
+  <target name="testRouter">
+    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+      <arg value="router"/>
+    </exec>
+  </target>
+
+  <target name="testMinistreaming">
+    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+      <arg value="ministreaming"/>
+    </exec>
+  </target>
+
+  <target name="testStreaming">
+    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+      <arg value="streaming"/>
+    </exec>
+  </target>
+
+  <target name="testI2PTunnel">
+    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+      <arg value="i2ptunnel"/>
+    </exec>
   </target>
 
 </project>

@@ -9,11 +9,6 @@ package net.i2p.client.impl;
  *
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-import java.util.Properties;
 import net.i2p.I2PAppContext;
 import net.i2p.I2PException;
 import net.i2p.client.I2PClient;
@@ -30,6 +25,12 @@ import net.i2p.data.SigningPrivateKey;
 import net.i2p.data.SigningPublicKey;
 import net.i2p.data.SimpleDataStructure;
 import net.i2p.util.RandomSource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.GeneralSecurityException;
+import java.util.Properties;
 
 /**
  * Base client implementation.
@@ -52,6 +53,7 @@ public class I2PClientImpl implements I2PClient {
      * @param destKeyStream location to write out the destination, PrivateKey, and SigningPrivateKey,
      *                      format is specified in {@link net.i2p.data.PrivateKeyFile PrivateKeyFile}
      */
+    @Override
     public Destination createDestination(OutputStream destKeyStream) throws I2PException, IOException {
         return createDestination(destKeyStream, DEFAULT_SIGTYPE);
     }
@@ -68,10 +70,14 @@ public class I2PClientImpl implements I2PClient {
      *                      format is specified in {@link net.i2p.data.PrivateKeyFile PrivateKeyFile}
      * @since 0.9.12
      */
+    @Override
     public Destination createDestination(OutputStream destKeyStream, SigType type) throws I2PException, IOException {
         Certificate cert;
-        if (type == SigType.DSA_SHA1) {cert = Certificate.NULL_CERT;}
-        else {cert = new KeyCertificate(type);}
+        if (type == SigType.DSA_SHA1) {
+            cert = Certificate.NULL_CERT;
+        } else {
+            cert = new KeyCertificate(type);
+        }
         return createDestination(destKeyStream, cert);
     }
 
@@ -89,6 +95,7 @@ public class I2PClientImpl implements I2PClient {
      * @param destKeyStream location to write out the destination, PrivateKey, and SigningPrivateKey,
      *                      format is specified in {@link net.i2p.data.PrivateKeyFile PrivateKeyFile}
      */
+    @Override
     public Destination createDestination(OutputStream destKeyStream, Certificate cert) throws I2PException, IOException {
         Destination d = new Destination();
         // Repeating pattern to be used in pubkey and padding, so the destination will be compressible
@@ -109,9 +116,14 @@ public class I2PClientImpl implements I2PClient {
         if (cert.getCertificateType() == Certificate.CERTIFICATE_TYPE_KEY) {
             KeyCertificate kcert = cert.toKeyCertificate();
             SigType type = kcert.getSigType();
-            try {signingKeys = KeyGenerator.getInstance().generateSigningKeys(type);}
-            catch (GeneralSecurityException gse) {throw new I2PException("Keygen failure", gse);}
-        } else {signingKeys = KeyGenerator.getInstance().generateSigningKeys();}
+            try {
+                signingKeys = KeyGenerator.getInstance().generateSigningKeys(type);
+            } catch (GeneralSecurityException gse) {
+                throw new I2PException("Keygen failure", gse);
+            }
+        } else {
+            signingKeys = KeyGenerator.getInstance().generateSigningKeys();
+        }
         SigningPublicKey signingPubKey = (SigningPublicKey) signingKeys[0];
         SigningPrivateKey signingPrivKey = (SigningPrivateKey) signingKeys[1];
         d.setPublicKey(publicKey);
@@ -149,6 +161,7 @@ public class I2PClientImpl implements I2PClient {
      *                      format is specified in {@link net.i2p.data.PrivateKeyFile PrivateKeyFile}
      * @param options set of options to configure the router with, if null will use System properties
      */
+    @Override
     public I2PSession createSession(InputStream destKeyStream, Properties options) throws I2PSessionException {
         return createSession(I2PAppContext.getGlobalContext(), destKeyStream, options);
     }
@@ -163,5 +176,4 @@ public class I2PClientImpl implements I2PClient {
     public I2PSession createSession(I2PAppContext context, InputStream destKeyStream, Properties options) throws I2PSessionException {
         return new I2PSessionMuxedImpl(context, destKeyStream, options); // thread safe and muxed
     }
-
 }

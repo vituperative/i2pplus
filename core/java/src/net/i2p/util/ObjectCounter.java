@@ -7,11 +7,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Thread-safe counter for tracking occurrences of objects.
- * 
+ *
  * <p>This class provides a concurrent way to count how many times specific
  * objects appear. It uses ConcurrentHashMap and AtomicInteger to ensure
  * thread-safe operations in multi-threaded environments.</p>
- * 
+ *
  * <p>Typical use cases include:</p>
  * <ul>
  * <li>Counting message frequencies</li>
@@ -41,8 +41,7 @@ public class ObjectCounter<K> implements Serializable {
      */
     public int increment(K h) {
         AtomicInteger i = this.map.putIfAbsent(h, new AtomicInteger(1));
-        if (i != null)
-            return i.incrementAndGet();
+        if (i != null) return i.incrementAndGet();
         return 1;
     }
 
@@ -59,8 +58,7 @@ public class ObjectCounter<K> implements Serializable {
      */
     public int count(K h) {
         AtomicInteger i = this.map.get(h);
-        if (i != null)
-            return i.get();
+        if (i != null) return i.get();
         return 0;
     }
 
@@ -86,5 +84,21 @@ public class ObjectCounter<K> implements Serializable {
     public void clear(K h) {
         this.map.remove(h);
     }
-}
 
+    /**
+     *  Decay all counts by the given factor (integer division).
+     *  Removes entries that decay to zero.
+     *  @param factor divisor for decay (e.g., 2 for 50% decay)
+     *  @since 0.9.69+
+     */
+    public void decay(int factor) {
+        if (factor <= 1) return;
+        this.map.entrySet().removeIf(entry -> {
+            AtomicInteger ai = entry.getValue();
+            int current = ai.get();
+            if (current <= 0) return true;
+            ai.set(current / factor);
+            return ai.get() == 0;
+        });
+    }
+}

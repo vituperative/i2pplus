@@ -76,7 +76,7 @@ public abstract class Addresses {
  *  @since 0.9.54
  */
     public static boolean isConnected(AddressType type) {
-        switch(type) {
+        switch (type) {
             case IPV6:
                 return isConnectedIPv6();
 
@@ -241,7 +241,7 @@ public abstract class Addresses {
                             newMacs.add(DataHelper.toString(mac));
                         }
                     } catch (SocketException ioe) {}
-                    for(Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
+                    for (Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
                         InetAddress addr = addrs.nextElement();
                         boolean isv4 = addr instanceof Inet4Address;
                         if (isv4)
@@ -263,7 +263,7 @@ public abstract class Addresses {
                     }
                 }
                 if (!newMacs.isEmpty()) {
-                    synchronized(_macCache) {
+                    synchronized (_macCache) {
                         _macCache.clear();
                         _macCache.addAll(newMacs);
                     }
@@ -304,7 +304,7 @@ public abstract class Addresses {
                     NetworkInterface ifc = ifcs.nextElement();
                     if (!ifc.isUp())
                         continue;
-                    for(Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
+                    for (Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
                         InetAddress addr = addrs.nextElement();
                         byte[] ip = addr.getAddress();
                         if (ip.length == 16 && (ip[0] & 0xfe) == 0x02)
@@ -334,7 +334,7 @@ public abstract class Addresses {
                     NetworkInterface ifc = ifcs.nextElement();
                     if (!ifc.isUp())
                         continue;
-                    for(Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
+                    for (Enumeration<InetAddress> addrs =  ifc.getInetAddresses(); addrs.hasMoreElements();) {
                         InetAddress addr = addrs.nextElement();
                         byte[] ip = addr.getAddress();
                         if (ip.length == 16 && (ip[0] & 0xfe) == 0x02) {
@@ -571,7 +571,7 @@ public abstract class Addresses {
             rv = _IPAddress.get(host);
         }
         if (rv == null) {
-            synchronized(_negativeCache) {
+            synchronized (_negativeCache) {
                 Long when = _negativeCache.get(host);
                 if (when != null) {
                     if (when.longValue() > System.currentTimeMillis() - NEG_CACHE_TIME)
@@ -588,7 +588,7 @@ public abstract class Addresses {
                 }
                 // else we do not cache hostnames here, we rely on the JVM
             } catch (UnknownHostException uhe) {
-                synchronized(_negativeCache) {
+                synchronized (_negativeCache) {
                     _negativeCache.put(host, Long.valueOf(System.currentTimeMillis()));
                 }
             }
@@ -663,7 +663,7 @@ public abstract class Addresses {
             return null;
         if (isIPAddress(host))
             return getIP(host);
-        synchronized(_negativeCache) {
+        synchronized (_negativeCache) {
             Long when = _negativeCache.get(host);
             if (when != null) {
                 if (when.longValue() > System.currentTimeMillis() - NEG_CACHE_TIME)
@@ -687,7 +687,7 @@ public abstract class Addresses {
                 }
             }
         } catch (UnknownHostException uhe) {
-            synchronized(_negativeCache) {
+            synchronized (_negativeCache) {
                 _negativeCache.put(host, Long.valueOf(System.currentTimeMillis()));
             }
         }
@@ -720,7 +720,7 @@ public abstract class Addresses {
                 return null;
             return Collections.singletonList(brv);
         }
-        synchronized(_negativeCache) {
+        synchronized (_negativeCache) {
             Long when = _negativeCache.get(host);
             if (when != null) {
                 if (when.longValue() > System.currentTimeMillis() - NEG_CACHE_TIME)
@@ -738,7 +738,7 @@ public abstract class Addresses {
             }
             return rv;
         } catch (UnknownHostException uhe) {
-            synchronized(_negativeCache) {
+            synchronized (_negativeCache) {
                 _negativeCache.put(host, Long.valueOf(System.currentTimeMillis()));
             }
         }
@@ -831,15 +831,15 @@ public abstract class Addresses {
         for (int i = 0; i < len; i++) {
             char c = host.charAt(i);
             if (c == '.') {
-               if (i == 0 || i == len - 1 || dots == 3 || b > 255 || host.charAt(i - 1) == '.')
-                   return null;
-               rv[dots++] = (byte) b;
-               b = 0;
+                if (i == 0 || i == len - 1 || dots == 3 || b > 255 || host.charAt(i - 1) == '.')
+                    return null;
+                rv[dots++] = (byte) b;
+                b = 0;
             } else if (c >= '0' && c <= '9') {
-               b *= 10;
-               b += c - '0';
+                b *= 10;
+                b += c - '0';
             } else {
-               return null;
+                return null;
             }
         }
         if (dots != 3 || b > 255)
@@ -865,23 +865,23 @@ public abstract class Addresses {
         for (int i = 0; i < len; i++) {
             char c = host.charAt(i);
             if (c == ':') {
-               if (i == 0 || i == len - 1 || colons == 7 || b > 65535 || host.charAt(i - 1) == ':')
-                   return null;
-               rv[j++] = (byte) (b >> 8);
-               rv[j++] = (byte) b;
-               colons++;
-               b = 0;
+                if (i == 0 || i == len - 1 || colons == 7 || b > 65535 || host.charAt(i - 1) == ':')
+                    return null;
+                rv[j++] = (byte) (b >> 8);
+                rv[j++] = (byte) b;
+                colons++;
+                b = 0;
             } else if (c >= '0' && c <= '9') {
-               b <<= 4;
-               b |= c - '0';
+                b <<= 4;
+                b |= c - '0';
             } else if (c >= 'a' && c <= 'f') {
-               b <<= 4;
-               b |= 10 + c - 'a';
+                b <<= 4;
+                b |= 10 + c - 'a';
             } else if (c >= 'A' && c <= 'F') {
-               b <<= 4;
-               b |= 10 + c - 'A';
+                b <<= 4;
+                b |= 10 + c - 'A';
             } else {
-               return null;
+                return null;
             }
         }
         if (colons != 7 || b > 65535)
@@ -928,7 +928,7 @@ public abstract class Addresses {
             in = new BufferedReader(new InputStreamReader(new FileInputStream(IF_INET6_FILE), "ISO-8859-1"), 1024);
             String line = null;
             StringBuilder buf = new StringBuilder(40);
-            while ( (line = in.readLine()) != null) {
+            while ((line = in.readLine()) != null) {
                 // http://tldp.org/HOWTO/html_single/Linux+IPv6-HOWTO/#PROC-NET
                 // 00000000000000000000000000000001 01 80 10 80       lo
                 String[] parts = DataHelper.split(line, " ", 6);
@@ -939,7 +939,7 @@ public abstract class Addresses {
                     continue;
                 buf.setLength(0);
                 int i = 0;
-                while(true) {
+                while (true) {
                     buf.append(as.substring(i, i+4));
                     i += 4;
                     if (i >= 32)
@@ -977,7 +977,7 @@ public abstract class Addresses {
         if (!INET6_CACHE_ENABLED)
             return isTemporary(addr);
         Inet6Addr a;
-        synchronized(_ifCache) {
+        synchronized (_ifCache) {
             refreshCache();
             a = _ifCache.get(addr);
         }
@@ -997,7 +997,7 @@ public abstract class Addresses {
         if (!INET6_CACHE_ENABLED)
             return false;
         Inet6Addr a;
-        synchronized(_ifCache) {
+        synchronized (_ifCache) {
             refreshCache();
             a = _ifCache.get(addr);
         }
@@ -1022,7 +1022,7 @@ public abstract class Addresses {
             if (b[8] == 0 && b[9] == 0 && b[10] == 0 && b[11] == 0)
                 return false;
             String last3 = DataHelper.toHexString(Arrays.copyOfRange(b, 13, 16));
-            synchronized(_macCache) {
+            synchronized (_macCache) {
                 for (String m : _macCache) {
                     if (m.endsWith(last3))
                         return false;
@@ -1039,7 +1039,7 @@ public abstract class Addresses {
             return true;
         }
         Inet6Addr a;
-        synchronized(_ifCache) {
+        synchronized (_ifCache) {
             refreshCache();
             a = _ifCache.get(addr);
         }
@@ -1055,19 +1055,19 @@ public abstract class Addresses {
      * @since 0.9.3
      */
     public static void clearCaches() {
-        synchronized(_IPAddress) {
+        synchronized (_IPAddress) {
             _IPAddress.clear();
         }
-        synchronized(_negativeCache) {
+        synchronized (_negativeCache) {
             _negativeCache.clear();
         }
         if (_ifCache != null) {
-            synchronized(_ifCache) {
+            synchronized (_ifCache) {
                 _ifCache.clear();
                 _ifCacheTime = 0;
             }
         }
-        synchronized(_macCache) {
+        synchronized (_macCache) {
             _macCache.clear();
         }
     }
@@ -1138,7 +1138,7 @@ public abstract class Addresses {
         Set<String> macs = new TreeSet<String>();
         for (String m : _macCache) {
             int i = 0;
-            while(true) {
+            while (true) {
                 buf.append(m.substring(i, i+2));
                 i += 2;
                 if (i >= 12)

@@ -27,12 +27,12 @@ import net.i2p.data.i2cp.SetDateMessage;
  * @author jrandom
  */
 class I2PClientMessageHandlerMap {
-    /** map of message type id --&gt; I2CPMessageHandler */
+    /** map of message type id--&gt; I2CPMessageHandler */
     protected final I2CPMessageHandler _handlers[];
 
     /** for extension */
     protected I2PClientMessageHandlerMap(int highest) {
-        _handlers = new I2CPMessageHandler[highest+1];
+        _handlers = new I2CPMessageHandler[highest + 1];
     }
 
     public I2PClientMessageHandlerMap(I2PAppContext context) {
@@ -53,7 +53,7 @@ class I2PClientMessageHandlerMap {
     }
 
     public I2CPMessageHandler getHandler(int messageTypeId) {
-        if ( (messageTypeId < 0) || (messageTypeId >= _handlers.length) ) return null;
+        if ((messageTypeId < 0) || (messageTypeId >= _handlers.length)) return null;
         return _handlers[messageTypeId];
     }
 }

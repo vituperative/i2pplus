@@ -9,15 +9,16 @@ package net.i2p.data;
  *
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
 import net.i2p.util.LHMCache;
 import net.i2p.util.SystemVersion;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
 /**
  * Defines an endpoint in the I2P network that can receive messages.
- * 
+ *
  * <p>Destination represents the fundamental addressing and identity concept in I2P:</p>
  * <ul>
  *   <li><strong>Network Endpoint:</strong> Messages sent to a Destination will find it regardless of location</li>
@@ -26,7 +27,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Addressing:</strong> Can be encoded as Base64 or Base32 (.b32.i2p)</li>
  *   <li><strong>Immutability:</strong> Identity becomes immutable after keys are set</li>
  * </ul>
- * 
+ *
  * <p><strong>Key Components:</strong></p>
  * <ul>
  *   <li><strong>Public Encryption Key:</strong> Historically used for end-to-end encryption</li>
@@ -34,14 +35,14 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Certificate:</strong> Optional metadata (NULL, HIDDEN, SIGNED, etc.)</li>
  *   <li><strong>Cached Hash:</strong> SHA-256 hash for efficient identification</li>
  * </ul>
- * 
+ *
  * <p><strong>Address Formats:</strong></p>
  * <ul>
  *   <li><strong>Base64:</strong> Full binary encoding for configuration files</li>
  *   <li><strong>Base32:</strong> Human-readable .b32.i2p addresses</li>
  *   <li><strong>Hash:</strong> 32-byte SHA-256 for internal identification</li>
  * </ul>
- * 
+ *
  * <p><strong>Historical Changes:</strong></p>
  * <ul>
  *   <li><strong>Pre-0.6:</strong> Public key used for end-to-end encryption</li>
@@ -49,7 +50,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>LeaseSet Encryption:</strong> Public key first bytes used as IV (deprecated)</li>
  *   <li><strong>0.9.9:</strong> Immutable after keys and certificate are set</li>
  * </ul>
- * 
+ *
  * <p><strong>Usage:</strong></p>
  * <ul>
  *   <li><strong>Client Connections:</strong> Target for I2P client communications</li>
@@ -57,7 +58,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Message Routing:</strong> Destination for I2NP message delivery</li>
  *   <li><strong>Address Book:</strong> Entry in address books and contact lists</li>
  * </ul>
- * 
+ *
  * <p><strong>Security Considerations:</strong></p>
  * <ul>
  *   <li><strong>Key Protection:</strong> Private keys must be securely stored</li>
@@ -65,7 +66,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Certificate Validation:</strong> Check certificate types and content</li>
  *   <li><strong>Deprecated Features:</strong> Avoid legacy encryption mechanisms</li>
  * </ul>
- * 
+ *
  * <p><strong>Performance Features:</strong></p>
  * <ul>
  *   <li><strong>Caching:</strong> LRU cache for frequently used destinations</li>
@@ -73,7 +74,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Efficient Storage:</strong> Optimized memory usage and serialization</li>
  *   <li><strong>Fast Lookup:</strong> Hash-based identification for quick comparisons</li>
  * </ul>
- * 
+ *
  * <p><strong>Immutability:</strong></p>
  * <ul>
  *   <li><strong>After 0.9.9:</strong> Keys and certificate cannot be changed after setting</li>
@@ -81,7 +82,7 @@ import net.i2p.util.SystemVersion;
  *   <li><strong>Corruption Prevention:</strong> Protects against accidental modification</li>
  *   <li><strong>Exception:</strong> Modification attempts throw {@link IllegalStateException}</li>
  * </ul>
- * 
+ *
  * <p><strong>Migration Notes:</strong></p>
  * <ul>
  *   <li><strong>Legacy Encryption:</strong> Public key usage deprecated in favor of LeaseSet encryption</li>
@@ -95,14 +96,15 @@ public class Destination extends KeysAndCert {
 
     private String _cachedB64;
 
-    //private static final boolean STATS = true;
+    // private static final boolean STATS = true;
     private static final int CACHE_SIZE;
     private static final int MIN_CACHE_SIZE = 32;
     private static final int MAX_CACHE_SIZE = 512;
+
     static {
         long maxMemory = SystemVersion.getMaxMemory();
-        CACHE_SIZE = (int) Math.min(MAX_CACHE_SIZE, Math.max(MIN_CACHE_SIZE, maxMemory / 512*1024));
-        //if (STATS)
+        CACHE_SIZE = (int) Math.min(MAX_CACHE_SIZE, Math.max(MIN_CACHE_SIZE, maxMemory / 512 * 1024));
+        // if (STATS)
         //    I2PAppContext.getGlobalContext().statManager().createRateStat("DestCache", "Hit rate", "Router", new long[] { RateConstants.TEN_MINUTES });
     }
 
@@ -131,15 +133,14 @@ public class Destination extends KeysAndCert {
             padding = null;
         }
         Destination rv;
-        synchronized(_cache) {
+        synchronized (_cache) {
             rv = _cache.get(sk);
-            if (rv != null && rv.getPublicKey().equals(pk) && rv.getCertificate().equals(c) &&
-                DataHelper.eq(rv.getPadding(), padding)) {
-                //if (STATS)
+            if (rv != null && rv.getPublicKey().equals(pk) && rv.getCertificate().equals(c) && DataHelper.eq(rv.getPadding(), padding)) {
+                // if (STATS)
                 //    I2PAppContext.getGlobalContext().statManager().addRateData("DestCache", 1);
                 return rv;
             }
-            //if (STATS)
+            // if (STATS)
             //    I2PAppContext.getGlobalContext().statManager().addRateData("DestCache", 0);
             rv = new Destination(pk, sk, c, padding);
             _cache.put(sk, rv);
@@ -163,8 +164,7 @@ public class Destination extends KeysAndCert {
     private Destination(PublicKey pk, SigningPublicKey sk, Certificate c, byte[] padding) {
         if (padding != null) {
             int sz = pk.length() + sk.length() + padding.length;
-            if (sz != 384)
-                throw new IllegalArgumentException("Bad total length " + sz);
+            if (sz != 384) throw new IllegalArgumentException("Bad total length " + sz);
         }
         _publicKey = pk;
         _signingKey = sk;
@@ -190,19 +190,17 @@ public class Destination extends KeysAndCert {
     }
 
     /**
-      * deprecated was used only by Packet.java in streaming, now unused
-      * Warning - used by i2p-bote. Does NOT support alternate key types. DSA-SHA1 only.
-      *
-      * @deprecated This method does not support alternate key types.
-      * @throws IllegalStateException if data already set
-      */
+     * deprecated was used only by Packet.java in streaming, now unused
+     * Warning - used by i2p-bote. Does NOT support alternate key types. DSA-SHA1 only.
+     *
+     * @deprecated This method does not support alternate key types.
+     * @throws IllegalStateException if data already set
+     */
     @Deprecated
     public int readBytes(byte source[], int offset) throws DataFormatException {
         if (source == null) throw new DataFormatException("Null source");
-        if (source.length <= offset + PublicKey.KEYSIZE_BYTES + SigningPublicKey.KEYSIZE_BYTES)
-            throw new DataFormatException("Not enough data (len=" + source.length + " off=" + offset + ")");
-        if (_publicKey != null || _signingKey != null || _certificate != null)
-            throw new IllegalStateException();
+        if (source.length <= offset + PublicKey.KEYSIZE_BYTES + SigningPublicKey.KEYSIZE_BYTES) throw new DataFormatException("Not enough data (len=" + source.length + " off=" + offset + ")");
+        if (_publicKey != null || _signingKey != null || _certificate != null) throw new IllegalStateException();
         int cur = offset;
 
         _publicKey = PublicKey.create(source, cur);
@@ -226,8 +224,7 @@ public class Destination extends KeysAndCert {
                 rv += 32 * _paddingBlocks;
             } else {
                 byte[] padding = getPadding();
-                if (padding != null)
-                    rv += padding.length;
+                if (padding != null) rv += padding.length;
             }
         } else {
             rv += _certificate.size();
@@ -242,8 +239,7 @@ public class Destination extends KeysAndCert {
      */
     @Override
     public String toBase64() {
-        if (_cachedB64 == null)
-            _cachedB64 = super.toBase64();
+        if (_cachedB64 == null) _cachedB64 = super.toBase64();
         return _cachedB64;
     }
 
@@ -265,7 +261,7 @@ public class Destination extends KeysAndCert {
      *  @since 0.9.9
      */
     public static void clearCache() {
-        synchronized(_cache) {
+        synchronized (_cache) {
             _cache.clear();
         }
     }

@@ -9,11 +9,11 @@ import java.util.Set;
 
 /**
  * Non-thread-safe counter for tracking occurrences of objects.
- * 
+ *
  * <p>This class provides a lightweight alternative to ObjectCounter for
  * single-threaded scenarios. It offers better performance with reduced
  * object churn by using primitive integers instead of AtomicInteger.</p>
- * 
+ *
  * <p><strong>Key differences from ObjectCounter:</strong></p>
  * <ul>
  * <li>NOT thread-safe - use only in single-threaded contexts</li>
@@ -21,7 +21,7 @@ import java.util.Set;
  * <li>Additional add() method for incrementing by arbitrary values</li>
  * <li>sortedObjects() method for retrieving objects by count</li>
  * </ul>
- * 
+ *
  * <p>Typical use cases include UI components and Sybil attack detection
  * where thread safety is not required.</p>
  *
@@ -63,8 +63,7 @@ public class ObjectCounterUnsafe<K> {
      */
     public int count(K h) {
         Int i = map.get(h);
-        if (i != null)
-            return i.c;
+        if (i != null) return i.c;
         return 0;
     }
 
@@ -103,19 +102,21 @@ public class ObjectCounterUnsafe<K> {
      */
     private static class Int {
         int c;
-        public Int(int i) { c = i; }
+
+        public Int(int i) {
+            c = i;
+        }
     }
 
     /**
      *  reverse sort
      */
     private class ObjComparator implements Comparator<K> {
+        @Override
         public int compare(K l, K r) {
             int rv = map.get(r).c - map.get(l).c;
-            if (rv != 0)
-                return rv;
+            if (rv != 0) return rv;
             return l.toString().compareTo(r.toString());
         }
     }
 }
-

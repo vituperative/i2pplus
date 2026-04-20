@@ -724,8 +724,7 @@ public class Base64 {
         // We use getUTF8() instead of getASCII() so we may verify
         // there's no UTF-8 in there.
         byte[] bytes = DataHelper.getUTF8(s);
-        if (bytes.length != s.length())
-            return null;
+        if (bytes.length != s.length()) return null;
         return decode(bytes, 0, bytes.length);
     } // end decode
 
@@ -787,8 +786,7 @@ public class Base64 {
         int converted = 0;
         while (i + 3 < end) {
             converted = decode4to3(source, i, outBuff, outBuffPosn);
-            if (converted < 0)
-                return null;
+            if (converted < 0) return null;
             outBuffPosn += converted;
             i += 4;
             if (converted < 3)
@@ -798,10 +796,8 @@ public class Base64 {
         // process any remaining without '='
         int remaining = end - i;
         if (remaining > 0) {
-            if (converted > 0 && converted < 3)
-                return null;
-            if (remaining == 1 || remaining > 3)
-                return null;
+            if (converted > 0 && converted < 3) return null;
+            if (remaining == 1 || remaining > 3) return null;
             byte[] b4 = new byte[4];
             b4[0] = source[i++];
             b4[1] = source[i++];
@@ -811,8 +807,7 @@ public class Base64 {
                 b4[2] = EQUALS_SIGN;
             b4[3] = EQUALS_SIGN;
             converted = decode4to3(b4, 0, outBuff, outBuffPosn);
-            if (converted < 0)
-                return null;
+            if (converted < 0) return null;
             outBuffPosn += converted;
         }
 

@@ -9,11 +9,11 @@ import net.i2p.data.SimpleDataStructure;
 
 /**
  * SHA-384 secure hash algorithm implementation.
- * 
+ *
  * This class provides the SHA-384 hash algorithm as specified in FIPS PUB 180-4,
  * producing a 48-byte (384-bit) message digest. SHA-384 is part of the
  * SHA-2 family and offers higher security than SHA-256 with similar performance.
- * 
+ *
  * <p>Common uses in I2P include:</p>
  * <ul>
  *   <li>Enhanced security requirements for sensitive data</li>
@@ -25,7 +25,7 @@ import net.i2p.data.SimpleDataStructure;
  */
 public class Hash384 extends SimpleDataStructure {
 
-    public final static int HASH_LENGTH = 48;
+    public static final int HASH_LENGTH = 48;
 
     public Hash384() {
         super();
@@ -36,6 +36,7 @@ public class Hash384 extends SimpleDataStructure {
         super(data);
     }
 
+    @Override
     public int length() {
         return HASH_LENGTH;
     }

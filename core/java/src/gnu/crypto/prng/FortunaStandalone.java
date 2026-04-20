@@ -1,4 +1,4 @@
-/* Fortuna.java -- The Fortuna PRNG.
+/* Fortuna.java-- The Fortuna PRNG.
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Crypto.
@@ -228,7 +228,7 @@ public class FortunaStandalone extends BasePRNGStandalone implements Serializabl
             CryptixRijndael_Algorithm.blockEncrypt(counter, buffer, 0, 0, cryptixKey);
             incrementCounter();
             ndx = 0;
-          }
+        }
 
         @Override
         public final void addRandomByte(byte b) {

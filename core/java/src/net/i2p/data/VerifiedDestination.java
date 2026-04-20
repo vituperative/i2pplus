@@ -9,9 +9,6 @@ package net.i2p.data;
  *
  */
 
-
-
-
 /**
  * Extend Destination with methods to verify its Certificate.
  * The router does not check Certificates, it doesn't care.
@@ -50,26 +47,22 @@ public class VerifiedDestination extends Destination {
      * @param allowNone If true, allow a NULL or HIDDEN certificate.
      */
     public boolean verifyCert(boolean allowNone) {
-        if (_publicKey == null || _signingKey == null || _certificate == null)
-            return false;
+        if (_publicKey == null || _signingKey == null || _certificate == null) return false;
         switch (_certificate.getCertificateType()) {
             case Certificate.CERTIFICATE_TYPE_NULL:
             case Certificate.CERTIFICATE_TYPE_HIDDEN:
                 return allowNone;
-            
+
             case Certificate.CERTIFICATE_TYPE_SIGNED:
                 return verifySignedCert();
         }
         return verifyUnknownCert();
     }
 
-
-
-
-
     /** Defaults for Signed Certs */
-    public final static int CERTIFICATE_LENGTH_SIGNED = Signature.SIGNATURE_BYTES;
-    public final static int CERTIFICATE_LENGTH_SIGNED_WITH_HASH = Signature.SIGNATURE_BYTES + Hash.HASH_LENGTH;
+    public static final int CERTIFICATE_LENGTH_SIGNED = Signature.SIGNATURE_BYTES;
+
+    public static final int CERTIFICATE_LENGTH_SIGNED_WITH_HASH = Signature.SIGNATURE_BYTES + Hash.HASH_LENGTH;
 
     /**
      *  Signed Certs are signed by a 3rd-party Destination.
@@ -95,9 +88,9 @@ public class VerifiedDestination extends Destination {
      *
      */
     protected boolean verifySignedCert() {
-        return _certificate.getPayload() != null &&
-               (_certificate.getPayload().length == CERTIFICATE_LENGTH_SIGNED ||
-                _certificate.getPayload().length == CERTIFICATE_LENGTH_SIGNED_WITH_HASH);
+        return _certificate.getPayload() != null
+                && (_certificate.getPayload().length == CERTIFICATE_LENGTH_SIGNED
+                        || _certificate.getPayload().length == CERTIFICATE_LENGTH_SIGNED_WITH_HASH);
     }
 
     /**
@@ -109,10 +102,9 @@ public class VerifiedDestination extends Destination {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(128);
+        StringBuilder buf = new StringBuilder(128); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append(super.toString());
         buf.append("\n\tVerified Certificate? ").append(verifyCert(true));
         return buf.toString();
     }
-
 }

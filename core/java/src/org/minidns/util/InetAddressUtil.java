@@ -10,12 +10,13 @@
  */
 package org.minidns.util;
 
+import org.minidns.dnsname.DnsName;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.regex.Pattern;
-import org.minidns.dnsname.DnsName;
 
 /**
  * Utility class for IP address manipulation and validation.
@@ -24,7 +25,7 @@ public class InetAddressUtil {
 
     /**
      * Creates an Inet4Address from the given CharSequence.
-     * 
+     *
      * @param cs the CharSequence containing the IPv4 address
      * @return the Inet4Address
      * @throws IllegalArgumentException if the input is not a valid IPv4 address
@@ -44,7 +45,7 @@ public class InetAddressUtil {
 
     /**
      * Creates an Inet6Address from the given CharSequence.
-     * 
+     *
      * @param cs the CharSequence containing the IPv6 address
      * @return the Inet6Address
      * @throws IllegalArgumentException if the input is not a valid IPv6 address
@@ -68,7 +69,7 @@ public class InetAddressUtil {
 
     /**
      * Checks if the given CharSequence represents a valid IPv4 address.
-     * 
+     *
      * @param address the CharSequence to validate
      * @return true if the input is a valid IPv4 address, false otherwise
      */
@@ -81,12 +82,11 @@ public class InetAddressUtil {
 
     // IPv6 Regular Expression from http://stackoverflow.com/a/17871737/194894 by David M. Syzdek
     // (http://stackoverflow.com/users/903194/david-m-syzdek) licensed under CC BY-SA 3.0.
-    private static final Pattern IPV6_PATTERN = Pattern.compile(
-            "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
+    private static final Pattern IPV6_PATTERN = Pattern.compile("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
 
     /**
      * Checks if the given CharSequence represents a valid IPv6 address.
-     * 
+     *
      * @param address the CharSequence to validate
      * @return true if the input is a valid IPv6 address, false otherwise
      */
@@ -99,7 +99,7 @@ public class InetAddressUtil {
 
     /**
      * Checks if the given CharSequence represents a valid IP address (IPv4 or IPv6).
-     * 
+     *
      * @param address the CharSequence to validate
      * @return true if the input is a valid IP address, false otherwise
      */
@@ -109,7 +109,7 @@ public class InetAddressUtil {
 
     /**
      * Converts a CharSequence to an InetAddress if it represents a valid IP address.
-     * 
+     *
      * @param address the CharSequence to convert
      * @return the InetAddress if the input is a valid IP address, null otherwise
      */
@@ -129,7 +129,7 @@ public class InetAddressUtil {
 
     /**
      * Creates the reverse DNS name for the given IPv6 address.
-     * 
+     *
      * @param inet6Address the IPv6 address
      * @return the reverse DNS name
      */
@@ -155,7 +155,7 @@ public class InetAddressUtil {
 
     /**
      * Creates the reverse DNS name for the given IPv4 address.
-     * 
+     *
      * @param inet4Address the IPv4 address
      * @return the reverse DNS name
      */

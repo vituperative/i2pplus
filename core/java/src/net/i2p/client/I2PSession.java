@@ -9,10 +9,6 @@ package net.i2p.client;
  *
  */
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 import net.i2p.data.BlindData;
 import net.i2p.data.Destination;
 import net.i2p.data.Hash;
@@ -22,6 +18,12 @@ import net.i2p.data.SessionTag;
 import net.i2p.data.Signature;
 import net.i2p.data.SigningPrivateKey;
 import net.i2p.data.SigningPublicKey;
+import net.i2p.data.TunnelId;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * <p>Define the standard means of sending and receiving messages on the
@@ -136,8 +138,7 @@ public interface I2PSession {
      * @return success
      * @since 0.7.1
      */
-    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent,
-                               int proto, int fromPort, int toPort) throws I2PSessionException;
+    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, int proto, int fromPort, int toPort) throws I2PSessionException;
 
     /**
      * See I2PSessionMuxedImpl for proto/port details.
@@ -155,8 +156,7 @@ public interface I2PSession {
      * @return success
      * @since 0.7.1
      */
-    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire,
-                               int proto, int fromPort, int toPort) throws I2PSessionException;
+    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire, int proto, int fromPort, int toPort) throws I2PSessionException;
 
     /**
      * See I2PSessionMuxedImpl for proto/port details.
@@ -174,8 +174,7 @@ public interface I2PSession {
      * @return success
      * @since 0.8.4
      */
-    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire,
-                               int proto, int fromPort, int toPort, int flags) throws I2PSessionException;
+    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire, int proto, int fromPort, int toPort, int flags) throws I2PSessionException;
 
     /**
      * See I2PSessionMuxedImpl for proto/port details.
@@ -192,8 +191,7 @@ public interface I2PSession {
      * @return success
      * @since 0.9.2
      */
-    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size,
-                               int proto, int fromPort, int toPort, SendMessageOptions options) throws I2PSessionException;
+    public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, int proto, int fromPort, int toPort, SendMessageOptions options) throws I2PSessionException;
 
     /**
      * Send a message and request an asynchronous notification of delivery status.
@@ -215,9 +213,7 @@ public interface I2PSession {
      * @throws I2PSessionException on all errors
      * @since 0.9.14
      */
-    public long sendMessage(Destination dest, byte[] payload, int offset, int size,
-                               int proto, int fromPort, int toPort,
-                               SendMessageOptions options, SendMessageStatusListener listener) throws I2PSessionException;
+    public long sendMessage(Destination dest, byte[] payload, int offset, int size, int proto, int fromPort, int toPort, SendMessageOptions options, SendMessageStatusListener listener) throws I2PSessionException;
 
     /** Receive a message that the router has notified the client about, returning
      * the payload.
@@ -434,6 +430,7 @@ public interface I2PSession {
      *  @since 0.9.67
      */
     public LookupResult lookupDest(Hash h, long maxWait, LookupCallback callback) throws I2PSessionException;
+
     /**
      *  Lookup a Destination by hash.
      *  Non-blocking.
@@ -506,6 +503,79 @@ public interface I2PSession {
      *  @since 0.7.1
      */
     public void removeListener(int proto, int port);
+
+    /**
+     *  Add a listener for tunnel status changes.
+     *  This is used by the streaming library to react to tunnel failures and removals.
+     *
+     *  @param lsnr the listener to add
+     *  @since 0.9.69
+     */
+    public void addTunnelStatusListener(TunnelStatusListener lsnr);
+
+    /**
+     *  Remove a tunnel status listener.
+     *
+     *  @param lsnr the listener to remove
+     *  @since 0.9.69
+     */
+    public void removeTunnelStatusListener(TunnelStatusListener lsnr);
+
+    /**
+     *  Force immediate tunnel rebuild.
+     *  This triggers the tunnel pool to build new tunnels to replace failed ones.
+     *  Useful when a connection fails and we want to ensure fresh tunnels before retry.
+     *
+     *  @since 0.9.69+
+     */
+    public void rebuildTunnels();
+
+    /**
+     *  Switch to a new tunnel for this session.
+     *  This forces the session to abandon its current tunnels and acquire fresh ones.
+     *  Useful when connections are failing and we need to switch to better tunnels.
+     *
+     *  @return true if switch was initiated successfully
+     *  @since 0.9.69+
+     */
+    public boolean switchToNewTunnel();
+
+    /**
+     *  Get the tunnel IDs currently in use by this session.
+     *  This allows the streaming library to track which tunnels are being used
+     *  and react when those specific tunnels are removed.
+     *
+     *  @return TunnelPair containing inbound and outbound tunnel IDs, or null if none
+     *  @since 0.9.69+
+     */
+    public TunnelPair getCurrentTunnelPair();
+
+/**
+     * Simple holder for tunnel pair information.
+     * @since 0.9.69+
+     */
+    public static class TunnelPair {
+        private final TunnelId _inboundTunnelId;
+        private final TunnelId _outboundTunnelId;
+
+        public TunnelPair(TunnelId inbound, TunnelId outbound) {
+            _inboundTunnelId = inbound;
+            _outboundTunnelId = outbound;
+        }
+
+        public TunnelId getInboundTunnelId() { return _inboundTunnelId; }
+        public TunnelId getOutboundTunnelId() { return _outboundTunnelId; }
+        public boolean isEmpty() { return _inboundTunnelId == null && _outboundTunnelId == null; }
+    }
+
+    /**
+     * Set the tunnel IDs actively in use by this session.
+     * Called by the streaming library when it learns which tunnels are being used.
+     *
+     * @param pair the tunnel pair in use
+     * @since 0.9.69+
+     */
+    public void setCurrentTunnelPair(TunnelPair pair);
 
     public static final int PORT_ANY = 0;
     public static final int PORT_UNSPECIFIED = 0;

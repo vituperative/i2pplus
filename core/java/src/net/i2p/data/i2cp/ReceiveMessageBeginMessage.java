@@ -97,13 +97,14 @@ public class ReceiveMessageBeginMessage extends I2CPMessageImpl {
         }
     }
 
+    @Override
     public int getType() {
         return MESSAGE_TYPE;
     }
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append("[ReceiveMessageBeginMessage: ");
         buf.append(" SessionId: ").append(_sessionId);
         buf.append("; MessageId: ").append(_messageId);

@@ -49,6 +49,14 @@ get_report_name() {
 run_test() {
   local dir="$1"
   local label="$2"
+  
+  # Skip if no test directory exists
+  if [ ! -d "${REPO_ROOT}/${dir}/test" ]; then
+    echo -e "${BOLD}${label}${RESET}"
+    echo "  (no tests)"
+    return 0
+  fi
+  
   echo -e "${BOLD}${label}${RESET}"
   cd "${REPO_ROOT}/${dir}" && ant $ANT_PROPS test -logfile "$LOG_FILE" > /dev/null 2>&1
 

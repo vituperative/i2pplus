@@ -5,11 +5,12 @@ package net.i2p.data.i2cp;
  *
  */
 
-import java.io.IOException;
-import java.io.InputStream;
 import net.i2p.data.DataFormatException;
 import net.i2p.data.DataHelper;
 import net.i2p.util.ByteArrayStream;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Tell the other side the limits
@@ -17,7 +18,7 @@ import net.i2p.util.ByteArrayStream;
  * @author zzz
  */
 public class BandwidthLimitsMessage extends I2CPMessageImpl {
-    public final static int MESSAGE_TYPE = 23;
+    public static final int MESSAGE_TYPE = 23;
     private static final int LIMITS = 16;
     private int[] data;
 
@@ -102,7 +103,7 @@ public class BandwidthLimitsMessage extends I2CPMessageImpl {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(); // NOPMD - AvoidUnnecessaryStringBuilderCreation
         buf.append("[BandwidthLimitsMessage");
         buf.append("\n\tIn: ").append(data[0]);
         buf.append("\n\tOut: ").append(data[1]);

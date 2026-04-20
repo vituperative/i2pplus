@@ -8,9 +8,10 @@
  */
 package net.i2p.crypto.eddsa.math.bigint;
 
-import java.math.BigInteger;
 import net.i2p.crypto.eddsa.math.Field;
 import net.i2p.crypto.eddsa.math.ScalarOps;
+
+import java.math.BigInteger;
 
 /**
  * BigInteger-based implementation of scalar operations for EdDSA cryptography.
@@ -30,12 +31,13 @@ public class BigIntegerScalarOps implements ScalarOps {
         enc.setField(f);
     }
 
+    @Override
     public byte[] reduce(byte[] s) {
         return enc.encode(enc.toBigInteger(s).mod(l));
     }
 
+    @Override
     public byte[] multiplyAndAdd(byte[] a, byte[] b, byte[] c) {
         return enc.encode(enc.toBigInteger(a).multiply(enc.toBigInteger(b)).add(enc.toBigInteger(c)).mod(l));
     }
-
 }

@@ -125,17 +125,17 @@ public class CPUID {
     static String getCPUVendorID() {
         CPUIDResult c = doCPUID(0);
         StringBuilder sb= new StringBuilder(13);
-        sb.append((char)( c.EBX        & 0xFF));
+        sb.append((char)(c.EBX        & 0xFF));
         sb.append((char)((c.EBX >> 8)  & 0xFF));
         sb.append((char)((c.EBX >> 16) & 0xFF));
         sb.append((char)((c.EBX >> 24) & 0xFF));
 
-        sb.append((char)( c.EDX        & 0xFF));
+        sb.append((char)(c.EDX        & 0xFF));
         sb.append((char)((c.EDX >> 8)  & 0xFF));
         sb.append((char)((c.EDX >> 16) & 0xFF));
         sb.append((char)((c.EDX >> 24) & 0xFF));
 
-        sb.append((char)( c.ECX        & 0xFF));
+        sb.append((char)(c.ECX        & 0xFF));
         sb.append((char)((c.ECX >> 8)  & 0xFF));
         sb.append((char)((c.ECX >> 16) & 0xFF));
         sb.append((char)((c.ECX >> 24) & 0xFF));
@@ -395,36 +395,36 @@ public class CPUID {
      */
     private static final void loadNative() {
         try {
-        String wantedProp = System.getProperty("jcpuid.enable", "true");
-        boolean wantNative = Boolean.parseBoolean(wantedProp);
-        if (wantNative) {
-            boolean loaded = loadGeneric();
-            if (loaded) {
-                _nativeOk = true;
-                if (_doLog) {
-                    System.err.println("INFO: Native CPUID library " + getLibraryMiddlePart() + " loaded from file");
-                }
-            } else {
-                loaded = loadFromResource();
+            String wantedProp = System.getProperty("jcpuid.enable", "true");
+            boolean wantNative = Boolean.parseBoolean(wantedProp);
+            if (wantNative) {
+                boolean loaded = loadGeneric();
                 if (loaded) {
                     _nativeOk = true;
                     if (_doLog) {
-                        System.err.println("INFO: Native CPUID library " + getResourceName() + " loaded from resource");
+                        System.err.println("INFO: Native CPUID library " + getLibraryMiddlePart() + " loaded from file");
                     }
                 } else {
-                    _nativeOk = false;
-                    if (_doLog) {
-                        System.err.println("WARNING: Native CPUID library jcpuid not loaded - will not be able to read CPU information using CPUID");
+                    loaded = loadFromResource();
+                    if (loaded) {
+                        _nativeOk = true;
+                        if (_doLog) {
+                            System.err.println("INFO: Native CPUID library " + getResourceName() + " loaded from resource");
+                        }
+                    } else {
+                        _nativeOk = false;
+                        if (_doLog) {
+                            System.err.println("WARNING: Native CPUID library jcpuid not loaded - will not be able to read CPU information using CPUID");
+                        }
                     }
                 }
+                _jcpuidVersion = fetchJcpuidVersion();
+            } else {
+                if (_doLog) {
+                    System.err.println("INFO: Native CPUID library jcpuid not loaded - will not be able to read CPU information using CPUID");
+                }
             }
-            _jcpuidVersion = fetchJcpuidVersion();
-        } else {
-            if (_doLog) {
-                System.err.println("INFO: Native CPUID library jcpuid not loaded - will not be able to read CPU information using CPUID");
-            }
-        }
-        } catch(Exception e) {
+        } catch (Exception e) {
             if (_doLog) {
                 System.err.println("INFO: Native CPUID library jcpuid not loaded\n* Reason: '" + e.getMessage() +
                                    "' - will not be able to read CPU information using CPUID");
@@ -531,7 +531,7 @@ public class CPUID {
             DataHelper.copy(libStream, fos);
             fos.close();
             fos = null;
-            System.load(outFile.getAbsolutePath());//System.load requires an absolute path to the lib
+            System.load(outFile.getAbsolutePath()); //System.load requires an absolute path to the lib
         } catch (UnsatisfiedLinkError ule) {
             if (_doLog) {
                 System.err.println("WARNING: The resource " + resourceName +

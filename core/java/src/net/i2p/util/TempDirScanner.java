@@ -1,7 +1,8 @@
 package net.i2p.util;
 
-import java.io.File;
 import net.i2p.I2PAppContext;
+
+import java.io.File;
 
 /**
  *  Prevent systemd from deleting our temp dir or any dirs or files in it.
@@ -24,7 +25,7 @@ public class TempDirScanner extends SimpleTimer2.TimedEvent {
 
     // systemd default is 10 days for /tmp? distro dependent.
     // go a little faster than 1 day just in case
-    private static final long DELAY = 23*60*60*1000L;
+    private static final long DELAY = 23 * 60 * 60 * 1000L;
 
     /**
      *  Schedules itself
@@ -35,6 +36,7 @@ public class TempDirScanner extends SimpleTimer2.TimedEvent {
         schedule(DELAY);
     }
 
+    @Override
     public void timeReached() {
         scan(ctx.getTempDir());
         schedule(DELAY);
@@ -45,6 +47,7 @@ public class TempDirScanner extends SimpleTimer2.TimedEvent {
      *  We can't count on the filesystem updating access time.
      *  This should not affect any known usage of our temp dir.
      */
+    @SuppressWarnings("PMD.AvoidInfiniteRecursion")
     private static void scan(File f) {
         if (f.isDirectory()) {
             File[] files = f.listFiles();

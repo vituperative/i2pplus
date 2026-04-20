@@ -16,12 +16,12 @@ import net.i2p.data.SimpleDataStructure;
 
 /**
  * I2P data structure for SHA-1 hash values.
- * 
+ *
  * This class provides a SimpleDataStructure wrapper for 20-byte SHA-1 hashes
  * used throughout I2P for data integrity and identification purposes.
  * It extends SimpleDataStructure to support I2P's serialization framework
  * and provides efficient caching of hash codes.
- * 
+ *
  * <p>Common uses include:</p>
  * <ul>
  *   <li>Router and destination identifiers</li>
@@ -32,10 +32,11 @@ import net.i2p.data.SimpleDataStructure;
  * @since 0.8.1
  * @author zzz
  */
+@SuppressWarnings({"PMD.OverrideBothEqualsAndHashcode", "checkstyle:EqualsHashCode"})
 public class SHA1Hash extends SimpleDataStructure {
     private int _cachedHashCode;
 
-    public final static int HASH_LENGTH = SHA1.HASH_LENGTH;
+    public static final int HASH_LENGTH = SHA1.HASH_LENGTH;
 
     /** @since 0.9.9 */
     public SHA1Hash() {

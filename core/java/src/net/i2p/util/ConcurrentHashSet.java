@@ -20,6 +20,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E> {
     public ConcurrentHashSet() {
         _map = new ConcurrentHashMap<E, Object>();
     }
+
     public ConcurrentHashSet(int capacity) {
         _map = new ConcurrentHashMap<E, Object>(capacity);
     }
@@ -49,10 +50,12 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E> {
         return _map.remove(o) != null;
     }
 
+    @Override
     public int size() {
         return _map.size();
     }
 
+    @Override
     public Iterator<E> iterator() {
         return _map.keySet().iterator();
     }
@@ -60,8 +63,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E> {
     @Override
     public boolean addAll(Collection<? extends E> c) {
         boolean rv = false;
-        for (E e : c)
-            rv |= _map.put(e, DUMMY) == null;
+        for (E e : c) rv |= _map.put(e, DUMMY) == null;
         return rv;
     }
 }

@@ -20,15 +20,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import net.i2p.I2PAppContext;
 import net.i2p.client.I2PClient;
+import net.i2p.client.I2PSession;
 import net.i2p.client.I2PSessionException;
 import net.i2p.client.I2PSessionListener;
 import net.i2p.client.I2PSessionMuxedListener;
 import net.i2p.client.SendMessageOptions;
 import net.i2p.client.SendMessageStatusListener;
+import net.i2p.client.TunnelRemovalEvent;
+import net.i2p.client.TunnelStatusListener;
 import net.i2p.data.DataHelper;
 import net.i2p.data.Destination;
 import net.i2p.data.SessionKey;
 import net.i2p.data.SessionTag;
+import net.i2p.data.TunnelId;
 import net.i2p.data.i2cp.MessageId;
 import net.i2p.util.SimpleTimer2;
 
@@ -52,7 +56,7 @@ class I2PSessionImpl2 extends I2PSessionImpl {
     /** Don't expect any MSMs from the router for outbound traffic @since 0.8.1 */
     protected boolean _noEffort;
     private static final long REMOVE_EXPIRED_TIME = 63*1000;
-    private static final long[] RATES = { 60*1000, 10*60*1000l, 30*60*1000l, 60*60*1000l };
+    private static final long[] RATES = { 60*1000, 10*60*1000L, 30*60*1000L, 60*60*1000L };
 
     /**
      * for extension by SimpleSession (no dest)
@@ -126,11 +130,12 @@ class I2PSessionImpl2 extends I2PSessionImpl {
 
         public RemoveExpired() {super(_context.simpleTimer2(), REMOVE_EXPIRED_TIME);}
 
+        @Override
         public void timeReached() {
             if (isClosed()) {return;}
             if (!_sendingStates.isEmpty()) {
                 long now = _context.clock().now();
-                for (Iterator<MessageState> iter = _sendingStates.values().iterator(); iter.hasNext(); ) {
+                for (Iterator<MessageState> iter = _sendingStates.values().iterator(); iter.hasNext();) {
                     MessageState state = iter.next();
                     if (state.getExpires() < now) {iter.remove();}
                 }
@@ -163,49 +168,58 @@ class I2PSessionImpl2 extends I2PSessionImpl {
     private static final int DONT_COMPRESS_SIZE = 66; // Todo: don't compress if destination is local?
 
     protected boolean shouldCompress(int size) {
-         if (size <= DONT_COMPRESS_SIZE) {return false;}
-         String p = getOptions().getProperty(I2PClient.PROP_GZIP);
-         if (p != null) {return Boolean.parseBoolean(p);}
-         return SHOULD_COMPRESS;
+        if (size <= DONT_COMPRESS_SIZE) {return false;}
+        String p = getOptions().getProperty(I2PClient.PROP_GZIP);
+        if (p != null) {return Boolean.parseBoolean(p);}
+        return SHOULD_COMPRESS;
     }
 
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public void addSessionListener(I2PSessionListener lsnr, int proto, int port) {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public void addMuxedSessionListener(I2PSessionMuxedListener l, int proto, int port) {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public void removeListener(int proto, int port) {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int proto, int fromport, int toport) throws I2PSessionException {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent,
                                int proto, int fromport, int toport) throws I2PSessionException {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire,
                                int proto, int fromport, int toport) throws I2PSessionException {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expire,
                                int proto, int fromport, int toport, int flags) throws I2PSessionException {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size,
                                int proto, int fromport, int toport, SendMessageOptions options) throws I2PSessionException {
         throw new UnsupportedOperationException("Use MuxedImpl");
     }
     /** @throws UnsupportedOperationException always, use MuxedImpl */
+    @Override
     public long sendMessage(Destination dest, byte[] payload, int offset, int size,
                                int proto, int fromport, int toport,
                                SendMessageOptions options, SendMessageStatusListener listener) throws I2PSessionException {
@@ -218,6 +232,7 @@ class I2PSessionImpl2 extends I2PSessionImpl {
         return sendMessage(dest, payload, 0, payload.length);
     }
 
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size) throws I2PSessionException {
         // we don't do end-to-end crypto any more
         //return sendMessage(dest, payload, offset, size, new SessionKey(), new HashSet(64), 0);
@@ -237,6 +252,7 @@ class I2PSessionImpl2 extends I2PSessionImpl {
      * @param keyUsed unused - no end-to-end crypto
      * @param tagsSent unused - no end-to-end crypto
      */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent)
                    throws I2PSessionException {
         return sendMessage(dest, payload, offset, size, keyUsed, tagsSent, 0);
@@ -248,6 +264,7 @@ class I2PSessionImpl2 extends I2PSessionImpl {
      * @param keyUsed unused - no end-to-end crypto
      * @param tagsSent unused - no end-to-end crypto
      */
+    @Override
     public boolean sendMessage(Destination dest, byte[] payload, int offset, int size, SessionKey keyUsed, Set<SessionTag> tagsSent, long expires)
                    throws I2PSessionException {
         if (_log.shouldDebug()) {_log.debug("Sending message");}
@@ -461,6 +478,138 @@ class I2PSessionImpl2 extends I2PSessionImpl {
             _log.info(getPrefix() + (states > 0 ? " -> Disconnecting " + _sendingStates.size() + ' ' + stateStr : ""));
         }
         _sendingStates.clear();
+    }
+
+    @Override
+    public void addTunnelStatusListener(TunnelStatusListener lsnr) {
+        _tunnelStatusListeners.add(lsnr);
+        // If in router context, also register with TunnelPoolManager for direct notifications
+        if (_context.isRouterContext()) {
+            try {
+                Object tm = _context.getClass().getMethod("tunnelManager").invoke(_context);
+                if (tm != null) {
+                    tm.getClass().getMethod("addTunnelStatusListener", TunnelStatusListener.class).invoke(tm, lsnr);
+                }
+            } catch (Exception e) {
+                // Ignore - not router context or method doesn't exist
+            }
+        }
+    }
+
+    @Override
+    public void removeTunnelStatusListener(TunnelStatusListener lsnr) {
+        _tunnelStatusListeners.remove(lsnr);
+        // Also remove from TunnelPoolManager if in router context
+        if (_context.isRouterContext()) {
+            try {
+                Object tm = _context.getClass().getMethod("tunnelManager").invoke(_context);
+                if (tm != null) {
+                    tm.getClass().getMethod("removeTunnelStatusListener", TunnelStatusListener.class).invoke(tm, lsnr);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+    }
+
+    @Override
+    public boolean switchToNewTunnel() {
+        return false;
+    }
+
+    @Override
+    public void setCurrentTunnelPair(TunnelPair pair) {
+        _currentTunnelPair = pair;
+    }
+
+    private volatile TunnelPair _currentTunnelPair;
+
+    @Override
+    public TunnelPair getCurrentTunnelPair() {
+        // First check if we have an explicitly set pair
+        TunnelPair explicit = _currentTunnelPair;
+        if (explicit != null && !explicit.isEmpty()) {
+            return explicit;
+        }
+        // Fallback to reflection-based lookup (less accurate)
+        if (_context.isRouterContext()) {
+            try {
+                Object tm = _context.getClass().getMethod("tunnelManager").invoke(_context);
+                if (tm != null) {
+                    net.i2p.data.Hash destHash = getMyDestination().calculateHash();
+                    Object result = tm.getClass().getMethod("getTunnelPair", net.i2p.data.Hash.class).invoke(tm, destHash);
+                    if (result != null) {
+                        net.i2p.data.TunnelId[] pair = (net.i2p.data.TunnelId[]) result;
+                        if (pair != null && pair.length >= 2) {
+                            return new TunnelPair(pair[0], pair[1]);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore - not router context or method doesn't exist
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void rebuildTunnels() {
+        // Trigger the tunnel pool to build new tunnels
+        if (_context.isRouterContext()) {
+            try {
+                Object tm = _context.getClass().getMethod("tunnelManager").invoke(_context);
+                if (tm != null) {
+                    tm.getClass().getMethod("tunnelFailed").invoke(tm);
+                }
+            } catch (Exception e) {
+                // Ignore - not router context or method doesn't exist
+            }
+        }
+    }
+
+    /**
+     *  Notify all tunnel status listeners of a tunnel failure.
+     *  @since 0.9.69
+     */
+    protected void notifyTunnelFailed(String poolName, boolean isInbound) {
+        for (TunnelStatusListener lsnr : _tunnelStatusListeners) {
+            try {
+                lsnr.tunnelFailed(poolName, isInbound);
+            } catch (Throwable t) {
+                if (_log.shouldWarn())
+                    _log.warn("Error notifying tunnel listener", t);
+            }
+        }
+    }
+
+    /**
+     *  Notify all tunnel status listeners of a tunnel removal.
+     *  @since 0.9.69+
+     */
+    protected void notifyTunnelRemoved(TunnelRemovalEvent event) {
+        for (TunnelStatusListener lsnr : _tunnelStatusListeners) {
+            try {
+                lsnr.tunnelRemoved(event);
+            } catch (Throwable t) {
+                if (_log.shouldWarn())
+                    _log.warn("Error notifying tunnel removal listener", t);
+            }
+        }
+    }
+
+    /**
+     *  Notify all tunnel status listeners of pool shutdown.
+     *  @since 0.9.69+
+     */
+    protected void notifyPoolShuttingDown(String poolName, boolean isInbound) {
+        for (TunnelStatusListener lsnr : _tunnelStatusListeners) {
+            try {
+                lsnr.poolShuttingDown(poolName, isInbound);
+            } catch (Throwable t) {
+                if (_log.shouldWarn())
+                    _log.warn("Error notifying pool shutdown listener", t);
+            }
+        }
     }
 
 }

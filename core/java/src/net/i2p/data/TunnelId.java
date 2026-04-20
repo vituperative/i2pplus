@@ -1,4 +1,5 @@
 package net.i2p.data;
+
 /*
  * free (adj.): unencumbered; not under the control of others
  * Written by jrandom in 2003 and released into the public domain
@@ -14,7 +15,7 @@ import java.io.OutputStream;
 
 /**
  * Tunnel identifier for routing messages through a sequence of routers in I2P.
- * 
+ *
  * <p>TunnelId provides unique identification within tunnel routing:</p>
  * <ul>
  *   <li><strong>Local Uniqueness:</strong> Must be unique on each router in tunnel</li>
@@ -22,7 +23,7 @@ import java.io.OutputStream;
  *   <li><strong>Random Generation:</strong> Typically generated from cryptographically secure random</li>
  *   <li><strong>Routing Coordination:</strong> Prevents message delivery to wrong tunnels</li>
  * </ul>
- * 
+ *
  * <p><strong>Constraints and Validation:</strong></p>
  * <ul>
  *   <li><strong>Minimum Value:</strong> Must be greater than zero (ID > 0)</li>
@@ -30,7 +31,7 @@ import java.io.OutputStream;
  *   <li><strong>Special Case:</strong> Zero reserved for direct replies in DatabaseStoreMessage</li>
  *   <li><strong>Uniqueness:</strong> Router must enforce uniqueness across its tunnels</li>
  * </ul>
- * 
+ *
  * <p><strong>Usage in I2P:</strong></p>
  * <ul>
  *   <li><strong>Tunnel Routing:</strong> Messages forwarded through tunnel chain</li>
@@ -39,7 +40,7 @@ import java.io.OutputStream;
  *   <li><strong>Load Balancing:</strong> Multiple tunnels for traffic distribution</li>
  *   <li><strong>Client Communication:</strong> I2CP tunnel establishment and management</li>
  * </ul>
- * 
+ *
  * <p><strong>Performance Considerations:</strong></p>
  * <ul>
  *   <li><strong>Efficient Storage:</strong> Compact 4-byte representation</li>
@@ -47,7 +48,7 @@ import java.io.OutputStream;
  *   <li><strong>Minimal Overhead:</strong> No object inheritance since 0.9.48</li>
  *   <li><strong>Memory Efficiency:</strong> Primitive long storage</li>
  * </ul>
- * 
+ *
  * <p><strong>Security Aspects:</strong></p>
  * <ul>
  *   <li><strong>ID Randomness:</strong> Use cryptographically secure random generation</li>
@@ -55,7 +56,7 @@ import java.io.OutputStream;
  *   <li><strong>Collision Avoidance:</strong> Local uniqueness prevents routing confusion</li>
  *   <li><strong>Isolation:</strong> Different tunnels have separate ID spaces</li>
  * </ul>
- * 
+ *
  * <p><strong>Implementation Notes:</strong></p>
  * <ul>
  *   <li><strong>Space Optimization:</strong> Does not extend DataStructureImpl since 0.9.48</li>
@@ -63,7 +64,7 @@ import java.io.OutputStream;
  *   <li><strong>Thread Safety:</strong> Immutable objects are inherently thread-safe</li>
  *   <li><strong>Validation:</strong> Constructor enforces valid ID range</li>
  * </ul>
- * 
+ *
  * <p><strong>Constants:</strong></p>
  * <ul>
  *   <li>{@link #MAX_ID_VALUE} - Maximum allowed tunnel ID (0xffffffff)</li>
@@ -88,17 +89,18 @@ public class TunnelId {
         setTunnelId(id);
     }
 
-    public long getTunnelId() { return _tunnelId; }
+    public long getTunnelId() {
+        return _tunnelId;
+    }
 
     /**
-      *  Sets the tunnel ID for this lease.
-      *
-      *  @param id 1 to 0xffffffff
-      *  @throws IllegalArgumentException if less than or equal to zero or greater than max value
-      */
-    public void setTunnelId(long id) {
-        if (id <= 0 || id > MAX_ID_VALUE)
-            throw new IllegalArgumentException("Bad Id " + id);
+     *  Sets the tunnel ID for this lease.
+     *
+     *  @param id 1 to 0xffffffff
+     *  @throws IllegalArgumentException if less than or equal to zero or greater than max value
+     */
+    public final void setTunnelId(long id) {
+        if (id <= 0 || id > MAX_ID_VALUE) throw new IllegalArgumentException("Bad Id " + id);
         _tunnelId = id;
     }
 
@@ -108,23 +110,24 @@ public class TunnelId {
 
     public void writeBytes(OutputStream out) throws DataFormatException, IOException {
         // writeLong() will throw DFE on negative value
-        //if (_tunnelId < 0) throw new DataFormatException("Invalid tunnel ID: " + _tunnelId);
+        // if (_tunnelId < 0) throw new DataFormatException("Invalid tunnel ID: " + _tunnelId);
         DataHelper.writeLong(out, 4, _tunnelId);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
-        if ( (obj == null) || !(obj instanceof TunnelId))
-            return false;
-        return _tunnelId == ((TunnelId)obj)._tunnelId;
+        if ((obj == null) || !(obj instanceof TunnelId)) return false;
+        return _tunnelId == ((TunnelId) obj)._tunnelId;
     }
 
     @Override
     public int hashCode() {
-        return (int)_tunnelId;
+        return (int) _tunnelId;
     }
 
     @Override
-    public String toString() { return String.valueOf(_tunnelId); }
+    public String toString() {
+        return String.valueOf(_tunnelId);
+    }
 }

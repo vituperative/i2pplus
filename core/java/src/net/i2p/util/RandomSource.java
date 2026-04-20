@@ -9,14 +9,15 @@ package net.i2p.util;
  *
  */
 
+import net.i2p.I2PAppContext;
+import net.i2p.crypto.EntropyHarvester;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import net.i2p.I2PAppContext;
-import net.i2p.crypto.EntropyHarvester;
 
 /**
  * Singleton for whatever PRNG i2p uses.
@@ -26,7 +27,7 @@ import net.i2p.crypto.EntropyHarvester;
 public class RandomSource extends SecureRandom implements EntropyHarvester {
 
     private static final long serialVersionUID = 1L;
-    protected transient final I2PAppContext _context;
+    protected final transient I2PAppContext _context;
 
     /**
      *  Deprecated - do not instantiate this directly, as you won't get the
@@ -82,6 +83,7 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
      * including 0, excluding n.
      *
      * This code unused, see FortunaRandomSource override
+     * NOPMD - nextLong(long) doesn't override SecureRandom (added in Java 17)
      */
     public long nextLong(long n) {
         long v = super.nextLong();
@@ -108,17 +110,18 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
         }
     }
 
-    public EntropyHarvester harvester() { return this; }
+    public EntropyHarvester harvester() {
+        return this;
+    }
 
     @Override
     public void feedEntropy(String source, long data, int bitoffset, int bits) {
-        if (bitoffset == 0)
-            setSeed(data);
+        if (bitoffset == 0) setSeed(data);
     }
 
     @Override
     public void feedEntropy(String source, byte[] data, int offset, int len) {
-        if ( (offset == 0) && (len == data.length) ) {
+        if ((offset == 0) && (len == data.length)) {
             setSeed(data);
         } else {
             setSeed(_context.sha().calculateHash(data, offset, len).getData());
@@ -130,8 +133,7 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
      */
     public void loadSeed() {
         byte buf[] = new byte[1024];
-        if (initSeed(buf))
-            setSeed(buf);
+        if (initSeed(buf)) setSeed(buf);
     }
 
     public void saveSeed() {
@@ -151,7 +153,10 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
         } catch (IOException ioe) {
             // ignore
         } finally {
-            if (fos != null) try { fos.close(); } catch (IOException ioe) {}
+            if (fos != null) try {
+                    fos.close();
+                } catch (IOException ioe) {
+                }
         }
     }
 
@@ -165,25 +170,24 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
         Thread t = new I2PThread(new SecureRandomInit(tbuf), "SecureRandomInit", true);
         t.start();
         try {
-            t.join(10*1000);
-            synchronized(tbuf) {
+            t.join(10 * 1000);
+            synchronized (tbuf) {
                 for (int i = 0; i < tbuf.length; i++) {
                     if (tbuf[i] != 0) {
                         ok = true;
                         break;
                     }
                 }
-                if (ok)
-                    System.arraycopy(tbuf, 0, buf, 0, buf.length);
+                if (ok) System.arraycopy(tbuf, 0, buf, 0, buf.length);
                 // See FortunaRandomSource constructor for fallback
-                //else
+                // else
                 //    System.out.println("INFO: SecureRandom init failed or took too long");
             }
-        } catch (InterruptedException ie) {}
+        } catch (InterruptedException ie) {
+        }
 
         // why urandom?  because /dev/random blocks
-        if (!SystemVersion.isWindows())
-            ok = seedFromFile(new File("/dev/urandom"), buf) || ok;
+        if (!SystemVersion.isWindows()) ok = seedFromFile(new File("/dev/urandom"), buf) || ok;
         // we merge (XOR) in the data from /dev/urandom with our own seedfile
         File localFile = new File(_context.getConfigDir(), SEEDFILE);
         ok = seedFromFile(localFile, buf) || ok;
@@ -214,11 +218,12 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
                 SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
                 for (int i = 0; i < buf.length; i += SZ) {
                     sr.nextBytes(buf2);
-                    synchronized(buf) {
+                    synchronized (buf) {
                         System.arraycopy(buf2, 0, buf, i, Math.min(SZ, buf.length - i));
                     }
                 }
-            } catch (NoSuchAlgorithmException e) {}
+            } catch (NoSuchAlgorithmException e) {
+            }
         }
     }
 
@@ -237,20 +242,20 @@ public class RandomSource extends SecureRandom implements EntropyHarvester {
                 byte tbuf[] = new byte[buf.length];
                 while (read < buf.length) {
                     int curRead = fis.read(tbuf, read, tbuf.length - read);
-                    if (curRead < 0)
-                        break;
+                    if (curRead < 0) break;
                     read += curRead;
                 }
-                for (int i = 0; i < read; i++)
-                    buf[i] ^= tbuf[i];
+                for (int i = 0; i < read; i++) buf[i] ^= tbuf[i];
                 return true;
             } catch (IOException ioe) {
                 // ignore
             } finally {
-                if (fis != null) try { fis.close(); } catch (IOException ioe) {}
+                if (fis != null) try {
+                        fis.close();
+                    } catch (IOException ioe) {
+                    }
             }
         }
         return false;
     }
-
 }

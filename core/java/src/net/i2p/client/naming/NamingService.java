@@ -7,11 +7,17 @@
  */
 package net.i2p.client.naming;
 
+import net.i2p.I2PAppContext;
+import net.i2p.data.DataFormatException;
+import net.i2p.data.Destination;
+import net.i2p.data.Hash;
+import net.i2p.util.Log;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,11 +25,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import net.i2p.I2PAppContext;
-import net.i2p.data.DataFormatException;
-import net.i2p.data.Destination;
-import net.i2p.data.Hash;
-import net.i2p.util.Log;
 
 /**
  * Naming services create a subclass of this class.
@@ -37,6 +38,7 @@ public abstract class NamingService {
 
     /** what classname should be used as the naming service impl? */
     public static final String PROP_IMPL = "i2p.naming.impl";
+
     private static final String DEFAULT_IMPL = "net.i2p.router.naming.BlockfileNamingService";
     private static final String OLD_DEFAULT_IMPL = "net.i2p.client.naming.BlockfileNamingService";
     private static final String BACKUP_IMPL = "net.i2p.client.naming.HostsTxtNamingService";
@@ -88,7 +90,9 @@ public abstract class NamingService {
      * if none is known. It is safe for subclasses to always return
      * <code>null</code> if no reverse lookup is possible.
      */
-    public String reverseLookup(Hash h) { return null; }
+    public String reverseLookup(Hash h) {
+        return null;
+    }
 
     /**
      * If the hostname is a valid Base64 encoded destination, return the
@@ -139,7 +143,7 @@ public abstract class NamingService {
      *  @since 0.8.7
      */
     public Properties getConfiguration() {
-        return null;
+        return new Properties();
     }
 
     /**
@@ -164,7 +168,7 @@ public abstract class NamingService {
      * @since 0.8.7
      */
     public List<NamingService> getNamingServices() {
-        return null;
+        return Collections.emptyList();
     }
 
     /**
@@ -188,7 +192,6 @@ public abstract class NamingService {
     public boolean addNamingService(NamingService ns) {
         return addNamingService(ns, false);
     }
-
 
     /**
      * Only for chaining-capable NamingServices.
@@ -286,11 +289,10 @@ public abstract class NamingService {
      */
     public Map<String, String> getBase64Entries(Properties options) {
         Map<String, Destination> entries = getEntries(options);
-        if (entries.size() <= 0)
-            return Collections.emptyMap();
+        if (entries.size() <= 0) return Collections.emptyMap();
         Map<String, String> rv = new TreeMap<String, String>();
         for (Map.Entry<String, Destination> e : entries.entrySet()) {
-             rv.put(e.getKey(), e.getValue().toBase64());
+            rv.put(e.getKey(), e.getValue().toBase64());
         }
         return rv;
     }
@@ -332,8 +334,7 @@ public abstract class NamingService {
         out.write(getName());
         if (options != null) {
             String list = options.getProperty("list");
-            if (list != null)
-                out.write(" (" + list + ')');
+            if (list != null) out.write(" (" + list + ')');
         }
         final String nl = System.getProperty("line.separator", "\n");
         out.write(nl);
@@ -344,7 +345,7 @@ public abstract class NamingService {
             return;
         }
         out.write("# Exported: ");
-        out.write(new Date().toString());
+        out.write(Instant.now().toString());
         out.write(nl);
         if (sz > 1) {
             out.write("# " + sz + " entries");
@@ -452,8 +453,7 @@ public abstract class NamingService {
     public boolean putAll(Map<String, Destination> entries, Properties options) {
         boolean rv = true;
         for (Map.Entry<String, Destination> entry : entries.entrySet()) {
-            if (!put(entry.getKey(), entry.getValue(), options))
-                rv = false;
+            if (!put(entry.getKey(), entry.getValue(), options)) rv = false;
         }
         return rv;
     }
@@ -667,8 +667,7 @@ public abstract class NamingService {
         List<Destination> rv;
         if (d != null) {
             rv = Collections.singletonList(d);
-            if (storedOptions != null)
-                storedOptions.add(props.isEmpty() ? null : props);
+            if (storedOptions != null) storedOptions.add(props.isEmpty() ? null : props);
         } else {
             rv = null;
         }
@@ -738,8 +737,7 @@ public abstract class NamingService {
      */
     public boolean remove(String hostname, Destination d, Properties options) {
         Destination old = lookup(hostname, options, null);
-        if (!d.equals(old))
-            return false;
+        if (!d.equals(old)) return false;
         return remove(hostname, options);
     }
 
@@ -817,11 +815,9 @@ public abstract class NamingService {
      */
     public static boolean isB32Host(String hostname) {
         int len = hostname.length();
-        if (len < 60)
-            return false;
+        if (len < 60) return false;
         String lc = hostname.toLowerCase(Locale.US);
-        return lc.endsWith(".b32.i2p") ||
-               (len >= 64 && lc.endsWith(".b32.i2p.alt"));
+        return lc.endsWith(".b32.i2p") || (len >= 64 && lc.endsWith(".b32.i2p.alt"));
     }
 
     /**
@@ -838,11 +834,9 @@ public abstract class NamingService {
      */
     public static boolean isBlindedHost(String hostname) {
         int len = hostname.length();
-        if (len < 64)
-            return false;
+        if (len < 64) return false;
         String lc = hostname.toLowerCase(Locale.US);
-        return lc.endsWith(".b32.i2p") ||
-               (len >= 68 && lc.endsWith(".b32.i2p.alt"));
+        return lc.endsWith(".b32.i2p") || (len >= 68 && lc.endsWith(".b32.i2p.alt"));
     }
 
     /**
@@ -864,12 +858,11 @@ public abstract class NamingService {
         NamingService instance = null;
         String dflt = context.isRouterContext() ? DEFAULT_IMPL : BACKUP_IMPL;
         String impl = context.getProperty(PROP_IMPL, dflt);
-        if (impl.equals(OLD_DEFAULT_IMPL))
-            impl = dflt;
+        if (impl.equals(OLD_DEFAULT_IMPL)) impl = dflt;
         try {
             Class<?> cls = Class.forName(impl);
             Constructor<?> con = cls.getConstructor(I2PAppContext.class);
-            instance = (NamingService)con.newInstance(context);
+            instance = (NamingService) con.newInstance(context);
         } catch (Exception ex) {
             Log log = context.logManager().getLog(NamingService.class);
             // Blockfile may throw RuntimeException but HostsTxt won't
@@ -883,5 +876,4 @@ public abstract class NamingService {
         }
         return instance;
     }
-
 }

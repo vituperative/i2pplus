@@ -1,9 +1,10 @@
 package net.i2p.kademlia;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.i2p.I2PAppContext;
 import net.i2p.data.SimpleDataStructure;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  Removes a random element. Not resistant to flooding.
@@ -19,12 +20,12 @@ public class RandomTrimmer<T extends SimpleDataStructure> implements KBucketTrim
         _max = max;
     }
 
+    @Override
     public boolean trim(KBucket<T> kbucket, T toAdd) {
         List<T> e = new ArrayList<T>(kbucket.getEntries());
         int sz = e.size();
         // concurrency
-        if (sz < _max)
-            return true;
+        if (sz < _max) return true;
         T toRemove = e.get(_ctx.random().nextInt(sz));
         kbucket.remove(toRemove);
         return true;

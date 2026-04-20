@@ -25,6 +25,7 @@ import net.i2p.I2PAppContext;
  * @since 0.7.12
  * @author zzz
  */
+@SuppressWarnings("PMD.CloseResource")
 public class PartialEepGet extends EepGet {
     private final long _fetchSize;
 
@@ -35,13 +36,26 @@ public class PartialEepGet extends EepGet {
      * @param proxyPort use 0 for no proxy
      * @param size fetch exactly this many bytes
      */
-    public PartialEepGet(I2PAppContext ctx, String proxyHost, int proxyPort,
-                         OutputStream outputStream,  String url, long size) {
+    public PartialEepGet(
+            I2PAppContext ctx, String proxyHost, int proxyPort, OutputStream outputStream, String url, long size) {
         // we're using this constructor:
         // public EepGet(I2PAppContext ctx, boolean shouldProxy, String proxyHost, int proxyPort, int numRetries,
-        //               long minSize, long maxSize, String outputFile, OutputStream outputStream, String url, boolean allowCaching, String etag, String postData) {
-        super(ctx, proxyHost != null && proxyPort > 0, proxyHost, proxyPort, 0,
-              size, size, null, outputStream, url, true, null, null);
+        //               long minSize, long maxSize, String outputFile, OutputStream outputStream, String url, boolean
+        // allowCaching, String etag, String postData) {
+        super(
+                ctx,
+                proxyHost != null && proxyPort > 0,
+                proxyHost,
+                proxyPort,
+                0,
+                size,
+                size,
+                null,
+                outputStream,
+                url,
+                true,
+                null,
+                null);
         _fetchSize = size;
     }
 
@@ -62,49 +76,49 @@ public class PartialEepGet extends EepGet {
         try {
             int c;
             while ((c = g.getopt()) != -1) {
-              switch (c) {
-                case 'p':
-                    String s = g.getOptarg();
-                    int colon = s.indexOf(':');
-                    if (colon >= 0) {
-                        // Todo IPv6 [a:b:c]:4444
-                        proxyHost = s.substring(0, colon);
-                        String port = s.substring(colon + 1);
-                        proxyPort = Integer.parseInt(port);
-                    } else {
-                        proxyHost = s;
-                        // proxyPort remains default
-                    }
-                    break;
+                switch (c) {
+                    case 'p':
+                        String s = g.getOptarg();
+                        int colon = s.indexOf(':');
+                        if (colon >= 0) {
+                            // Todo IPv6 [a:b:c]:4444
+                            proxyHost = s.substring(0, colon);
+                            String port = s.substring(colon + 1);
+                            proxyPort = Integer.parseInt(port);
+                        } else {
+                            proxyHost = s;
+                            // proxyPort remains default
+                        }
+                        break;
 
-                case 'c':
-                    // no proxy, same as -p :0
-                    proxyHost = "";
-                    proxyPort = 0;
-                    break;
+                    case 'c':
+                        // no proxy, same as -p :0
+                        proxyHost = "";
+                        proxyPort = 0;
+                        break;
 
-                case 'l':
-                    size = Long.parseLong(g.getOptarg());
-                    break;
+                    case 'l':
+                        size = Long.parseLong(g.getOptarg());
+                        break;
 
-                case 'o':
-                    saveAs = g.getOptarg();
-                    break;
+                    case 'o':
+                        saveAs = g.getOptarg();
+                        break;
 
-                case 'u':
-                    username = g.getOptarg();
-                    break;
+                    case 'u':
+                        username = g.getOptarg();
+                        break;
 
-                case 'x':
-                    password = g.getOptarg();
-                    break;
+                    case 'x':
+                        password = g.getOptarg();
+                        break;
 
-                case '?':
-                case ':':
-                default:
-                    error = true;
-                    break;
-              }  // switch
+                    case '?':
+                    case ':':
+                    default:
+                        error = true;
+                        break;
+                } // switch
             } // while
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -117,8 +131,7 @@ public class PartialEepGet extends EepGet {
         }
         String url = args[g.getOptind()];
 
-        if (saveAs == null)
-            saveAs = suggestName(url);
+        if (saveAs == null) saveAs = suggestName(url);
         OutputStream out;
         try {
             // resume from a previous eepget won't work right doing it this way
@@ -137,8 +150,7 @@ public class PartialEepGet extends EepGet {
                     do {
                         System.err.print("Proxy password: ");
                         password = r.readLine();
-                        if (password == null)
-                            throw new IOException();
+                        if (password == null) throw new IOException();
                         password = password.trim();
                     } while (password.length() <= 0);
                 } catch (IOException ioe) {
@@ -148,7 +160,7 @@ public class PartialEepGet extends EepGet {
             get.addAuthorization(username, password);
         }
         get.addStatusListener(get.new CLIStatusListener(1024, 40));
-        if (get.fetch(45*1000, -1, 60*1000)) {
+        if (get.fetch(45 * 1000, -1, 60 * 1000)) {
             System.err.println("Last-Modified: " + get.getLastModified());
             System.err.println("Etag: " + get.getEtag());
         } else {
@@ -158,10 +170,9 @@ public class PartialEepGet extends EepGet {
     }
 
     private static void usage() {
-        System.err.println("PartialEepGet [-p 127.0.0.1[:4444]] [-c] [-o outputFile]\n" +
-                           "              [-l #bytes] (default 56)\n" +
-                           "              [-u username] [-x password] url\n" +
-                           "              (use -c or -p :0 for no proxy)");
+        System.err.println("PartialEepGet [-p 127.0.0.1[:4444]] [-c] [-o outputFile]\n"
+                + "              [-l #bytes] (default 56)\n" + "              [-u username] [-x password] url\n"
+                + "              (use -c or -p :0 for no proxy)");
     }
 
     @Override
@@ -176,32 +187,25 @@ public class PartialEepGet extends EepGet {
             throw ioe;
         }
         String host = url.getHost();
-        if (host == null || host.length() <= 0)
-            throw new MalformedURLException("Bad URL, no host");
+        if (host == null || host.length() <= 0) throw new MalformedURLException("Bad URL, no host");
         int port = url.getPort();
         String path = url.getRawPath();
         String query = url.getRawQuery();
-        if (_log.shouldDebug())
-            _log.debug("Requesting " + _actualURL);
+        if (_log.shouldDebug()) _log.debug("Requesting " + _actualURL);
         // RFC 2616 sec 5.1.2 - full URL if proxied, absolute path only if not proxied
         String urlToSend;
         if (_shouldProxy) {
             urlToSend = _actualURL;
-            if ((path == null || path.length()<= 0) &&
-                (query == null || query.length()<= 0))
-                urlToSend += "/";
+            if ((path == null || path.length() <= 0) && (query == null || query.length() <= 0)) urlToSend += "/";
         } else {
             urlToSend = path;
-            if (urlToSend == null || urlToSend.length()<= 0)
-                urlToSend = "/";
-            if (query != null)
-                urlToSend += '?' + query;
+            if (urlToSend == null || urlToSend.length() <= 0) urlToSend = "/";
+            if (query != null) urlToSend += '?' + query;
         }
         buf.append("GET ").append(urlToSend).append(" HTTP/1.1\r\n");
         // RFC 2616 sec 5.1.2 - host + port (NOT authority, which includes userinfo)
         buf.append("Host: ").append(host);
-        if (port >= 0)
-            buf.append(':').append(port);
+        if (port >= 0) buf.append(':').append(port);
         buf.append("\r\n");
         buf.append("Range: bytes=");
         buf.append(_alreadyTransferred);
@@ -209,21 +213,17 @@ public class PartialEepGet extends EepGet {
         buf.append(_fetchSize - 1);
         buf.append("\r\n");
 
-        buf.append("Cache-Control: no-cache\r\n" +
-                   "Pragma: no-cache\r\n" +
-                   "Accept-Encoding: \r\n" +
-                   "Connection: close\r\n");
+        buf.append("Cache-Control: no-cache\r\n" + "Pragma: no-cache\r\n" + "Accept-Encoding: \r\n"
+                + "Connection: close\r\n");
         boolean uaOverridden = false;
         if (_extraHeaders != null) {
             for (String hdr : _extraHeaders) {
-                if (hdr.toLowerCase(Locale.US).startsWith("user-agent: "))
-                    uaOverridden = true;
+                if (hdr.toLowerCase(Locale.US).startsWith("user-agent: ")) uaOverridden = true;
                 buf.append(hdr).append("\r\n");
             }
         }
         // This will be replaced if we are going through I2PTunnelHTTPClient
-        if(!uaOverridden)
-            buf.append("User-Agent: " + USER_AGENT + "\r\n");
+        if (!uaOverridden) buf.append("User-Agent: ").append(USER_AGENT).append("\r\n");
         if (_authState != null && _shouldProxy && _authState.authMode != AUTH_MODE.NONE) {
             buf.append("Proxy-Authorization: ");
             buf.append(_authState.getAuthHeader("GET", urlToSend));
@@ -231,8 +231,7 @@ public class PartialEepGet extends EepGet {
         }
         buf.append("\r\n");
 
-        if (_log.shouldDebug())
-            _log.debug("Request: " + buf.toString());
+        if (_log.shouldDebug()) _log.debug("Request: " + buf.toString());
         return buf.toString();
     }
 }

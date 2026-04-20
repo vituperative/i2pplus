@@ -11,6 +11,9 @@
  */
 package net.i2p.crypto.eddsa;
 
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
+
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactorySpi;
@@ -20,8 +23,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 
 /**
  * Java Security Provider KeyFactory implementation for EdDSA (Edwards-curve Digital Signature Algorithm).
@@ -88,11 +89,11 @@ public final class KeyFactory extends KeyFactorySpi {
      * @return the generated EdDSA private key
      * @throws InvalidKeySpecException if the key specification is unsupported or malformed
      * @since 0.9.15
-     * 
+     *
      * Supports PKCS8EncodedKeySpec since version 0.9.25.
      */
-    protected PrivateKey engineGeneratePrivate(KeySpec keySpec)
-            throws InvalidKeySpecException {
+    @Override
+    protected PrivateKey engineGeneratePrivate(KeySpec keySpec) throws InvalidKeySpecException {
         if (keySpec instanceof EdDSAPrivateKeySpec) {
             return new EdDSAPrivateKey((EdDSAPrivateKeySpec) keySpec);
         }
@@ -112,11 +113,11 @@ public final class KeyFactory extends KeyFactorySpi {
      * @return the generated EdDSA public key
      * @throws InvalidKeySpecException if the key specification is unsupported or malformed
      * @since 0.9.15
-     * 
+     *
      * Supports X509EncodedKeySpec since version 0.9.25.
      */
-    protected PublicKey engineGeneratePublic(KeySpec keySpec)
-            throws InvalidKeySpecException {
+    @Override
+    protected PublicKey engineGeneratePublic(KeySpec keySpec) throws InvalidKeySpecException {
         if (keySpec instanceof EdDSAPublicKeySpec) {
             return new EdDSAPublicKey((EdDSAPublicKeySpec) keySpec);
         }
@@ -141,8 +142,8 @@ public final class KeyFactory extends KeyFactorySpi {
      * @since 0.9.15
      */
     @SuppressWarnings("unchecked")
-    protected <T extends KeySpec> T engineGetKeySpec(Key key, Class<T> keySpec)
-            throws InvalidKeySpecException {
+    @Override
+    protected <T extends KeySpec> T engineGetKeySpec(Key key, Class<T> keySpec) throws InvalidKeySpecException {
         if (keySpec.isAssignableFrom(EdDSAPublicKeySpec.class) && key instanceof EdDSAPublicKey) {
             EdDSAPublicKey k = (EdDSAPublicKey) key;
             if (k.getParams() != null) {
@@ -169,6 +170,7 @@ public final class KeyFactory extends KeyFactorySpi {
      * @throws InvalidKeyException always, as no other EdDSA providers are supported
      * @since 0.9.15
      */
+    @Override
     protected Key engineTranslateKey(Key key) throws InvalidKeyException {
         throw new InvalidKeyException("No other EdDSA key providers known");
     }

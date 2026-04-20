@@ -28,7 +28,7 @@ public class Frequency {
 
     /** how long is this frequency averaged over? (ms) */
     public long getPeriod() {
-            return _period;
+        return _period;
     }
 
     /**
@@ -37,7 +37,7 @@ public class Frequency {
      */
     @Deprecated
     public synchronized long getLastEvent() {
-            return _lastEvent;
+        return _lastEvent;
     }
 
     /**
@@ -46,7 +46,7 @@ public class Frequency {
      * @return milliseconds; returns period + 1 if no events in previous period
      */
     public synchronized double getAverageInterval() {
-            return _avgInterval;
+        return _avgInterval;
     }
 
     /**
@@ -56,7 +56,7 @@ public class Frequency {
      */
     @Deprecated
     public synchronized double getMinAverageInterval() {
-            return _minAverageInterval;
+        return _minAverageInterval;
     }
 
     /**
@@ -64,9 +64,9 @@ public class Frequency {
      * Use getStrictAverageInterval() for the real lifetime average.
      */
     public synchronized double getAverageEventsPerPeriod() {
-    	if (_avgInterval > 0) return _period / _avgInterval;
+        if (_avgInterval > 0) return _period / _avgInterval;
 
-    	return 0;
+        return 0;
     }
 
     /**
@@ -74,9 +74,9 @@ public class Frequency {
      * Use getStrictAverageEventsPerPeriod() for the real lifetime average.
      */
     public synchronized double getMaxAverageEventsPerPeriod() {
-    	if (_minAverageInterval > 0 && _minAverageInterval <= _period) return _period / _minAverageInterval;
+        if (_minAverageInterval > 0 && _minAverageInterval <= _period) return _period / _minAverageInterval;
 
-    	return 0;
+        return 0;
     }
 
     /**
@@ -84,9 +84,9 @@ public class Frequency {
      * @return milliseconds; returns Double.MAX_VALUE if no events ever
      */
     public synchronized double getStrictAverageInterval() {
-            long duration = now() - _start;
-            if ((duration <= 0) || (_count <= 0)) return Double.MAX_VALUE;
-            return duration / (double) _count;
+        long duration = now() - _start;
+        if ((duration <= 0) || (_count <= 0)) return Double.MAX_VALUE;
+        return duration / (double) _count;
     }
 
     /** using the strict average interval, how many events occur within an average period? */
@@ -98,7 +98,7 @@ public class Frequency {
 
     /** how many events have occurred within the lifetime of this stat? */
     public synchronized long getEventCount() {
-            return _count;
+        return _count;
     }
 
     /**
@@ -125,8 +125,7 @@ public class Frequency {
             // This calculates something of a rolling average interval.
             long now = now();
             long interval = now - _lastEvent;
-            if (interval > _period)
-                interval = _period;
+            if (interval > _period) interval = _period;
             else if (interval <= 0) interval = 1;
 
             if (interval >= _period && !eventOccurred) {
@@ -149,7 +148,7 @@ public class Frequency {
         }
     }
 
-    private final static long now() {
+    private static final long now() {
         return System.currentTimeMillis();
     }
 

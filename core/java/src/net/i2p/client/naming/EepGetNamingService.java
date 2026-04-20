@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import net.i2p.I2PAppContext;
 import net.i2p.data.Destination;
 import net.i2p.util.EepGet;
@@ -36,8 +37,9 @@ import net.i2p.util.EepGet;
  */
 public class EepGetNamingService extends DummyNamingService {
 
-    private final static String PROP_EEPGET_LIST = "i2p.naming.eepget.list";
-    private final static String DEFAULT_EEPGET_LIST = "http://i2host.i2p/cgi-bin/i2hostquery?";
+    private static final String PROP_EEPGET_LIST = "i2p.naming.eepget.list";
+    private static final String DEFAULT_EEPGET_LIST = "http://i2host.i2p/cgi-bin/i2hostquery?";
+    private static final Pattern VALID_DEST_CHARS = Pattern.compile("[a-zA-Z0-9~-]");
 
     /**
      * The naming service should only be constructed and accessed through the
@@ -53,25 +55,21 @@ public class EepGetNamingService extends DummyNamingService {
         String list = _context.getProperty(PROP_EEPGET_LIST, DEFAULT_EEPGET_LIST);
         StringTokenizer tok = new StringTokenizer(list, ",");
         List<String> rv = new ArrayList<String>(tok.countTokens());
-        while (tok.hasMoreTokens())
-            rv.add(tok.nextToken());
+        while (tok.hasMoreTokens()) rv.add(tok.nextToken());
         return rv;
     }
 
     @Override
     public Destination lookup(String hostname, Properties lookupOptions, Properties storedOptions) {
         Destination d = super.lookup(hostname, null, null);
-        if (d != null)
-            return d;
+        if (d != null) return d;
 
         hostname = hostname.toLowerCase(Locale.US);
         // Base32 failed?
-        if (hostname.length() == BASE32_HASH_LENGTH + 8 && hostname.endsWith(".b32.i2p"))
-            return null;
+        if (hostname.length() == BASE32_HASH_LENGTH + 8 && hostname.endsWith(".b32.i2p")) return null;
 
         List<String> URLs = getURLs();
-        if (URLs.isEmpty())
-            return null;
+        if (URLs.isEmpty()) return null;
 
         // prevent lookup loops - this cannot be the only lookup service
         for (int i = 0; i < URLs.size(); i++) {
@@ -98,28 +96,40 @@ public class EepGetNamingService extends DummyNamingService {
 
     // FIXME allow larger Dests for non-null Certs
     private static final int MAX_RESPONSE = DEST_SIZE + 68 + 10; // allow for hostname= and some trailing stuff
+
     private String fetchAddr(String url, String hostname) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(MAX_RESPONSE);
 
         try {
             // Do a proxied eepget into our ByteArrayOutputStream with 0 retries
-            EepGet get = new EepGet(_context, true, "localhost", 4444, 0, DEST_SIZE, MAX_RESPONSE,
-                                    null, baos, url + hostname, false, null, null);
+            EepGet get = new EepGet(
+                    _context,
+                    true,
+                    "localhost",
+                    4444,
+                    0,
+                    DEST_SIZE,
+                    MAX_RESPONSE,
+                    null,
+                    baos,
+                    url + hostname,
+                    false,
+                    null,
+                    null);
             // 10s header timeout, 15s total timeout, unlimited inactivity timeout
-            if (get.fetch(10*1000l, 15*1000l, -1l)) {
+            if (get.fetch(10 * 1000L, 15 * 1000L, -1L)) {
                 if (baos.size() < DEST_SIZE) {
                     _log.error("Short response: " + url + hostname);
                     return null;
                 }
                 String key = baos.toString("UTF-8");
-                if (key.startsWith(hostname + "="))  // strip hostname=
-                    key = key.substring(hostname.length() + 1);
-                key = key.substring(0, DEST_SIZE);   // catch IndexOutOfBounds exception below
+                if (key.startsWith(hostname + "=")) key = key.substring(hostname.length() + 1); // strip hostname=
+                key = key.substring(0, DEST_SIZE); // catch IndexOutOfBounds exception below
                 if (!key.endsWith("AA")) {
                     _log.error("Invalid key: " + url + hostname);
                     return null;
                 }
-                if (key.replaceAll("[a-zA-Z0-9~-]", "").length() != 0) {
+                if (!VALID_DEST_CHARS.matcher(key).replaceAll("").isEmpty()) {
                     _log.error("Invalid chars: " + url + hostname);
                     return null;
                 }

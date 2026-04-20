@@ -1,6 +1,7 @@
 package net.i2p.crypto.elgamal;
 
 import java.math.BigInteger;
+
 import javax.crypto.interfaces.DHPrivateKey;
 
 /**
@@ -12,5 +13,6 @@ import javax.crypto.interfaces.DHPrivateKey;
  * in the ElGamal public-key cryptosystem.
  */
 public interface ElGamalPrivateKey extends ElGamalKey, DHPrivateKey {
+    @Override
     public BigInteger getX();
 }

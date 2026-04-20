@@ -1,6 +1,10 @@
-/* I2P+ profiles.js by dr|z3d */
-/* Handle refresh, table sorts, and tier counts on /profiles pages */
-/* License: AGPL3 or later */
+/**
+ * @module profiles
+ * @description Handles auto-refresh, table sorting, and session ban summaries
+ * for the /profiles pages, including profile lists, floodfill profiles, and banlist.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 import { refreshElements } from "./refreshElements.js";
 
@@ -20,12 +24,23 @@ import { refreshElements } from "./refreshElements.js";
   let sorterFF = null;
   let sorterP = null;
   let sorterBans = null;
+  const disabledReasons = new Set();
 
+  /**
+   * Initializes sort listeners and refresh schedules for profile pages.
+   * @function initRefresh
+   * @returns {void}
+   */
   function initRefresh() {
     addSortListeners();
     setupRefreshes();
   }
 
+  /**
+   * Sets up Tablesort instances and progress bar handlers for profile tables.
+   * @function addSortListeners
+   * @returns {void}
+   */
   function addSortListeners() {
     if (ff && sorterFF === null) {
       sorterFF = new Tablesort(ff, {descending: true});
@@ -42,6 +57,11 @@ import { refreshElements } from "./refreshElements.js";
     }
   }
 
+  /**
+   * Configures periodic element refresh for profiles overview, lists, floodfills, and bans.
+   * @function setupRefreshes
+   * @returns {void}
+   */
   function setupRefreshes() {
     // Refresh profiles overview and thresholds every 5 seconds
     if (info || thresholds) {
@@ -63,7 +83,7 @@ import { refreshElements } from "./refreshElements.js";
 
     // Refresh session bans every 15 seconds
     if (sessionBans) {
-      const targetSelectors = "#sessionBanlist, #banSummary h2, #banSummary ul";
+      const targetSelectors = "#sessionBanlist, #banSummary h2";
       refreshElements(targetSelectors, uri, 15000);
     }
 
@@ -72,11 +92,47 @@ import { refreshElements } from "./refreshElements.js";
       if (sorterP) {sorterP.refresh();}
       if (sorterFF) {sorterFF.refresh();}
       if (sorterBans) {sorterBans.refresh();}
-      if (banBody) {updateBanSummary(banBody);}
     });
 
   }
 
+  /**
+   * Filters the session ban table based on active reasons in the summary list.
+   * @function filterBanTable
+   * @returns {void}
+   */
+  function filterBanTable() {
+    if (!banBody) return;
+    const activeReasons = new Set();
+    document.querySelectorAll("#banSummary ul.ban-reasons li.active").forEach(li => {
+      let reason = li.textContent.replace(/^\d+\s*/, "").trim();
+      activeReasons.add(reason);
+    });
+    banBody.querySelectorAll("tr").forEach(row => {
+      const reasonCell = row.querySelector("td.reason");
+      if (!reasonCell) { return; }
+      let reason = reasonCell.textContent;
+      reason = reason.split("(")[0].trim();
+      reason = reason.replace("<b> -&gt; </b>", "")
+                     .replace("<b> -> </b>", "")
+                     .replace(/>\s*/, "")
+                     .replace(/->\s*/, "")
+                     .replace(/➜\s*/, "")
+                     .replace(/^-\s*/, "")
+                     .replace(/^ \-> /, "")
+                     .replace("Excessive NTCP connection", "Excessive connection")
+                     .replace(/Blocklist:\s*[\d.:a-f]+/i, "Blocklist");
+      reason = reason.trim();
+      row.style.display = activeReasons.has(reason) ? "" : "none";
+    });
+  }
+
+  /**
+   * Generates and displays a summary of session bans grouped by reason.
+   * @function updateBanSummary
+   * @param {HTMLElement} banBody - The table body containing ban rows
+   * @returns {void}
+   */
   function updateBanSummary(banBody) {
     const rows = banBody.querySelectorAll("tr");
     const reasonCounts = {};
@@ -91,8 +147,10 @@ import { refreshElements } from "./refreshElements.js";
                        .replace("<b> -> </b>", "")
                        .replace(/>\s*/, "")
                        .replace(/->\s*/, "")
+                       .replace(/➜\s*/, "")
                        .replace(/^-\s*/, "")  // Remove leading dash
                        .replace(/^ \-> /, "") // Remove leading " -> "
+                       .replace("Excessive NTCP connection", "Excessive connection")
                        .replace(/Blocklist:\s*[\d.:a-f]+/i, "Blocklist");
         reason = reason.trim();
         if (reason) { reasonCounts[reason] = (reasonCounts[reason] || 0) + 1; }
@@ -104,9 +162,17 @@ import { refreshElements } from "./refreshElements.js";
       return a[0].localeCompare(b[0]);
     });
 
+    // Auto-disable categories with >= 1000 entries for performance
+    sorted.forEach(([reason, count]) => {
+      if (count >= 1000) { disabledReasons.add(reason); }
+    });
+
     let summaryDiv = document.getElementById("banSummary");
-    let html = `<h2>Total Session Bans: ${total}</h2>\n<ul>`;
-    sorted.forEach(([reason, count]) => { html += `<li><span class=badge>${count}</span> ${reason}</li>\n`; });
+    let html = `<h2>Total Session Bans: ${total}</h2>\n<ul class="ban-reasons">`;
+    sorted.forEach(([reason, count]) => {
+      const cls = disabledReasons.has(reason) ? "" : " active";
+      html += `<li class="${cls}"><span class=badge>${count}</span> ${reason}</li>\n`;
+    });
     html += "</ul>";
 
     if (!summaryDiv) {
@@ -117,12 +183,30 @@ import { refreshElements } from "./refreshElements.js";
       }
     }
     summaryDiv.innerHTML = html;
+    filterBanTable();
     const footer = document.getElementById("sessionBanlistFooter");
     if (footer) {footer.remove();}
   }
 
+  document.addEventListener("click", (e) => {
+    const li = e.target.closest("#banSummary ul.ban-reasons li");
+    if (!li) return;
+    li.classList.toggle("active");
+    const reason = li.textContent.replace(/^\d+\s*/, "").trim();
+    if (li.classList.contains("active")) {
+      disabledReasons.delete(reason);
+    } else {
+      disabledReasons.add(reason);
+    }
+    filterBanTable();
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     initRefresh();
-    if (banBody) {updateBanSummary(banBody);}
+    if (banBody) {
+      updateBanSummary(banBody);
+      new MutationObserver(() => updateBanSummary(banBody))
+        .observe(banBody, {childList: true});
+    }
  });
 })();

@@ -13,6 +13,14 @@
   * Build:
     - Add pmd, codeql ant targets; update ant help
     - Refactor repo folder structure
+  * Core:
+    - Add new tests: ChaCha20, HKDF, SigType, SigUtil, elgamal, x25519
+    - Add router tests: crypto ratchet, PQC, peermanager, transport
+    - Add JBIGI binaries: zen3, athlon64, excavator, jaguar, goldmont, etc.
+    - Fix version regex: use "public static final" convention
+    - Add TunnelRemovalEvent, TunnelStatusListener interfaces
+  * Test Infrastructure:
+    - Add run-tests.sh wrapper with correct classpath
 
 2026-03-21 dr|z3d
   * JBIGI:

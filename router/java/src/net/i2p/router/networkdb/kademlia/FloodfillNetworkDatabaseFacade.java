@@ -988,6 +988,11 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
         }
         public String getName() { return "Timeout NetDb Lookup for Failing Peer"; }
         public void runJob() {
+            // Skip for banned peers
+            if (_context.banlist().isBanlisted(_peer)) {
+                dropAfterLookupFailed(_peer);
+                return;
+            }
             if (!dropAfterLookupFailed(_peer)) {
                 dropAfterLookupFailed(_peer);
             }
@@ -1005,6 +1010,11 @@ public class FloodfillNetworkDatabaseFacade extends KademliaNetworkDatabaseFacad
         }
         public String getName() { return "Verify NetDb Lookup for Failing Peer"; }
         public void runJob() {
+            // Skip verification for banned peers
+            if (_context.banlist().isBanlisted(_peer)) {
+                dropAfterLookupFailed(_peer);
+                return;
+            }
             RouterInfo updated = lookupRouterInfoLocally(_peer);
             if (updated == null || updated.getPublished() <= _info.getPublished()) {
                 // they just sent us what we already had

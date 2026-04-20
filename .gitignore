@@ -188,3 +188,15 @@ tools/java-format-errors.txt
 
 # Local documentation etc
 WIP/
+
+# Native JNI libraries
+*.so
+
+# Log files
+logs/
+core/java/logs/
+router/java/logs/
+
+# Logger config
+logger.config
+core/java/logger.config

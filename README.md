@@ -1,5 +1,5 @@
-[![CodeQL](https://github.com/vituperative/i2pplus/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/vituperative/i2pplus/actions/workflows/codeql-analysis.yml)
-[![Java CI](https://github.com/vituperative/i2pplus/actions/workflows/ant.yml/badge.svg)](https://github.com/vituperative/i2pplus/actions/workflows/ant.yml)
+[![CodeQL](https://github.com/I2PPlus/i2pplus/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/I2PPlus/i2pplus/actions/workflows/codeql-analysis.yml)
+[![Java CI](https://github.com/I2PPlus/i2pplus/actions/workflows/ant.yml/badge.svg)](https://github.com/I2PPlus/i2pplus/actions/workflows/ant.yml)
 [![I2P+ Update zip](https://i2pplus.github.io/download.svg)](https://i2pplus.github.io/i2pupdate.zip)
 [![I2P+ I2PSnark standalone](https://i2pplus.github.io/i2psnarkdownload.svg)](https://i2pplus.github.io/installers/i2psnark-standalone.zip)
 [![I2P+ Javadocs](https://i2pplus.github.io/javadocsdownload.svg)](https://i2pplus.github.io/javadoc.zip)
@@ -14,7 +14,7 @@ Latest release: https://i2pplus.github.io/
 
 ## Installing
 
-See [INSTALL.txt](docs/INSTALL.txt) or https://i2pplus.github.io/ for installation instructions.
+See [INSTALL.md](docs/INSTALL.md) or https://i2pplus.github.io/ for installation instructions.
 
 ## Documentation
 
@@ -80,7 +80,9 @@ you can build a full installation zip which can be extracted and run in situ:
 Run 'ant' with no arguments to see other build options.
 
 ### Docker
-For more information how to run I2P in Docker, see [Docker.md](docker/Docker.md)
+
+For more information how to run I2P in Docker, see [docker/README.md](docker/README.md)
+
 ## Contact info
 
 Need help? See the IRC channel #saltR on the I2P IRC network
@@ -93,3 +95,24 @@ I2P+ is licensed under the AGPL v.3.
 
 For the various sub-component licenses, see: [LICENSE.txt](docs/licenses/LICENSE.txt)
 
+## See also
+
+### Documentation
+
+- [docs/README.md](docs/README.md) - Full documentation index
+- [docs/INSTALL.md](docs/INSTALL.md) - Installation guide
+- [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - Headless (console mode) installation
+- [docs/HACKING.md](docs/HACKING.md) - Developer guide and build systems
+- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Source tree layout and where to find things
+- [docs/checklist.md](docs/checklist.md) - Release checklist and process
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Managing I2P session bans with nftables
+- [docs/history.txt](docs/history.txt) - Full changelog
+
+### Sub-project READMEs
+
+- [docs/licenses/README.md](docs/licenses/README.md) - Third-party licenses
+- [docker/README.md](docker/README.md) - Running I2P+ in Docker
+- [scripts/README.md](scripts/README.md) - Utility scripts for development and administration
+- [scripts/tests/README.md](scripts/tests/README.md) - Validation and testing scripts
+- [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)

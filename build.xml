@@ -2999,7 +2999,7 @@
       <arg value="-projectName"/>
       <arg value="I2P+"/>
       <arg value="-sortByClass"/>
-      <arg value="-html:./findbugs.xsl"/>
+      <arg value="-html:./config/findbugs.xsl"/>
       <arg value="-output"/>
       <arg value="dist/findbugs.html"/>
       <arg value="-effort:max"/>
@@ -3038,11 +3038,19 @@
   </target>
 
   <target name="spotbugs" depends="jar, build2, buildUtilityJar">
-    <!-- Download latest SpotBugs if not present -->
-    <echo message="Note: SpotBugs requires Java11 or later."/>
-    <property name="spotbugs.version" value="4.9.8"/>
-<property name="spotbugs.dir" location="spotbugs/spotbugs-${spotbugs.version}"/>
-<property name="spotbugs.jar" location="${spotbugs.dir}/lib/spotbugs-ant.jar"/>
+    <echo message="Running SpotBugs analysis..."/>
+
+    <exec executable="cat" outputproperty="spotbugs.version" failifexecutionfails="false">
+      <arg value="tools/spotbugs/version.txt"/>
+    </exec>
+    <condition property="spotbugs.dir" value="tools/spotbugs/spotbugs-${spotbugs.version}">
+      <and>
+        <isset property="spotbugs.version"/>
+        <not><equals arg1="${spotbugs.version}" arg2="" trim="true"/></not>
+      </and>
+    </condition>
+    <property name="spotbugs.dir" location="tools/spotbugs/spotbugs-unknown"/>
+    <property name="spotbugs.jar" location="${spotbugs.dir}/lib/spotbugs-ant.jar"/>
 
     <available file="${spotbugs.jar}" property="spotbugs.present"/>
     <antcall target="download-spotbugs"/>
@@ -3050,9 +3058,21 @@
     <taskdef resource="edu/umd/cs/findbugs/anttask/tasks.properties" classpath="${spotbugs.jar}"/>
     <property name="spotbugs.home" value="${spotbugs.dir}"/>
     <property name="spotbugs.java" value="${java.home}/bin/java"/>
-    <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="spotbugs-exclude.xml">
+
+    <!-- Build aux classpath dynamically from available system jars -->
+    <available file="installer/lib/wrapper/all/wrapper.jar" property="wrapper.jar.path" value="installer/lib/wrapper/all/wrapper.jar"/>
+    <available file="/usr/share/java/ant.jar" property="system.ant.path" value="/usr/share/java/ant.jar"/>
+    <path id="spotbugs.auxclasspath">
+      <fileset dir="build" includes="*.jar"/>
+      <fileset dir="${spotbugs.dir}/lib" includes="*.jar"/>
+      <pathelement location="${wrapper.jar.path}"/>
+      <pathelement location="${system.ant.path}"/>
+    </path>
+    <pathconvert refid="spotbugs.auxclasspath" property="spotbugs.auxclasspath.path" pathsep=":"/>
+
+    <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="config/spotbugs-exclude.xml">
       <auxAnalyzepath path="./build"/>
-      <auxClasspath path="build/commons-el.jar:build/commons-logging.jar:build/jasper-compiler.jar:build/jasper-runtime.jar:build/jetty-continuation.jar:build/jetty-deploy.jar:build/jetty-http.jar:build/jetty-i2p.jar:build/jetty-io.jar:build/jetty-java5-threadpool.jar:build/jetty-rewrite-handler.jar:build/jetty-security.jar:build/jetty-servlet.jar:build/jetty-servlets.jar:build/jetty-sslengine.jar:build/jetty-start.jar:build/jetty-util.jar:build/jetty-webapp.jar:build/jetty-xml.jar:build/javax.servlet.jar:build/jo.jsonrpc.war:build/jrobin.jar:build/org.mortbay.jetty.jar:build/org.mortbay.jmx.jar:build/pack200.jar:build/systray.jar:build/tools.jar"/>
+      <auxClasspath path="${spotbugs.auxclasspath.path}"/>
       <!-- Only analyze core I2P JAR files, exclude third-party heavy libraries -->
       <class location="./build/i2p.jar"/>
       <class location="./build/router.jar"/>
@@ -3067,24 +3087,723 @@
       <class location="./build/i2ptunnel.jar"/>
       <sourcePath path="./apps:./router:./core"/>
     </spotbugs>
-    <echo message="Spotbugs XML report written to dist/spotbugs.xml"/>
     <antcall target="transform-spotbugs"/>
   </target>
 
   <target name="transform-spotbugs">
-    <echo message="Transforming SpotBugs XML to HTML using custom stylesheet..."/>
-    <xslt in="dist/spotbugs.xml" out="dist/spotbugs.html" style="spotbugs.xsl"/>
-    <echo message="SpotBugs HTML report written to dist/spotbugs.html"/>
+    <fail message="SpotBugs XML report not found. SpotBugs may have failed to produce output.">
+      <condition>
+        <not><available file="dist/spotbugs.xml"/></not>
+      </condition>
+    </fail>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/spotbugs/spotbugs-to-html.py"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="dist/spotbugs.html"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/spotbugs/spotbugs-to-html.py"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="dist/spotbugs-local.html"/>
+      <arg value="--local"/>
+    </exec>
+    <echo message="SpotBugs: dist/spotbugs.html, dist/spotbugs-local.html"/>
   </target>
 
   <target name="download-spotbugs" unless="spotbugs.present">
-    <echo message="Downloading SpotBugs ${spotbugs.version}..."/>
-    <mkdir dir="spotbugs"/>
-    <get src="https://github.com/spotbugs/spotbugs/releases/download/${spotbugs.version}/spotbugs-${spotbugs.version}.tgz"
-         dest="spotbugs/spotbugs-${spotbugs.version}.tgz"
-         usetimestamp="true"/>
-    <untar src="spotbugs/spotbugs-${spotbugs.version}.tgz" dest="spotbugs" compression="gzip"/>
-    <echo message="SpotBugs ${spotbugs.version} downloaded and extracted to ${spotbugs.dir}"/>
+    <echo message="Running SpotBugs download script..."/>
+    <exec executable="tools/spotbugs/download-spotbugs.sh" failonerror="true"/>
+  </target>
+
+  <target name="pmd" depends="pmd-java,pmd-js"/>
+
+  <target name="pmd-java" depends="pmd-setup">
+    <exec executable="ant" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="build"/>
+    </exec>
+    <echo message="Running PMD (Java) analysis..."/>
+    <mkdir dir="dist"/>
+    <exec executable="${pmd.java}" failonerror="false" outputproperty="pmd.result">
+      <arg value="-Xmx4g"/>
+      <arg value="-Xss1g"/>
+      <arg value="-cp"/>
+      <arg value="${pmd.dir}/lib/*"/>
+      <arg value="net.sourceforge.pmd.cli.PmdCli"/>
+      <arg value="check"/>
+      <arg value="-d"/>
+      <arg value="core/java/src/net/i2p"/>
+      <arg value="-d"/>
+      <arg value="router/java/src"/>
+      <arg value="-d"/>
+      <arg value="apps"/>
+      <arg value="-R"/>
+      <arg value="tools/pmd/ruleset-java.xml"/>
+      <arg value="-f"/>
+      <arg value="xml"/>
+      <arg value="-r"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="--no-cache"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/pmd/pmd-to-html.py"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="dist/pmd-java.html"/>
+      <arg value="Java"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/pmd/pmd-to-html.py"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="dist/pmd-java-local.html"/>
+      <arg value="Java"/>
+      <arg value="--local"/>
+    </exec>
+    <echo message="PMD (Java): dist/pmd-java.html, dist/pmd-java-local.html"/>
+  </target>
+
+  <target name="pmd-js" depends="pmd-setup">
+    <exec executable="ant" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="build"/>
+    </exec>
+    <echo message="Running PMD (JavaScript) analysis..."/>
+    <mkdir dir="dist"/>
+    <exec executable="${pmd.java}" failonerror="false" outputproperty="pmd.result">
+      <arg value="-Xmx4g"/>
+      <arg value="-Xss1g"/>
+      <arg value="-cp"/>
+      <arg value="${pmd.dir}/lib/*"/>
+      <arg value="net.sourceforge.pmd.cli.PmdCli"/>
+      <arg value="check"/>
+      <arg value="-d"/>
+      <arg value="apps"/>
+      <arg value="-R"/>
+      <arg value="tools/pmd/ruleset-js.xml"/>
+      <arg value="-f"/>
+      <arg value="xml"/>
+      <arg value="-r"/>
+      <arg value="dist/pmd-js.xml"/>
+      <arg value="--no-cache"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/pmd/pmd-to-html.py"/>
+      <arg value="dist/pmd-js.xml"/>
+      <arg value="dist/pmd-js.html"/>
+      <arg value="JavaScript"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/pmd/pmd-to-html.py"/>
+      <arg value="dist/pmd-js.xml"/>
+      <arg value="dist/pmd-js-local.html"/>
+      <arg value="JavaScript"/>
+      <arg value="--local"/>
+    </exec>
+    <echo message="PMD (JavaScript): dist/pmd-js.html, dist/pmd-js-local.html"/>
+  </target>
+
+  <target name="checkstyle-setup">
+    <available property="cs.present" file="tools/checkstyle/checkstyle-all.jar"/>
+  </target>
+
+  <target name="checkstyle-download" unless="cs.present">
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="tools/checkstyle/download-checkstyle.sh"/>
+    </exec>
+  </target>
+
+  <target name="checkstyle-download-skip" if="cs.present">
+    <echo message="Checkstyle JAR found"/>
+  </target>
+
+  <target name="checkstyle" depends="checkstyle-setup,checkstyle-download,checkstyle-download-skip">
+    <exec executable="ant" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="build"/>
+    </exec>
+    <echo message="Running Checkstyle analysis..."/>
+    <mkdir dir="dist"/>
+    <exec executable="java" failonerror="false" outputproperty="cs.result">
+      <arg value="-Xmx4g"/>
+      <arg value="-Xss1g"/>
+      <arg value="-jar"/>
+      <arg value="tools/checkstyle/checkstyle-all.jar"/>
+      <arg value="-c"/>
+      <arg value="tools/checkstyle/checkstyle.xml"/>
+      <arg value="-f"/>
+      <arg value="xml"/>
+      <arg value="-o"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="core/java/src/net/i2p"/>
+      <arg value="router/java/src"/>
+      <arg value="apps"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/checkstyle/checkstyle-to-html.py"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="dist/checkstyle.html"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/checkstyle/checkstyle-to-html.py"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="dist/checkstyle-local.html"/>
+      <arg value="--local"/>
+    </exec>
+    <echo message="Checkstyle: dist/checkstyle.html, dist/checkstyle-local.html"/>
+  </target>
+
+  <!-- CodeQL -->
+  <target name="codeql-setup">
+    <available property="codeql.present" file="tools/codeql/codeql/codeql"/>
+    <loadfile property="codeql.version" srcFile="tools/codeql/version.txt"/>
+    <property name="codeql.version" value="v2.25.0"/>
+  </target>
+
+  <target name="codeql-download" unless="codeql.present">
+    <echo message="CodeQL CLI not found. Downloading (~509MB)..."/>
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="tools/codeql/download-codeql.sh"/>
+    </exec>
+  </target>
+
+  <target name="codeql-download-skip" if="codeql.present">
+    <echo message="CodeQL CLI found"/>
+  </target>
+
+  <target name="codeql-packs-setup" depends="codeql-setup,codeql-download,codeql-download-skip">
+    <available property="codeql.packs.present" file="tools/codeql/packs/java-queries"/>
+    <available property="codeql.js.packs.present" file="tools/codeql/packs/javascript-queries"/>
+  </target>
+
+  <target name="codeql-packs-download" unless="codeql.packs.present">
+    <echo message="Downloading Java query packs..."/>
+    <mkdir dir="/tmp/codeql-packs"/>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="codeql/java-all"/>
+      <arg value="--dir=/tmp/codeql-packs"/>
+    </exec>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="codeql/java-queries"/>
+      <arg value="--dir=/tmp/codeql-packs"/>
+    </exec>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="githubsecuritylab/codeql-java-queries"/>
+      <arg value="--dir=/tmp/codeql-packs"/>
+    </exec>
+    <!-- Restructure to flat layout: tools/codeql/packs/{pack-name}/ -->
+    <mkdir dir="tools/codeql/packs"/>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-packs" includes="**/java-queries/**" excludes="**/java-queries/**/java-all/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-packs" includes="**/java-all/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-packs" includes="**/codeql-java-queries/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <delete dir="/tmp/codeql-packs" quiet="true"/>
+    <echo message="Java query packs installed"/>
+  </target>
+
+  <target name="codeql-packs-download-skip" if="codeql.packs.present">
+    <echo message="CodeQL Java query packs found"/>
+  </target>
+
+  <target name="codeql-js-packs-download" unless="codeql.js.packs.present">
+    <echo message="Downloading JavaScript query packs..."/>
+    <mkdir dir="/tmp/codeql-js-packs"/>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="codeql/javascript-all"/>
+      <arg value="--dir=/tmp/codeql-js-packs"/>
+    </exec>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="codeql/javascript-queries"/>
+      <arg value="--dir=/tmp/codeql-js-packs"/>
+    </exec>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+      <arg value="pack"/>
+      <arg value="download"/>
+      <arg value="githubsecuritylab/codeql-javascript-queries"/>
+      <arg value="--dir=/tmp/codeql-js-packs"/>
+    </exec>
+    <!-- Restructure to flat layout: tools/codeql/packs/{pack-name}/ -->
+    <mkdir dir="tools/codeql/packs"/>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-js-packs" includes="**/javascript-queries/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-js-packs" includes="**/javascript-all/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <move todir="tools/codeql/packs" includeemptydirs="true">
+      <fileset dir="/tmp/codeql-js-packs" includes="**/codeql-javascript-queries/**"/>
+      <mapper type="regexp" from="(.*/)(codeql|githubsecuritylab)/([^/]+)/(.*)" to="\1\3/\4"/>
+    </move>
+    <delete dir="/tmp/codeql-js-packs" quiet="true"/>
+    <echo message="JavaScript query packs installed"/>
+  </target>
+
+  <target name="codeql-js-packs-download-skip" if="codeql.js.packs.present">
+    <echo message="CodeQL JavaScript query packs found"/>
+  </target>
+
+  <target name="codeql" depends="codeql-packs-setup,codeql-packs-download,codeql-packs-download-skip,codeql-js-packs-download,codeql-js-packs-download-skip">
+    <echo message="Running CodeQL analysis..."/>
+    <exec executable="ant" dir="${basedir}" failonerror="true" output="/dev/null" error="/dev/null">
+      <arg value="distclean"/>
+    </exec>
+    <delete dir="/tmp/codeql" quiet="true"/>
+    <mkdir dir="/tmp/codeql"/>
+    <antcall target="codeql-java"/>
+    <antcall target="codeql-js"/>
+    <antcall target="codeql-jsp"/>
+    <loadfile property="cq.java.issues" srcFile="dist/codeql-java.txt" failonerror="false"/>
+    <loadfile property="cq.js.issues" srcFile="dist/codeql-js.txt" failonerror="false"/>
+    <loadfile property="cq.jsp.issues" srcFile="dist/codeql-jsp.txt" failonerror="false"/>
+    <echo message="CodeQL: ${cq.java.issues} (Java), ${cq.js.issues} (JavaScript), ${cq.jsp.issues} (JSP)"/>
+  </target>
+
+  <target name="codeql-java" depends="codeql-setup">
+    <mkdir dir="dist"/>
+    <mkdir dir="/tmp/codeql"/>
+    <mkdir dir="/tmp/codeql/classes"/>
+    <echo message="Creating CodeQL Java database at /tmp/codeql/db-java..."/>
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="-c"/>
+      <arg value="tools/codeql/codeql/codeql database create /tmp/codeql/db-java --language=java --source-root=. --overwrite --ram=8192 --search-path=tools/codeql/codeql-${codeql.version} --command='bash tools/codeql/build-java.sh'"/>
+    </exec>
+    <echo message="Running CodeQL Java analysis..."/>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.java.result" error="/dev/null">
+      <arg value="database"/>
+      <arg value="analyze"/>
+      <arg value="/tmp/codeql/db-java"/>
+      <arg value="--format=sarif-latest"/>
+      <arg value="--output=dist/codeql-java.sarif"/>
+      <arg value="--sarif-add-query-help"/>
+      <arg value="--ram=8192"/>
+      <arg value="--additional-packs=tools/codeql/packs"/>
+      <arg value="codeql/java-queries:codeql-suites/java-security-and-quality.qls"/>
+    </exec>
+    <exec executable="python3" failonerror="false">
+      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="dist/codeql-java.html"/>
+    </exec>
+    <exec executable="python3" failonerror="false">
+      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="dist/codeql-java-local.html"/>
+      <arg value="--local"/>
+    </exec>
+    <exec executable="bash" failonerror="false" outputproperty="cq.java.count">
+      <arg value="-c"/>
+      <arg value="python3 tools/codeql/sarif-count.py dist/codeql-java.sarif 2>/dev/null || echo 0"/>
+    </exec>
+    <echo message="${cq.java.count}" file="dist/codeql-java.txt"/>
+    <echo message="CodeQL Java: dist/codeql-java.html, dist/codeql-java-local.html (${cq.java.count} issues)"/>
+  </target>
+
+  <target name="codeql-js" depends="codeql-setup">
+    <mkdir dir="dist"/>
+    <mkdir dir="/tmp/codeql"/>
+    <echo message="Creating CodeQL JavaScript database at /tmp/codeql/db-js..."/>
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="-c"/>
+      <arg value="tools/codeql/codeql/codeql database create /tmp/codeql/db-js --language=javascript --overwrite --ram=8192 --search-path=tools/codeql/codeql-${codeql.version}"/>
+    </exec>
+    <echo message="Running CodeQL JavaScript analysis..."/>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.js.result" error="/dev/null">
+      <arg value="database"/>
+      <arg value="analyze"/>
+      <arg value="/tmp/codeql/db-js"/>
+      <arg value="--format=sarif-latest"/>
+      <arg value="--output=dist/codeql-js.sarif"/>
+      <arg value="--sarif-add-query-help"/>
+      <arg value="--ram=8192"/>
+      <arg value="--additional-packs=tools/codeql/packs"/>
+      <arg value="codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls"/>
+    </exec>
+    <exec executable="python3" failonerror="false">
+      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="dist/codeql-js.sarif"/>
+      <arg value="dist/codeql-js.html"/>
+    </exec>
+    <exec executable="bash" failonerror="false" outputproperty="cq.js.count">
+      <arg value="-c"/>
+      <arg value="python3 tools/codeql/sarif-count.py dist/codeql-js.sarif 2>/dev/null || echo 0"/>
+    </exec>
+    <echo message="${cq.js.count}" file="dist/codeql-js.txt"/>
+    <echo message="CodeQL JavaScript report written to dist/codeql-js.html (${cq.js.count} issues)"/>
+  </target>
+
+  <target name="codeql-jsp">
+    <echo message="Filtering JSP results from Java SARIF..."/>
+    <exec executable="python3" failonerror="false" outputproperty="cq.jsp.count">
+      <arg value="tools/codeql/sarif-filter.py"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="dist/codeql-jsp.sarif"/>
+      <arg value="_jsp.java"/>
+    </exec>
+    <exec executable="python3" failonerror="false">
+      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="--no-exclude"/>
+      <arg value="dist/codeql-jsp.sarif"/>
+      <arg value="dist/codeql-jsp.html"/>
+    </exec>
+    <echo message="${cq.jsp.count}" file="dist/codeql-jsp.txt"/>
+    <echo message="CodeQL JSP report written to dist/codeql-jsp.html (${cq.jsp.count} issues)"/>
+  </target>
+
+  <target name="report-all-java" depends="jar, build2, buildUtilityJar, pmd-setup, checkstyle-setup, checkstyle-download">
+    <echo message="Running analysis tools..."/>
+
+    <!-- Suppress verbose build output, keep our progress echoes -->
+    <record name="dist/report-all-java.log" action="start" loglevel="warn"/>
+
+    <!-- CodeQL version setup (inline, since codeql-setup has download dependency we handle here) -->
+    <loadfile property="codeql.version" srcFile="tools/codeql/version.txt"/>
+    <property name="codeql.version" value="v2.25.0"/>
+    <available property="codeql.present" file="tools/codeql/codeql/codeql"/>
+    <antcall target="codeql-download"/>
+
+    <!-- SpotBugs setup -->
+    <exec executable="cat" outputproperty="spotbugs.version" failifexecutionfails="false">
+      <arg value="tools/spotbugs/version.txt"/>
+    </exec>
+    <condition property="spotbugs.dir" value="tools/spotbugs/spotbugs-${spotbugs.version}">
+      <and>
+        <isset property="spotbugs.version"/>
+        <not><equals arg1="${spotbugs.version}" arg2="" trim="true"/></not>
+      </and>
+    </condition>
+    <property name="spotbugs.dir" location="tools/spotbugs/spotbugs-unknown"/>
+    <property name="spotbugs.jar" location="${spotbugs.dir}/lib/spotbugs-ant.jar"/>
+    <property name="spotbugs.home" value="${spotbugs.dir}"/>
+    <property name="spotbugs.java" value="${java.home}/bin/java"/>
+    <antcall target="download-spotbugs"/>
+
+    <mkdir dir="dist"/>
+
+    <!-- CodeQL compilation first (creates the database) -->
+    <echo message="  [1/2] CodeQL compilation..."/>
+    <mkdir dir="/tmp/codeql"/>
+    <mkdir dir="/tmp/codeql/classes"/>
+    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="true" output="/dev/null" error="/dev/null">
+      <arg value="database"/>
+      <arg value="create"/>
+      <arg value="/tmp/codeql/db-java"/>
+      <arg value="--language=java"/>
+      <arg value="--source-root=."/>
+      <arg value="--overwrite"/>
+      <arg value="--ram=8192"/>
+      <arg value="--search-path=tools/codeql/codeql-${codeql.version}"/>
+      <arg value="--command"/>
+      <arg value="bash tools/codeql/build-java.sh"/>
+    </exec>
+    <echo message="  [1/2] CodeQL database ready. Starting parallel analysis..."/>
+
+    <!-- All 4 analysis tools run in parallel -->
+    <parallel>
+      <sequential>
+        <echo message="    PMD running..."/>
+        <exec executable="${pmd.java}" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="-Xmx4g"/>
+          <arg value="-Xss1g"/>
+          <arg value="-cp"/>
+          <arg value="${pmd.dir}/lib/*"/>
+          <arg value="net.sourceforge.pmd.cli.PmdCli"/>
+          <arg value="check"/>
+          <arg value="-d"/>
+          <arg value="core/java/src/net/i2p"/>
+          <arg value="-d"/>
+          <arg value="router/java/src"/>
+          <arg value="-d"/>
+          <arg value="apps"/>
+          <arg value="-R"/>
+          <arg value="tools/pmd/ruleset-java.xml"/>
+          <arg value="-f"/>
+          <arg value="xml"/>
+          <arg value="-r"/>
+          <arg value="dist/pmd-java.xml"/>
+          <arg value="--no-cache"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/pmd/pmd-to-html.py"/>
+          <arg value="dist/pmd-java.xml"/>
+          <arg value="dist/pmd-java.html"/>
+          <arg value="Java"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/pmd/pmd-to-html.py"/>
+          <arg value="dist/pmd-java.xml"/>
+          <arg value="dist/pmd-java-local.html"/>
+          <arg value="Java"/>
+          <arg value="--local"/>
+        </exec>
+        <echo message="    PMD done."/>
+      </sequential>
+      <sequential>
+        <echo message="    Checkstyle running..."/>
+        <exec executable="java" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="-Xmx4g"/>
+          <arg value="-Xss1g"/>
+          <arg value="-jar"/>
+          <arg value="tools/checkstyle/checkstyle-all.jar"/>
+          <arg value="-c"/>
+          <arg value="tools/checkstyle/checkstyle.xml"/>
+          <arg value="-f"/>
+          <arg value="xml"/>
+          <arg value="-o"/>
+          <arg value="dist/checkstyle.xml"/>
+          <arg value="core/java/src/net/i2p"/>
+          <arg value="router/java/src"/>
+          <arg value="apps"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/checkstyle/checkstyle-to-html.py"/>
+          <arg value="dist/checkstyle.xml"/>
+          <arg value="dist/checkstyle.html"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/checkstyle/checkstyle-to-html.py"/>
+          <arg value="dist/checkstyle.xml"/>
+          <arg value="dist/checkstyle-local.html"/>
+          <arg value="--local"/>
+        </exec>
+        <echo message="    Checkstyle done."/>
+      </sequential>
+      <sequential>
+        <echo message="    SpotBugs running..."/>
+        <taskdef resource="edu/umd/cs/findbugs/anttask/tasks.properties" classpath="${spotbugs.jar}"/>
+        <available file="installer/lib/wrapper/all/wrapper.jar" property="wrapper.jar.path" value="installer/lib/wrapper/all/wrapper.jar"/>
+        <available file="/usr/share/java/ant.jar" property="system.ant.path" value="/usr/share/java/ant.jar"/>
+        <path id="spotbugs.auxclasspath">
+          <fileset dir="build" includes="*.jar"/>
+          <fileset dir="${spotbugs.dir}/lib" includes="*.jar"/>
+          <pathelement location="${wrapper.jar.path}"/>
+          <pathelement location="${system.ant.path}"/>
+        </path>
+        <pathconvert refid="spotbugs.auxclasspath" property="spotbugs.auxclasspath.path" pathsep=":"/>
+        <spotbugs home="${spotbugs.home}" output="xml:withMessages" outputFile="dist/spotbugs.xml" effort="max" debug="false" reportLevel="medium" timeout="1800000" jvm="${spotbugs.java}" excludeFilter="config/spotbugs-exclude.xml">
+          <auxAnalyzepath path="./build"/>
+          <auxClasspath path="${spotbugs.auxclasspath.path}"/>
+          <class location="./build/i2p.jar"/>
+          <class location="./build/router.jar"/>
+          <class location="./build/streaming.jar"/>
+          <class location="./build/mstreaming.jar"/>
+          <class location="./build/utility.jar"/>
+          <class location="./build/sam.jar"/>
+          <class location="./build/addressbook.jar"/>
+          <class location="./build/desktopgui.jar"/>
+          <class location="./build/i2psnark.jar"/>
+          <class location="./build/i2ptunnel.jar"/>
+          <sourcePath path="./apps:./router:./core"/>
+        </spotbugs>
+        <antcall target="transform-spotbugs"/>
+        <echo message="    SpotBugs done."/>
+      </sequential>
+      <sequential>
+        <echo message="    CodeQL running..."/>
+        <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="database"/>
+          <arg value="analyze"/>
+          <arg value="/tmp/codeql/db-java"/>
+          <arg value="--format=sarif-latest"/>
+          <arg value="--output=dist/codeql-java.sarif"/>
+          <arg value="--sarif-add-query-help"/>
+          <arg value="--ram=8192"/>
+          <arg value="--additional-packs=tools/codeql/packs"/>
+          <arg value="codeql/java-queries:codeql-suites/java-security-and-quality.qls"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/codeql/codeql-to-html.py"/>
+          <arg value="dist/codeql-java.sarif"/>
+          <arg value="dist/codeql-java.html"/>
+        </exec>
+        <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
+          <arg value="tools/codeql/codeql-to-html.py"/>
+          <arg value="dist/codeql-java.sarif"/>
+          <arg value="dist/codeql-java-local.html"/>
+          <arg value="--local"/>
+        </exec>
+        <echo message="    CodeQL done."/>
+      </sequential>
+    </parallel>
+
+    <record name="dist/report-all-java.log" action="stop"/>
+
+    <!-- Combine all results -->
+    <echo message="  [2/2] Combining results..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/template/report-all-java.py"/>
+      <arg value="--pmd"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="--checkstyle"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="--codeql"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="--spotbugs"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="-o"/>
+      <arg value="dist/report-all-java.html"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/template/report-all-java.py"/>
+      <arg value="--pmd"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="--checkstyle"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="--codeql"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="--spotbugs"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="--local"/>
+      <arg value="-o"/>
+      <arg value="dist/report-all-java-local.html"/>
+    </exec>
+    <echo message="Report: dist/report-all-java.html, dist/report-all-java-local.html"/>
+  </target>
+
+  <target name="report-all-java-quick">
+    <echo message="Combining existing Java analysis results (no re-analysis)..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/template/report-all-java.py"/>
+      <arg value="--pmd"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="--checkstyle"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="--codeql"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="--spotbugs"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="-o"/>
+      <arg value="dist/report-all-java.html"/>
+    </exec>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/template/report-all-java.py"/>
+      <arg value="--pmd"/>
+      <arg value="dist/pmd-java.xml"/>
+      <arg value="--checkstyle"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="--codeql"/>
+      <arg value="dist/codeql-java.sarif"/>
+      <arg value="--spotbugs"/>
+      <arg value="dist/spotbugs.xml"/>
+      <arg value="--local"/>
+      <arg value="-o"/>
+      <arg value="dist/report-all-java-local.html"/>
+    </exec>
+    <echo message="Report: dist/report-all-java.html, dist/report-all-java-local.html"/>
+  </target>
+
+  <target name="checkstyle-fix-errors" depends="checkstyle-setup,checkstyle-download,checkstyle-download-skip">
+    <echo message="Running fix-java-issues.py --fix checkstyle indent imports (dry run)..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/fix-java-issues.py"/>
+      <arg value="-p"/>
+      <arg value="."/>
+      <arg value="--fix"/>
+      <arg value="checkstyle"/>
+      <arg value="indent"/>
+      <arg value="imports"/>
+      <arg value="-x"/>
+      <arg value="dist/checkstyle.xml"/>
+      <arg value="--dry-run"/>
+    </exec>
+  </target>
+
+  <target name="checkstyle-fix-errors-apply" depends="checkstyle-setup,checkstyle-download,checkstyle-download-skip">
+    <echo message="Applying fix-java-issues.py --fix checkstyle indent imports..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/fix-java-issues.py"/>
+      <arg value="-p"/>
+      <arg value="."/>
+      <arg value="--fix"/>
+      <arg value="checkstyle"/>
+      <arg value="indent"/>
+      <arg value="imports"/>
+      <arg value="-x"/>
+      <arg value="dist/checkstyle.xml"/>
+    </exec>
+  </target>
+
+  <target name="pmd-fix-errors">
+    <echo message="Running fix-java-issues.py (dry run)..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/fix-java-issues.py"/>
+      <arg value="-p"/>
+      <arg value="."/>
+      <arg value="--dry-run"/>
+    </exec>
+  </target>
+
+  <target name="pmd-fix-errors-apply">
+    <echo message="Applying fix-java-issues.py..."/>
+    <exec executable="python3" failonerror="true">
+      <arg value="tools/fix-java-issues.py"/>
+      <arg value="-p"/>
+      <arg value="."/>
+    </exec>
+  </target>
+
+  <target name="pmd-setup">
+    <property name="pmd.dir" location="tools/pmd"/>
+    <property name="pmd.bin" location="${pmd.dir}/bin/pmd"/>
+    <available file="${pmd.bin}" property="pmd.present"/>
+    <if>
+      <isset property="pmd.present"/>
+      <then>
+        <echo message="PMD found: ${pmd.bin}"/>
+      </then>
+      <else>
+        <antcall target="download-pmd"/>
+      </else>
+    </if>
+    <!-- PMD 7 requires Java 11+, detect a suitable JVM -->
+    <if>
+      <not><isset property="pmd.java"/></not>
+      <then>
+        <condition property="pmd.java" value="/usr/lib/jvm/java-25-openjdk-amd64/bin/java">
+          <available file="/usr/lib/jvm/java-25-openjdk-amd64/bin/java"/>
+        </condition>
+      </then>
+    </if>
+    <if>
+      <not><isset property="pmd.java"/></not>
+      <then>
+        <condition property="pmd.java" value="/usr/lib/jvm/java-24-openjdk-amd64/bin/java">
+          <available file="/usr/lib/jvm/java-24-openjdk-amd64/bin/java"/>
+        </condition>
+      </then>
+    </if>
+    <if>
+      <not><isset property="pmd.java"/></not>
+      <then>
+        <condition property="pmd.java" value="/usr/lib/jvm/java-21-openjdk-amd64/bin/java">
+          <available file="/usr/lib/jvm/java-21-openjdk-amd64/bin/java"/>
+        </condition>
+      </then>
+    </if>
+    <fail message="PMD requires Java 11+. Set pmd.java=/path/to/java11+ in override.properties or ensure Java 11+ is installed.">
+      <condition>
+        <equals arg1="${pmd.java}" arg2="" trim="true"/>
+      </condition>
+    </fail>
+  </target>
+
+  <target name="download-pmd" unless="pmd.present">
+    <echo message="PMD not found, downloading..."/>
+    <exec executable="tools/pmd/download-pmd.sh" failonerror="true"/>
   </target>
 
   <!-- this is the same dependency as pkg, but with updater200 in the middle, since preppkg puts too much stuff in pkg-temp -->

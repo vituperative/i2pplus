@@ -18,6 +18,8 @@ import net.i2p.router.JobImpl;
 import net.i2p.router.RouterContext;
 import net.i2p.router.TunnelInfo;
 import net.i2p.router.TunnelManagerFacade;
+import net.i2p.router.peermanager.PeerTestJob;
+import net.i2p.router.peermanager.PeerManagerFacadeImpl;
 import net.i2p.router.TunnelPoolSettings;
 import net.i2p.router.tunnel.TunnelCreatorConfig;
 import net.i2p.router.tunnel.TunnelDispatcher;
@@ -906,6 +908,14 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                     cfg.setExpiration(now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY);
                     cfg.setTestTooSlow();
                     ExpireJob.scheduleExpiration(_context, cfg);
+                    // Schedule all peers in this tunnel for priority testing
+                    List<Hash> tunnelPeers = new ArrayList<Hash>();
+                    for (int i = 0; i < cfg.getLength(); i++) {
+                        tunnelPeers.add(cfg.getPeer(i));
+                    }
+                    if (!tunnelPeers.isEmpty()) {
+                        schedulePeerTests(tunnelPeers);
+                    }
                     if (_log.shouldDebug()) {
                         _log.debug("Scheduling early expiry for slow tunnel: " + cfg.getReceiveTunnelId(0));
                     }
@@ -935,6 +945,19 @@ public class TunnelPoolManager implements TunnelManagerFacade {
         _executor.shutdown();
         shutdownExploratory();
         _isShutdown = true;
+    }
+
+    /**
+     * Schedule peers for priority testing.
+     * @param peers list of peer hashes to test urgently
+     * @since 0.9.69+
+     */
+    private void schedulePeerTests(List<Hash> peers) {
+        if (peers == null || peers.isEmpty()) return;
+        PeerTestJob peerTestJob = ((PeerManagerFacadeImpl) _context.peerManager()).getPeerTestJob();
+        if (peerTestJob != null) {
+            peerTestJob.schedulePriorityTests(peers);
+        }
     }
 
     private void shutdownExploratory() {

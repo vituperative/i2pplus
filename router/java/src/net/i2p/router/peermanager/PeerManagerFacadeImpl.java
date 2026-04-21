@@ -73,6 +73,15 @@ public class PeerManagerFacadeImpl implements PeerManagerFacade {
     }
 
     /**
+     * Get the peer test job for scheduling priority peer tests.
+     * @return the PeerTestJob instance, or null if not available
+     * @since 0.9.69+
+     */
+    public PeerTestJob getPeerTestJob() {
+        return _testJob;
+    }
+
+    /**
      *  @param capability case-insensitive
      *  @return non-null unmodifiable set
      */

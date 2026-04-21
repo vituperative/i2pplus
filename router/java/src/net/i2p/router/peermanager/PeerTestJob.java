@@ -1,5 +1,6 @@
 package net.i2p.router.peermanager;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +56,7 @@ public class PeerTestJob extends JobImpl {
     private final Log _log;
     private PeerManager _manager;
     private boolean _keepTesting;
+    private final List<Hash> _priorityPeers = new ArrayList<Hash>();
     private final int DEFAULT_PEER_TEST_DELAY = SystemVersion.isSlow() ? 8*1000 : 5*1000;
     public static final String PROP_PEER_TEST_DELAY = "router.peerTestDelay";
     private static final int DEFAULT_PEER_TEST_CONCURRENCY = SystemVersion.isSlow() ? 1 :
@@ -149,7 +151,7 @@ public class PeerTestJob extends JobImpl {
                 _log.warn("Peer test timeout set below successful test average, setting to: " + getAvgPeerTestTime() + "ms");
             return getAvgPeerTestTime();
         } else {
-            if (avgTestTime > 0)
+            if (avgTestTime > 200)
                 return Math.min(testTimeout, avgTestTime * 3 / 2);
             else
                 return testTimeout;
@@ -206,6 +208,27 @@ public class PeerTestJob extends JobImpl {
     public synchronized void stopTesting() {
         _keepTesting = false;
         if (_log.shouldInfo()) {_log.info("Ending peer tests...");}
+    }
+
+    /**
+     * Schedule peers for priority testing (e.g., from slow tunnels).
+     * These peers will be tested on the next test cycle before other peers.
+     *
+     * @param peers list of peer hashes to test urgently
+     * @since 0.9.69+
+     */
+    public synchronized void schedulePriorityTests(List<Hash> peers) {
+        if (peers == null || peers.isEmpty()) return;
+        synchronized (_priorityPeers) {
+            for (Hash peer : peers) {
+                if (!_priorityPeers.contains(peer)) {
+                    _priorityPeers.add(peer);
+                }
+            }
+        }
+        if (_log.shouldInfo()) {
+            _log.info("Scheduled " + peers.size() + " priority peer tests");
+        }
     }
 
     public String getName() { return "Test Peers"; }
@@ -285,36 +308,69 @@ public class PeerTestJob extends JobImpl {
         synchronized(this) {
             manager = _manager;
         }
-        PeerSelectionCriteria criteria = new PeerSelectionCriteria();
-        criteria.setMinimumRequired(getTestConcurrency());
-        criteria.setMaximumRequired(getTestConcurrency());
-        criteria.setPurpose(PeerSelectionCriteria.PURPOSE_TEST);
-        List<Hash> peerHashes = manager.selectPeers(criteria);
-        Set<RouterInfo> peers = new HashSet<RouterInfo>(peerHashes.size());
-        for (Hash peer : peerHashes) {
-            PeerData data = new PeerData(getContext(), peer);
+        Set<RouterInfo> peers = new HashSet<RouterInfo>();
 
-            // Primary candidates: high-bandwidth, reachable, compatible version
-            if (data.routerInfo != null && data.profile != null && data.capabilities != null && data.isReachable &&
-                VersionComparator.comp(data.routerInfo.getVersion(), "0.9.57") >= 0 &&
-                (data.bandwidthTier.equals("O") || data.bandwidthTier.equals("P") || data.bandwidthTier.equals("X"))) {
-                peers.add(data.routerInfo);
-            // Low-bandwidth or unreachable peers: penalize but don't test
-            } else if (data.routerInfo != null && data.profile != null && data.capabilities != null &&
-                (!data.isReachable || data.bandwidthTier.equals("K") || data.bandwidthTier.equals("L") ||
-                 data.bandwidthTier.equals("M") || data.bandwidthTier.equals("N"))) {
-                data.profile.setCapacityBonus(-30);
-                if (_log.shouldInfo())
-                    _log.info("Setting capacity bonus to -30 and skipping test for [" + data.shortHash + "] -> K, L, M, N or unreachable");
-            // Missing RouterInfo: cannot test
-            } else if (data.routerInfo == null) {
-                if (_log.shouldInfo())
-                    _log.info("Test of [" + data.shortHash + "] failed: No local RouterInfo");
+        // First, test priority peers (from slow tunnels)
+        List<Hash> priorityPeers;
+        synchronized (_priorityPeers) {
+            priorityPeers = new ArrayList<Hash>(_priorityPeers);
+            _priorityPeers.clear();
+        }
+        if (!priorityPeers.isEmpty()) {
+            for (Hash peer : priorityPeers) {
+                PeerData data = new PeerData(getContext(), peer);
+                if (data.routerInfo != null) {
+                    peers.add(data.routerInfo);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Testing priority peer: " + peer.toBase32().substring(0, 6));
+                    }
+                }
             }
         }
-        if (getTestConcurrency() != 1) {
+
+        // Now get regular peers, prioritizing untested peers
+        int needed = getTestConcurrency() - peers.size();
+        if (needed > 0) {
+            PeerSelectionCriteria criteria = new PeerSelectionCriteria();
+            criteria.setMinimumRequired(needed);
+            criteria.setMaximumRequired(needed * 2); // Get extra to filter
+            criteria.setPurpose(PeerSelectionCriteria.PURPOSE_TEST);
+            List<Hash> peerHashes = manager.selectPeers(criteria);
+
+            for (Hash peer : peerHashes) {
+                if (peers.size() >= getTestConcurrency()) break;
+                PeerData data = new PeerData(getContext(), peer);
+
+                // Skip if already testing as priority
+                if (priorityPeers.contains(peer)) continue;
+
+                // Check if peer has been tested before
+                long lastTest = data.profile != null ? data.profile.getLastTestedSuccessfully() : 0;
+                boolean untested = lastTest <= 0;
+
+                // Primary candidates: high-bandwidth, reachable, compatible version
+                if (data.routerInfo != null && data.profile != null && data.capabilities != null && data.isReachable &&
+                    VersionComparator.comp(data.routerInfo.getVersion(), "0.9.57") >= 0 &&
+                    (data.bandwidthTier.equals("O") || data.bandwidthTier.equals("P") || data.bandwidthTier.equals("X"))) {
+                    peers.add(data.routerInfo);
+                // Low-bandwidth or unreachable peers: penalize but don't test
+                } else if (data.routerInfo != null && data.profile != null && data.capabilities != null &&
+                    (!data.isReachable || data.bandwidthTier.equals("K") || data.bandwidthTier.equals("L") ||
+                     data.bandwidthTier.equals("M") || data.bandwidthTier.equals("N"))) {
+                    data.profile.setCapacityBonus(-30);
+                    if (_log.shouldInfo())
+                        _log.info("Setting capacity bonus to -30 and skipping test for [" + data.shortHash + "] -> K, L, M, N or unreachable");
+                // Missing RouterInfo: cannot test
+                } else if (data.routerInfo == null) {
+                    if (_log.shouldInfo())
+                        _log.info("Test of [" + data.shortHash + "] failed: No local RouterInfo");
+                }
+            }
+        }
+
+        if (getTestConcurrency() != 1 && !peers.isEmpty()) {
             if (_log.shouldInfo())
-                _log.info("Running " +  getTestConcurrency() + " concurrent peer tests");
+                _log.info("Running " + peers.size() + " concurrent peer tests (" + priorityPeers.size() + " priority)");
         }
         return peers;
     }

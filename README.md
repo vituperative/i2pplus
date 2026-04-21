@@ -85,7 +85,7 @@ For more information how to run I2P in Docker, see [docker/README.md](docker/REA
 
 ## Contact info
 
-Need help? See the IRC channel #saltR on the I2P IRC network
+Need help? Visit the IRC channel #saltR on the I2P IRC network
 
 Bug reports: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues or https://github.com/I2PPlus/i2pplus/issues
 

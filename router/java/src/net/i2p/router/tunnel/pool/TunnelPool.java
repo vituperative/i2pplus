@@ -784,63 +784,6 @@ public class TunnelPool {
 
     /**
      *  Track recently-added tunnel IDs to prevent duplicates.
-                List<TunnelInfo> sortedExpiring = new ArrayList<>(_tunnels);
-                sortedExpiring.sort(Comparator.comparingLong(TunnelInfo::getExpiration));
-                for (TunnelInfo info : sortedExpiring) {
-                    if (extraToPrune <= 0) break;
-                    long exp = info.getExpiration();
-                    // Skip if already scheduled for early expiry
-                    if (exp < now + getPruneEarlyExpiry()) {
-                        continue;
-                    }
-                    if (exp <= pruneExpiryThreshold && !info.getTunnelFailed() && !toRemove.contains(info) && info instanceof PooledTunnelCreatorConfig) {
-                        PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
-                        // Use ExpireJob for graceful early expiration
-                        cfg.setExpiration(now + getPruneEarlyExpiry());
-                        cfg.setTestOverBudget();
-                        ExpireJob.scheduleExpiration(_context, cfg);
-                        toRemove.add(info);
-                        extraToPrune--;
-                    }
-                }
-            }
-
-            // Schedule early expiry for completely failed tunnels
-            for (TunnelInfo info : _tunnels) {
-                if (info instanceof PooledTunnelCreatorConfig && !toRemove.contains(info)) {
-                    PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
-                    boolean completelyFailed = cfg.getTunnelFailed();
-                    if (completelyFailed) {
-                        cfg.setTestTooSlow();
-                        cfg.setExpiration(now + getPruneEarlyExpiry());
-                        ExpireJob.scheduleExpiration(_context, cfg);
-                        toRemove.add(info);
-                        removed++;
-                        if (_log.shouldDebug()) {
-                            _log.debug(toString() + " -> Scheduling early expiry for failed tunnel: " + cfg.getReceiveTunnelId(0));
-                        }
-                    }
-                }
-            }
-        }
-
-        // Actually remove the tunnels
-        for (TunnelInfo info : toRemove) {
-            removeTunnel(info);
-            if (_log.shouldInfo()) {
-                _log.info(toString() + " -> Removed problematic tunnel: " + info);
-            }
-        }
-
-        if (removed > 0 && _log.shouldInfo()) {
-            _log.info(toString() + " -> Cleaned up " + removed + " slow/failed tunnels");
-        }
-
-        return removed;
-    }
-
-    /**
-     *  Track recently-added tunnel IDs to prevent duplicates.
      *  Uses a simple sliding window based on expiration time.
      *  Window set to 10 minutes to handle slow tunnel builds.
      */

@@ -100,7 +100,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     private int _version = 2;
 
     /** Reusable options array for message 1 processing to eliminate per-call allocation */
-    
+
 
     /** Buffer size for reading data phase packets (16 KB), same as I2PTunnelRunner */
     private static final int BUFFER_SIZE = 16*1024;
@@ -564,7 +564,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (_log.shouldDebug()) {
                 _log.debug("After Establishment handshake message #1: " + _handshakeState.toString());
             }
-int v = options[1] & 0xff;
+            int v = options[1] & 0xff;
             if (v != NTCPTransport.NTCP2_INT_VERSION) {
                 fail("BAD version: " + v);
                 return;
@@ -609,10 +609,7 @@ int v = options[1] & 0xff;
             if (_padlen1 <= 0) {
                 // No padding specified, go straight to sending msg 2
                 changeState(State.IB_NTCP2_GOT_PADDING);
-                if (src.hasRemaining()) {
-                    // Inbound conn can never have extra data after message #1
-                    fail("Extra data (" + src.remaining() + " bytes) after Establishment handshake message #1");
-                } else {prepareOutbound2();} // Write msg 2
+                prepareOutbound2(); // Write msg 2
                 return;
             }
             // We don't enforce max _padlen1 here

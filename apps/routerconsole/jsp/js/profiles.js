@@ -81,10 +81,10 @@ import { refreshElements } from "./refreshElements.js";
       refreshElements(targetSelectors, uri, 15000);
     }
 
-    // Refresh session bans every 15 seconds
+    // Refresh session bans every 30 seconds
     if (sessionBans) {
       const targetSelectors = "#sessionBanlist, #banSummary h2";
-      refreshElements(targetSelectors, uri, 15000);
+      refreshElements(targetSelectors, uri, 30000);
     }
 
     document.addEventListener("refreshComplete", () => {

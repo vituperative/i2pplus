@@ -65,7 +65,7 @@ class RequestVariableLeaseSetMessageHandler extends RequestLeaseSetMessageHandle
                 session.destroySession();
                 return;
             }
-            if (Boolean.parseBoolean(opts.getProperty("i2cp.dontPublishLeaseSet")))
+            if (Boolean.parseBoolean(opts.getProperty("i2cp.dontPublishLeaseSet"))) {
                 ls2.setUnpublished();
             }
 

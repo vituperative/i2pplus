@@ -893,19 +893,20 @@ public class TunnelPoolManager implements TunnelManagerFacade {
 
             // PHASE B: Schedule early expiry for slow tunnels OUTSIDE the lock
             long now = _context.clock().now();
+            long pruneDelay = _context.getProperty("router.pruneEarlyExpiryDelay", 30000L);
             for (TunnelInfo info : toRemove) {
                 // Re-verify tunnel is still valid (another thread may have removed it)
                 if (info.getTunnelFailed() || info.getExpiration() <= now) {
                     continue;
                 }
                 // Skip if already scheduled for early expiry
-                if (info.getExpiration() < now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY) {
+                if (info.getExpiration() < now + pruneDelay) {
                     continue;
                 }
                 // Use early expiry via ExpireJob for graceful removal
                 if (info instanceof PooledTunnelCreatorConfig) {
                     PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
-                    cfg.setExpiration(now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY);
+                    cfg.setExpiration(now + pruneDelay);
                     cfg.setTestTooSlow();
                     ExpireJob.scheduleExpiration(_context, cfg);
                     // Schedule all peers in this tunnel for priority testing

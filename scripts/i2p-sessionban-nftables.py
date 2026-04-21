@@ -559,50 +559,61 @@ def init_table_and_sets(ipv4_only: bool = False, log_file: Optional[str] = None)
                 log(f"Migrated {migrated} bans from iptables to nftables", log_file)
 
 
-def get_current_set_ips(ipv4_only: bool = False, log_file: Optional[str] = None) -> Tuple[Set[str], Set[str]]:
-    """Read current IPs from nftables sets."""
+def get_current_set_ips_from_file(ruleset_path: Path, ipv4_only: bool = False) -> Tuple[Set[str], Set[str]]:
+    """Parse IPs from saved nftables ruleset file.
+
+    The saved ruleset may have IPv6 elements (IPv4 set is typically empty in the file).
+    Extracts IPv6 IPs by finding the elements block in the file.
+    """
     ipv4_ips: Set[str] = set()
     ipv6_ips: Set[str] = set()
 
-    for set_name, ip_set, skip in [
-        (SET_IPV4, ipv4_ips, False),
-        (SET_IPV6, ipv6_ips, ipv4_only),
-    ]:
-        if skip:
-            continue
-        rc, stdout, _ = run_nft(["list", "set", "inet", TABLE, set_name], fail_ok=True)
-        if rc != 0:
-            continue
-        in_elements = False
-        for line in stdout.splitlines():
-            line = line.strip()
-            if "elements = " in line:
-                # Single-line: elements = { 1.2.3.4, 5.6.7.8 }
-                if "{" in line and "}" in line:
-                    block = line[line.index("{") + 1 : line.index("}")].strip()
-                    if block:
-                        for entry in block.split(","):
-                            entry = entry.strip()
-                            ip_str = entry.split("/")[0] if "/" in entry else entry
-                            normalized = normalize_ip(ip_str)
-                            if normalized:
-                                ip_set.add(normalized)
-                else:
-                    in_elements = True
-                continue
-            if in_elements:
-                if "}" in line:
-                    line = line[: line.index("}")].strip()
-                    in_elements = False
-                if line:
-                    for entry in line.rstrip(",").split(","):
-                        entry = entry.strip()
-                        if not entry:
-                            continue
-                        ip_str = entry.split("/")[0] if "/" in entry else entry
-                        normalized = normalize_ip(ip_str)
-                        if normalized:
-                            ip_set.add(normalized)
+    content = ruleset_path.read_text()
+
+    # Find the IPv6 set position and its elements
+    v6_start = content.find(f'set {SET_IPV6}')
+    if v6_start > 0:
+        elem_start = content.find('elements = {', v6_start)
+        if elem_start > 0:
+            elem_end = content.find('}', elem_start)
+            if elem_end > elem_start:
+                elem_block = content[elem_start + 11:elem_end]
+                for entry in elem_block.split(","):
+                    entry = entry.strip()
+                    if not entry:
+                        continue
+                    entry = entry.rstrip(",").rstrip(";")
+                    if not entry:
+                        continue
+                    ip_str = entry.split("/")[0] if "/" in entry else entry
+                    normalized = normalize_ip(ip_str)
+                    if normalized and ":" in normalized:
+                        ipv6_ips.add(normalized)
+
+    return ipv4_ips, ipv6_ips
+
+
+def get_current_set_ips(ipv4_only: bool = False, log_file: Optional[str] = None) -> Tuple[Set[str], Set[str]]:
+    """Read current IPs from nftables sets/nft files.
+
+    IPv6 comes from the saved ruleset file (contains stored elements).
+    IPv4 comes from the tracking file since kernel queries require root
+    and the ruleset file typically has an empty IPv4 set.
+    """
+    ipv4_ips: Set[str] = set()
+    ipv6_ips: Set[str] = set()
+    ruleset_path = Path(DEFAULT_RULESET_FILE)
+    tracking_path = Path(BAN_TRACKING)
+
+    if ruleset_path.exists():
+        ipv4_ips, ipv6_ips = get_current_set_ips_from_file(ruleset_path, ipv4_only)
+
+    # Tracking file has all IPs that were added to nftables
+    if not ipv4_ips and tracking_path.exists():
+        tracking = load_tracking(tracking_path)
+        for ip in tracking:
+            if is_ipv4(ip):
+                ipv4_ips.add(ip)
 
     return ipv4_ips, ipv6_ips
 

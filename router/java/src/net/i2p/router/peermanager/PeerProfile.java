@@ -310,10 +310,8 @@ public class PeerProfile {
      *  calculated over a 10 minute, 1 hour, and 1 day period
      *  Warning - may return null if !getIsExpanded()
      *
-     *  @deprecated unused
-     *  @return null always
+     *  @return latency response time in ms
      */
-    @Deprecated
     public RateStat getTunnelTestResponseTime() {return _tunnelTestResponseTime;}
 
     /** how long it takes for a peer to respond to a direct test (ms) */

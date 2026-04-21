@@ -38,13 +38,6 @@ jobs:
           echo "Installer build complete. Current directory contents:"
           ls -al
 
-      - name: Build javadocs with Ant
-        run: |
-          echo "Building javadocs..."
-          ant javadoc-zip
-          echo "Javadocs build complete. Current directory contents:"
-          ls -al
-
       - name: Build I2PSnark standalone with Ant
         run: |
           echo "Building I2PSnark standalone..."
@@ -59,8 +52,5 @@ jobs:
           path: |
             dist/i2pupdate.zip
             dist/install.jar
-            dist/javadoc.zip
             dist/i2psnark-standalone.zip
           retention-days: 7
-
-      

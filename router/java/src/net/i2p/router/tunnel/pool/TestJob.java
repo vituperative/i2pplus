@@ -43,8 +43,8 @@ public class TestJob extends JobImpl {
     private RatchetSessionTag _ratchetEncryptTag;
     private static final AtomicInteger __id = new AtomicInteger();
     private int _id;
-    private static final int MIN_TEST_PERIOD = 30*1000;
-    private static final int MAX_TEST_PERIOD = 120*1000;
+    private static final int MIN_TEST_PERIOD = 45*1000;
+    private static final int MAX_TEST_PERIOD = 75*1000;
 
     /**
      * Maximum number of tunnel tests that can run concurrently.
@@ -54,7 +54,7 @@ public class TestJob extends JobImpl {
     private static final int MAX_CONCURRENT_TESTS = SystemVersion.isSlow() ? 8 : 16;
 
     // Adaptive testing frequency constants
-    private static final int BASE_TEST_DELAY = 120 * 1000; // 120s base
+    private static final int BASE_TEST_DELAY = 90 * 1000; // 90s base
     private static final int MIN_TEST_DELAY = 60 * 1000; // 60s minimum
     private static final int MAX_TEST_DELAY = 180 * 1000; // 180s maximum
     private static final int SUCCESS_HISTORY_SIZE = 3; // Track last 3 results
@@ -845,7 +845,7 @@ public class TestJob extends JobImpl {
         int totalCount = getTotalTestJobCount();
         if (readyCount > 50 || maxLag > 10 || totalCount >= maxTestJobs) {
             if (_log.shouldInfo()) {
-                _log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag + 
+                _log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag +
                          "ms, testJobs=" + totalCount + "/" + maxTestJobs + ") -> Skipping retest for " + _cfg);
             }
             return false;

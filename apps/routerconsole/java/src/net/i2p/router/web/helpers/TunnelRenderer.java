@@ -946,7 +946,9 @@ class TunnelRenderer {
             live++;
             boolean isInbound = info.isInbound();
             net.i2p.router.TunnelTestStatus testStatus = info.getTestStatus();
-            boolean isFailed = (testStatus == net.i2p.router.TunnelTestStatus.FAILED);
+            boolean isFailed = (testStatus == net.i2p.router.TunnelTestStatus.FAILED ||
+                                testStatus == net.i2p.router.TunnelTestStatus.TOO_SLOW ||
+                                testStatus == net.i2p.router.TunnelTestStatus.OVER_BUDGET);
             boolean isFailing = (testStatus == net.i2p.router.TunnelTestStatus.FAILING);
             boolean isGood = (testStatus == net.i2p.router.TunnelTestStatus.GOOD);
             boolean isTesting = (testStatus == net.i2p.router.TunnelTestStatus.TESTING);
@@ -982,6 +984,12 @@ class TunnelRenderer {
                     break;
                 case FAILED:
                     buf.append("<span title=\"").append(_t("Test failed (3 consecutive failures)")).append("\"></span>");
+                    break;
+                case TOO_SLOW:
+                    buf.append("<span title=\"").append(_t("Tunnel too slow - scheduled for early expiry")).append("\"></span>");
+                    break;
+                case OVER_BUDGET:
+                    buf.append("<span title=\"").append(_t("Pool over budget - scheduled for early expiry")).append("\"></span>");
                     break;
                 default:
                     buf.append("<span title=\"").append(_t("Not yet tested")).append("\"></span>");

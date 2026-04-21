@@ -1,3 +1,19 @@
+2026-04-21 dr|z3d
+  * Router:
+    - Tunnel pool pruning: add pruneExcessTunnels() method to stay within
+      configured budget; use ExpireJob.scheduleExpiration() for graceful
+      early expiry (30s) instead of direct removal
+    - LU router handling: simplify ban to 1h, no version check; add periodic
+      cleanup job; fix lookup-before-drop for banned peers; skip direct lookup
+      in ExploreJob for banned peers
+    - Peer test and tunnel build timeouts: reduce next hop lookup timeout,
+      tweak first hop selection timeouts
+    - RequestThrottler: simplify request queuing, reduce complexity
+    - TestJob: tweak delays and intervals
+  * Console:
+    - Session bans: toggle ban display off by default for >=500 routers
+    - Increase auto-refresh on session bans page to 30s (was 15)
+
 2026-04-20 dr|z3d
   * Router:
     - Acceptance ratio for peers: demote peers with low tunnel acceptance

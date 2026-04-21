@@ -19,6 +19,7 @@ import net.i2p.router.RouterContext;
 import net.i2p.router.TunnelInfo;
 import net.i2p.router.TunnelManagerFacade;
 import net.i2p.router.TunnelPoolSettings;
+import net.i2p.router.tunnel.TunnelCreatorConfig;
 import net.i2p.router.tunnel.TunnelDispatcher;
 import net.i2p.stat.RateConstants;
 import net.i2p.util.I2PThread;
@@ -886,27 +887,34 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 }
             } // Lock released
 
-            // PHASE B: Execute removals OUTSIDE the lock to prevent ABBA deadlock
+            // PHASE B: Schedule early expiry for slow tunnels OUTSIDE the lock
+            long now = _context.clock().now();
             for (TunnelInfo info : toRemove) {
-                // Re-verify tunnel is still valid before removal (another thread may have removed it)
-                if (info.getTunnelFailed() || info.getExpiration() <= _context.clock().now()) {
+                // Re-verify tunnel is still valid (another thread may have removed it)
+                if (info.getTunnelFailed() || info.getExpiration() <= now) {
                     continue;
                 }
-                long start = System.currentTimeMillis();
-                try {
-                    pool.removeTunnel(info);
-                } catch (Exception e) {
-                    _log.warn("Exception removing slow tunnel " + info, e);
-                }
-                long duration = System.currentTimeMillis() - start;
-                if (duration > 1000) {
-                    _log.warn("removeTunnel blocked for " + duration + "ms on " + info);
+                // Use early expiry via ExpireJob for graceful removal
+                if (info instanceof PooledTunnelCreatorConfig) {
+                    PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
+                    cfg.setExpiration(now + TunnelPool.PRUNE_EARLY_EXPIRY);
+                    ExpireJob.scheduleExpiration(_context, cfg);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Scheduling early expiry for slow tunnel: " + cfg.getReceiveTunnelId(0));
+                    }
+                } else {
+                    // Fallback to direct removal for non-PooledTunnelCreatorConfig
+                    try {
+                        pool.removeTunnel(info);
+                    } catch (Exception e) {
+                        _log.warn("Exception removing slow tunnel " + info, e);
+                    }
                 }
             }
 
             if (!toRemove.isEmpty()) {
                 didRemove = true;
-                _log.warn("Removed " + toRemove.size() + " slow tunnels from " + pool);
+                _log.warn("Scheduled early expiry for " + toRemove.size() + " slow tunnels from " + pool);
             }
         }
         return didRemove;

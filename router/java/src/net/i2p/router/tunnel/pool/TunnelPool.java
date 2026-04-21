@@ -62,6 +62,8 @@ public class TunnelPool {
     private static final int BUILD_TRIES_LENGTH_OVERRIDE_1 = 10;
     private static final int BUILD_TRIES_LENGTH_OVERRIDE_2 = 12;
     private static final long STARTUP_TIME = 5*60*1000;
+    /** Early expiration time for pruned tunnels (30 seconds) */
+    static final long PRUNE_EARLY_EXPIRY = 30*1000;
 
 
     TunnelPool(RouterContext ctx, TunnelPoolManager mgr, TunnelPoolSettings settings, TunnelPeerSelector sel) {
@@ -621,6 +623,143 @@ public class TunnelPool {
             }
         }
         return cancelled;
+    }
+
+    /**
+     *  Prune excess tunnels from the pool to stay within budget.
+     *  Uses ExpireJob.scheduleExpiration() for budget-based pruning instead of direct removal.
+     *  @return number of tunnels marked for removal
+     *  @since 0.9.69+
+     */
+    public int pruneExcessTunnels() {
+        if (!_alive || _tunnels.isEmpty()) {
+            return 0;
+        }
+
+        int poolSize = size();
+        boolean needsReplacement = false;
+        if (_settings.isInbound() && !_settings.isExploratory()) {
+            Hash dest = _settings.getDestination();
+            TunnelPool oppositePool = _manager.getOutboundPool(dest);
+            if (oppositePool != null && oppositePool.size() <= 1) {
+                needsReplacement = true;
+            }
+        }
+        if (needsReplacement && poolSize > 1) {
+            if (_log.shouldWarn())
+                _log.warn(toString() + " -> Pre-building tunnel replacement before slow/failed cleanup");
+            _manager.tunnelFailed();
+        }
+
+        int removed = 0;
+        long now = _context.clock().now();
+        List<TunnelInfo> toRemove = new ArrayList<>();
+
+        synchronized (_tunnels) {
+            poolSize = _tunnels.size();
+            if (poolSize <= 1) {
+                return 0;
+            }
+
+            if (_settings.isInbound() && !_settings.isExploratory()) {
+                Hash dest = _settings.getDestination();
+                TunnelPool oppositePool = _manager.getOutboundPool(dest);
+                if (oppositePool != null) {
+                    int oppositeUsable = oppositePool.getTunnelCount();
+                    int oppositeMin = oppositePool.getSettings().getQuantity();
+                    if (poolSize - 1 < 1 && oppositeUsable < oppositeMin) {
+                        if (_log.shouldDebug()) {
+                            _log.debug(toString() + " -> Skipping cleanup - would break paired tunnel failover");
+                        }
+                        return 0;
+                    }
+                }
+            }
+
+            int target = _settings.isExploratory() ? _settings.getQuantity() : _settings.getQuantity() + 1;
+            int currentSize = _tunnels.size();
+
+            // Prune oldest tunnels if we're over target - use ExpireJob instead of direct removal
+            if (currentSize > target) {
+                int toPrune = currentSize - target;
+                List<TunnelInfo> sortedTunnels = new ArrayList<>(_tunnels);
+                sortedTunnels.sort(Comparator.comparingLong(TunnelInfo::getExpiration));
+                for (TunnelInfo info : sortedTunnels) {
+                    if (toPrune <= 0) break;
+                    if (!info.getTunnelFailed() && info instanceof PooledTunnelCreatorConfig) {
+                        PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
+                        // Use ExpireJob for graceful early expiration instead of direct removal
+                        long earlyExpiry = now + PRUNE_EARLY_EXPIRY;
+                        cfg.setExpiration(earlyExpiry);
+                        ExpireJob.scheduleExpiration(_context, cfg);
+                        toRemove.add(info);
+                        toPrune--;
+                        if (_log.shouldDebug()) {
+                            _log.debug(toString() + " -> Scheduling early expiry to meet target (" + target + "): " + info.getReceiveTunnelId(0));
+                        }
+                    }
+                }
+            }
+
+            // Additional pruning for tunnels with < 3 min to expiry that exceed target + 2
+            int pruneThreshold = target + 2;
+            long pruneExpiryThreshold = now + 3 * 60 * 1000;
+            int healthyExpiring = 0;
+            for (TunnelInfo info : _tunnels) {
+                if (info.getExpiration() > pruneExpiryThreshold && !info.getTunnelFailed()) {
+                    healthyExpiring++;
+                }
+            }
+
+            if (healthyExpiring > pruneThreshold) {
+                int extraToPrune = healthyExpiring - target;
+                List<TunnelInfo> sortedExpiring = new ArrayList<>(_tunnels);
+                sortedExpiring.sort(Comparator.comparingLong(TunnelInfo::getExpiration));
+                for (TunnelInfo info : sortedExpiring) {
+                    if (extraToPrune <= 0) break;
+                    long exp = info.getExpiration();
+                    if (exp <= pruneExpiryThreshold && !info.getTunnelFailed() && !toRemove.contains(info) && info instanceof PooledTunnelCreatorConfig) {
+                        PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
+                        // Use ExpireJob for graceful early expiration
+                        cfg.setExpiration(now + PRUNE_EARLY_EXPIRY);
+                        ExpireJob.scheduleExpiration(_context, cfg);
+                        toRemove.add(info);
+                        extraToPrune--;
+                    }
+                }
+            }
+
+            // Schedule early expiry for completely failed tunnels
+            for (TunnelInfo info : _tunnels) {
+                if (info instanceof PooledTunnelCreatorConfig && !toRemove.contains(info)) {
+                    PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
+                    boolean completelyFailed = cfg.getTunnelFailed();
+                    if (completelyFailed) {
+                        cfg.setExpiration(now + PRUNE_EARLY_EXPIRY);
+                        ExpireJob.scheduleExpiration(_context, cfg);
+                        toRemove.add(info);
+                        removed++;
+                        if (_log.shouldDebug()) {
+                            _log.debug(toString() + " -> Scheduling early expiry for failed tunnel: " + cfg.getReceiveTunnelId(0));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Actually remove the tunnels
+        for (TunnelInfo info : toRemove) {
+            removeTunnel(info);
+            if (_log.shouldInfo()) {
+                _log.info(toString() + " -> Removed problematic tunnel: " + info);
+            }
+        }
+
+        if (removed > 0 && _log.shouldInfo()) {
+            _log.info(toString() + " -> Cleaned up " + removed + " slow/failed tunnels");
+        }
+
+        return removed;
     }
 
     /**

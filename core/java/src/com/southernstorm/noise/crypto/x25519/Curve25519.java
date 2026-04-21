@@ -62,8 +62,7 @@ public final class Curve25519 {
     /**
      * Constructs the temporary state holder for Curve25519 evaluation.
      */
-    private Curve25519()
-    {
+    private Curve25519() {
         // Allocate memory for all of the temporary variables we will need.
         x_1 = new int [NUM_LIMBS_255BIT];
         x_2 = new int [NUM_LIMBS_255BIT];
@@ -113,8 +112,7 @@ public final class Curve25519 {
      *
      * @param x The number to reduce, and the result.
      */
-    private void reduceQuick(int[] x)
-    {
+    private void reduceQuick(int[] x) {
         int index, carry;
 
         // Perform a trial subtraction of (2^255 - 19) from "x" which is
@@ -147,8 +145,7 @@ public final class Curve25519 {
      * modified during the reduction.
      * @param size The number of limbs in the high order half of x.
      */
-    private void reduce(int[] result, int[] x, int size)
-    {
+    private void reduce(int[] result, int[] x, int size) {
         int index, limb, carry;
 
         // Calculate (x mod 2^255) + ((x / 2^255) * 19) which will
@@ -202,8 +199,7 @@ public final class Curve25519 {
      * @param x The first number to multiply.
      * @param y The second number to multiply.
      */
-    private void mul(int[] result, int[] x, int[] y)
-    {
+    private void mul(int[] result, int[] x, int[] y) {
         int i, j;
 
         // Multiply the two numbers to create the intermediate result.
@@ -237,8 +233,7 @@ public final class Curve25519 {
      * @param result The result.
      * @param x The number to square.
      */
-    private void square(int[] result, int[] x)
-    {
+    private void square(int[] result, int[] x) {
         mul(result, x, x);
     }
 
@@ -248,8 +243,7 @@ public final class Curve25519 {
      * @param result The result.
      * @param x The number to multiply by a24.
      */
-    private void mulA24(int[] result, int[] x)
-    {
+    private void mulA24(int[] result, int[] x) {
         long a24 = 121665;
         long carry = 0;
         int index;
@@ -269,8 +263,7 @@ public final class Curve25519 {
      * @param x The first number to add.
      * @param y The second number to add.
      */
-    private void add(int[] result, int[] x, int[] y)
-    {
+    private void add(int[] result, int[] x, int[] y) {
         int index, carry;
         carry = x[0] + y[0];
         result[0] = carry & 0x03FFFFFF;
@@ -288,8 +281,7 @@ public final class Curve25519 {
      * @param x The first number to subtract.
      * @param y The second number to subtract.
      */
-    private static void sub(int[] result, int[] x, int[] y)
-    {
+    private static void sub(int[] result, int[] x, int[] y) {
         int index, borrow;
 
         // Subtract y from x to generate the intermediate result.
@@ -320,8 +312,7 @@ public final class Curve25519 {
      * @param x The first value.
      * @param y The second value.
      */
-    private static void cswap(int select, int[] x, int[] y)
-    {
+    private static void cswap(int select, int[] x, int[] y) {
         int dummy;
         select = -select;
         for (int index = 0; index < NUM_LIMBS_255BIT; ++index) {
@@ -337,8 +328,7 @@ public final class Curve25519 {
      * @param result The result.  Must not overlap with x.
      * @param x The argument.
      */
-    private void pow250(int[] result, int[] x)
-    {
+    private void pow250(int[] result, int[] x) {
         int i, j;
 
         // The big-endian hexadecimal expansion of (2^250 - 1) is:
@@ -378,8 +368,7 @@ public final class Curve25519 {
      * @param result The result.  Must not overlap with x.
      * @param x The argument.
      */
-    private void recip(int[] result, int[] x)
-    {
+    private void recip(int[] result, int[] x) {
         // The reciprocal is the same as x ^ (p - 2) where p = 2^255 - 19.
         // The big-endian hexadecimal expansion of (p - 2) is:
         // 7FFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFEB
@@ -402,8 +391,7 @@ public final class Curve25519 {
      *
      * @param s The 32-byte secret key.
      */
-    private void evalCurve(byte[] s)
-    {
+    private void evalCurve(byte[] s) {
         int sposn = 31;
         int sbit = 6;
         int svalue = s[sposn] | 0x40;
@@ -443,17 +431,17 @@ public final class Curve25519 {
 
             // Move onto the next lower bit of "s".
             if (sbit > 0) {
-            	--sbit;
+                --sbit;
             } else if (sposn == 0) {
-            	break;
+                break;
             } else if (sposn == 1) {
-            	--sposn;
-            	svalue = s[sposn] & 0xF8;
-            	sbit = 7;
+                --sposn;
+                svalue = s[sposn] & 0xF8;
+                sbit = 7;
             } else {
-            	--sposn;
-            	svalue = s[sposn];
-            	sbit = 7;
+                --sposn;
+                svalue = s[sposn];
+                sbit = 7;
             }
         }
 
@@ -471,10 +459,9 @@ public final class Curve25519 {
      * @param publicKey The public key to use in the evaluation, or null
      *                  MUST have MSB high bit cleared, i.e. publicKey[31] &amp; 0x80 == 0
      * if the base point of the curve should be used.
-	 * @throws IllegalArgumentException on low-order input see RFC 7748
+     * @throws IllegalArgumentException on low-order input see RFC 7748
      */
-    public static void eval(byte[] result, int offset, byte[] privateKey, byte[] publicKey)
-    {
+    public static void eval(byte[] result, int offset, byte[] privateKey, byte[] publicKey) {
         Curve25519 state = new Curve25519();
         try {
             // Unpack the public key value.  If null, use 9 as the base point.
@@ -482,16 +469,16 @@ public final class Curve25519 {
             if (publicKey != null) {
                 // Convert the input value from little-endian into 26-bit limbs.
                 for (int index = 0; index < 32; ++index) {
-                	int bit = (index * 8) % 26;
-                	int word = (index * 8) / 26;
-                	int value = publicKey[index] & 0xFF;
-                	if (bit <= (26 - 8)) {
-                		state.x_1[word] |= value << bit;
-                	} else {
-                		state.x_1[word] |= value << bit;
-                		state.x_1[word] &= 0x03FFFFFF;
-                		state.x_1[word + 1] |= value >> (26 - bit);
-                	}
+                    int bit = (index * 8) % 26;
+                    int word = (index * 8) / 26;
+                    int value = publicKey[index] & 0xFF;
+                    if (bit <= (26 - 8)) {
+                        state.x_1[word] |= value << bit;
+                    } else {
+                        state.x_1[word] |= value << bit;
+                        state.x_1[word] &= 0x03FFFFFF;
+                        state.x_1[word + 1] |= value >> (26 - bit);
+                    }
                 }
 
                 // Just in case, we reduce the number modulo 2^255 - 19 to
@@ -504,11 +491,11 @@ public final class Curve25519 {
             }
 
             // Initialize the other temporary variables.
-            //Arrays.fill(state.x_2, 0);			// x_2 = 1
+            //Arrays.fill(state.x_2, 0);            // x_2 = 1
             state.x_2[0] = 1;
-            //Arrays.fill(state.z_2, 0);			// z_2 = 0
+            //Arrays.fill(state.z_2, 0);            // z_2 = 0
             System.arraycopy(state.x_1, 0, state.x_3, 0, state.x_1.length);  // x_3 = x_1
-            //Arrays.fill(state.z_3, 0);			// z_3 = 1
+            //Arrays.fill(state.z_3, 0);            // z_3 = 1
             state.z_3[0] = 1;
 
             // Evaluate the curve for every bit of the private key.
@@ -519,18 +506,18 @@ public final class Curve25519 {
             state.mul(state.x_2, state.x_2, state.z_3);
 
             // Convert x_2 into little-endian in the result buffer.
-		    byte b = 0;
+            byte b = 0;
             for (int index = 0; index < 32; ++index) {
-            	int bit = (index * 8) % 26;
-            	int word = (index * 8) / 26;
-            	if (bit <= (26 - 8))
-            		result[offset + index] = (byte)(state.x_2[word] >> bit);
-            	else
-            		result[offset + index] = (byte)((state.x_2[word] >> bit) | (state.x_2[word + 1] << (26 - bit)));
-			b |= result[offset + index];
+                int bit = (index * 8) % 26;
+                int word = (index * 8) / 26;
+                if (bit <= (26 - 8))
+                    result[offset + index] = (byte)(state.x_2[word] >> bit);
+                else
+                    result[offset + index] = (byte)((state.x_2[word] >> bit) | (state.x_2[word + 1] << (26 - bit)));
+            b |= result[offset + index];
             }
-		    if (b == 0)
-			throw new IllegalArgumentException("low order input RFC 7748");
+            if (b == 0)
+            throw new IllegalArgumentException("Low order input RFC 7748");
         } finally {
             // Clean up all temporary state before we exit.
             state.destroy();

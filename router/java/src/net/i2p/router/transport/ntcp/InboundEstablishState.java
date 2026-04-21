@@ -477,10 +477,10 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                     if (verifyInbound(h)) {
                         if (_log.shouldDebug()) {
                             _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                      " more bytes, waiting for " + _padlen1 + " more bytes", gse);
+                                      " more bytes, waiting for " + _padlen1 + " more bytes...", gse);
                         } else if (_log.shouldWarn()) {
                             _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                      " more bytes, waiting for " + _padlen1 + " more bytes" +
+                                      " more bytes, waiting for " + _padlen1 + " more bytes..." +
                                       (gseNotNull ? "\n* General Security Exception: " + gse.getMessage() : ""));
                         }
                     }

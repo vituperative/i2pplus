@@ -189,7 +189,7 @@ public final class ECIESAEADEngine {
                 _log.warn("ECIES decryption error -> " + dfe.getMessage());
             return NO_CLOVES;
         } catch (Exception e) {
-            _log.error("ECIES decryption error", e);
+            _log.warn("ECIES decryption error", e);
             return NO_CLOVES;
         }
     }
@@ -238,7 +238,7 @@ public final class ECIESAEADEngine {
                 _log.warn("ECIES decryption error -> " +  dfe.getMessage());
             return NO_CLOVES;
         } catch (Exception e) {
-            _log.error("ECIES decryption error", e);
+            _log.warn("ECIES decryption error", e);
             return NO_CLOVES;
         }
     }
@@ -302,7 +302,8 @@ public final class ECIESAEADEngine {
             } else {
                 decrypted = null;
                 if (_log.shouldWarn()) {
-                    _log.warn("NewSessionReply decryption failure -> Tag found but no state and too small (" + data.length + " bytes) for NewSessionReply (minimum " + (KEYLEN + KEYLEN + MACLEN + MACLEN) + " bytes)");
+                    _log.warn("NewSessionReply decryption failure -> Tag found but no state and too small (" +
+                              data.length + " bytes) for NewSessionReply (minimum " + (KEYLEN + KEYLEN + MACLEN + MACLEN) + " bytes)");
                 }
             }
             if (decrypted != null) {
@@ -310,7 +311,7 @@ public final class ECIESAEADEngine {
             } else {
                 _context.statManager().updateFrequency("crypto.eciesAEAD.decryptFailed");
                 if (_log.shouldWarn()) {
-                    _log.warn("ECIES decryption failure -> Known tag [" + st + "] but failed decrypt with key \n* Key: " + key + 
+                    _log.warn("ECIES decryption failure -> Known tag [" + st + "] but failed decrypt with key \n* Key: " + key +
                              "\n* Failure type: Cryptographic verification failed (MAC or decryption error)");
                 }
             }
@@ -333,7 +334,7 @@ public final class ECIESAEADEngine {
                 _log.warn("ECIES decryption error", dfe);
             return NO_CLOVES;
         } catch (Exception e) {
-            _log.error("ECIES decryption error", e);
+            _log.warn("ECIES decryption error", e);
             return NO_CLOVES;
         }
     }
@@ -359,7 +360,7 @@ public final class ECIESAEADEngine {
                 _context.statManager().updateFrequency("crypto.eciesAEAD.decryptFailed");
                 // we'll get this a lot on muxed SKM
                 if (_log.shouldInfo()) {
-                    _log.info("ECIES decryption failure for NewSession -> Type: " + type + 
+                    _log.info("ECIES decryption failure for NewSession -> Type: " + type +
                              " Data size: " + data.length + " (minimum " + minns + ")" +
                              " Is router: " + isRouter);
                 }

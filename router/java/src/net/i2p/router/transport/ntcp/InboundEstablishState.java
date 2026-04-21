@@ -100,7 +100,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     private int _version = 2;
 
     /** Reusable options array for message 1 processing to eliminate per-call allocation */
-    private final byte[] _options1 = new byte[OPTIONS1_SIZE];
+    
 
     /** Buffer size for reading data phase packets (16 KB), same as I2PTunnelRunner */
     private static final int BUFFER_SIZE = 16*1024;
@@ -564,7 +564,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (_log.shouldDebug()) {
                 _log.debug("After Establishment handshake message #1: " + _handshakeState.toString());
             }
-            int v = _options1[1] & 0xff;
+int v = options[1] & 0xff;
             if (v != NTCPTransport.NTCP2_INT_VERSION) {
                 fail("BAD version: " + v);
                 return;
@@ -577,15 +577,14 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                     if (_log.shouldWarn()) {
                         _log.warn("[NTCP] Dropping Inbound connection (Wrong network identifier): " + Addresses.toString(ip));
                     }
-                    // So next time we will not accept the con from this IP
                     _context.blocklist().add(ip);
                 }
-                fail("BAD NetworkId: " + v);
+                fail("BAD network id: " + v);
                 return;
             }
-            _padlen1 = (int) DataHelper.fromLong(_options1, 2, 2);
-            _msg3p2len = (int) DataHelper.fromLong(_options1, 4, 2);
-            long tsA = DataHelper.fromLong(_options1, 8, 4);
+            _padlen1 = (int) DataHelper.fromLong(options, 2, 2);
+            _msg3p2len = (int) DataHelper.fromLong(options, 4, 2);
+            long tsA = DataHelper.fromLong(options, 8, 4);
             long now = _context.clock().now();
             // Will be adjusted for RTT in verifyInbound()
             _peerSkew = (now - (tsA * 1000) + 500) / 1000;

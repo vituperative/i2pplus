@@ -1186,7 +1186,7 @@ public class Router implements RouterClock.ClockShiftListener {
         boolean disableCongestionCaps = isAdvanced() && _context.getBooleanProperty(PROP_RELAX_CONGESTION_CAP);
         boolean capsEnabled = false;
         if (forceG || maxTunnels <= 0) {cong = CAPABILITY_NO_TUNNELS;}
-        else if (maxTunnels <= 1000 || || !_context.commSystem().haveOutboundCapacity(94) || SystemVersion.isSlow()) {cong = CAPABILITY_CONGESTION_MODERATE;}
+        else if (SystemVersion.isSlow() || maxTunnels <= 1000 || !_context.commSystem().haveOutboundCapacity(94)) {cong = CAPABILITY_CONGESTION_MODERATE;}
         else {
             int numTunnels = _context.tunnelManager().getParticipatingCount();
             if (numTunnels > 9 * maxTunnels / 10) {cong = CAPABILITY_CONGESTION_SEVERE;}

@@ -753,16 +753,21 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
      * @return the new PeerState2 if are done, may also be retrieved from getPeerState(),
      *         or null if more fragments to go
      */
-    public synchronized PeerState2 receiveSessionConfirmed(UDPPacket packet) throws GeneralSecurityException {
+    public synchronized PeerState2 receiveSessionConfirmed(UDPPacket packet) {
         try {
             return locked_receiveSessionConfirmed(packet);
         } catch (GeneralSecurityException gse) {
-            if (!shouldSuppressException(gse) && _log.shouldDebug()) {
-                _log.debug("[SSU] SessionConfirmed error", gse);
-            }
-            // fail inside synch rather than have Est. Mgr. do it to prevent races
             fail();
-            throw gse;
+            throw new RuntimeException(gse);
+        } catch (RuntimeException re) {
+            // HandshakeState throws IllegalStateException when state is FAILED,
+            // IllegalArgumentException for low-order/invalid Curve25519 keys, etc.
+            if (_log.shouldWarn()) {
+                _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + this +
+                          " (state may already be failed): " + re.getClass().getSimpleName() + ": " + re.getMessage());
+            }
+            fail();
+            throw re;
         }
     }
 

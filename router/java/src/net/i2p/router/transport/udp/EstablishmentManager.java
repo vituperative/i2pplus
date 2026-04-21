@@ -904,12 +904,10 @@ class EstablishmentManager {
         }
 
         try {state.receiveSessionConfirmed(packet);}
-        catch (GeneralSecurityException gse) {
-            if (state != null && !isPeerBanned(state) && !shouldSuppressException(gse)) {
-                if (_log.shouldDebug()) {
-                    _log.warn("[SSU] Received CORRUPT SessionConfirmed -> Router: " + state, gse);
-                } else if (_log.shouldWarn()) {
-                    _log.warn("[SSU] Received CORRUPT SessionConfirmed -> Router: " + state + "\n* " + gse.getMessage());
+        catch (RuntimeException e) {
+            if (state != null && !isPeerBanned(state)) {
+                if (_log.shouldWarn()) {
+                    _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + state + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
                 }
             }
             _inboundStates.remove(state.getRemoteHostId());

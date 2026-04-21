@@ -655,8 +655,11 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (!src.hasRemaining()) {return;}
             int msg3tot = MSG3P1_SIZE + _msg3p2len;
             if (_msg3tmp == null) {_msg3tmp = _dataReadBufs.acquire();}
-            // use _X for the buffer FIXME too small
             byte[] tmp = _msg3tmp.getData();
+            if (msg3tot > tmp.length) {
+                fail("msg 3 too large: " + msg3tot);
+                return;
+            }
             int toGet = Math.min(src.remaining(), msg3tot - _received);
             src.get(tmp, _received, toGet);
             _received += toGet;

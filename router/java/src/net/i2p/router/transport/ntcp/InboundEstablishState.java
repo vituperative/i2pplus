@@ -109,8 +109,6 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     /** Cache for read buffers */
     private static final ByteCache _dataReadBufs = ByteCache.getInstance(MAX_DATA_READ_BUFS, BUFFER_SIZE);
 
-    /** Maximum padding length in message 1 (223 bytes: 287 - 64) */
-    private static final int PADDING1_MAX = TOTAL1_MAX - MSG1_SIZE;
     /** Maximum padding for probing resistance strategy (128 bytes) */
     private static final int PADDING1_FAIL_MAX = 128;
     /** Maximum padding length in message 2 (64 bytes) */
@@ -618,6 +616,8 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                 } else {prepareOutbound2();} // Write msg 2
                 return;
             }
+            // We don't enforce max _padlen1 here
+            // if it is more than our buffer size we will fail below.
         }
 
         // Delayed fail for probing resistance

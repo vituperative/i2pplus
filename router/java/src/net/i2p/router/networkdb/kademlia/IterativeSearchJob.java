@@ -444,6 +444,7 @@ public class IterativeSearchJob extends FloodSearchJob {
                               " have LSK? " + (lsk != null) +
                               " have his RI? " + (ri != null) +
                               " skipped, no ratchet/elg support");
+                failed(peer, false);
                 return;
             }
             isDirect = false;

@@ -67,7 +67,7 @@ public class HostReplyMessage extends I2CPMessageImpl {
      *  @param options for replies to lookup types 2-4, may be null, see proposal 167
      *  @since 0.9.69
      */
-    public HostReplyMessage(SessionId id, Destination d, long reqID) {
+    public HostReplyMessage(SessionId id, Destination d, long reqID, Properties options) {
         if (id == null || d == null) {
             throw new IllegalArgumentException();
         }

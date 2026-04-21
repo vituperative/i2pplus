@@ -217,7 +217,7 @@ class LookupDestJob extends JobImpl {
 
     private void returnDest(Destination d) {
         I2CPMessage msg;
-        if (_reqID >= 0) {msg = new HostReplyMessage(_sessID, d, _reqID);}
+        if (_reqID >= 0) {msg = new HostReplyMessage(_sessID, d, _reqID, null);}
         else {msg = new DestReplyMessage(d);}
         try {_runner.doSend(msg);}
         catch (I2CPMessageException ime) {}

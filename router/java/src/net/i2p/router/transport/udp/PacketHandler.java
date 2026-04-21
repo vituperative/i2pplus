@@ -456,8 +456,8 @@ class PacketHandler {
                 _log.warn("Banning IP Address " + ip.getHostAddress() + " for duration of session -> " + banReason);
             }
         } else {
-            if (_log.shouldDebug()) {
-                _log.warn("Cannot ban packet source, missing IP address or ban reason");
+            if (_log.shouldInfo()) {
+                _log.info("Cannot ban packet source -> Missing " + (ip == null ? "IP address" : "ban reason") + "...");
             }
         }
     }

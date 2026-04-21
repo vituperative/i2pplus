@@ -53,6 +53,8 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     private static final String PROP_SLOW_TUNNEL_THRESHOLD = "router.tunnel.slowThreshold";
     private static final String PROP_SLOW_TUNNEL_MIN = "router.tunnel.slowThresholdMin";
     private static final String PROP_SLOW_TUNNEL_INTERVAL = "router.tunnel.slowTunnelInterval";
+    private static final String PROP_PRUNE_EARLY_EXPIRY = "router.pruneEarlyExpiryDelay";
+    private static final long DEFAULT_PRUNE_EARLY_EXPIRY = 30*1000; // 30 seconds
     private static final int DEFAULT_SLOW_THRESHOLD_MS = 0; // 0 means use 1.5x average
     private static final int DEFAULT_RUN_INTERVAL_MS = 180*1000; // 3m default
     private static final long REFRESH_DELAY_AFTER_REMOVAL = 5*1000; // wait for new tunnels to build
@@ -894,10 +896,15 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                 if (info.getTunnelFailed() || info.getExpiration() <= now) {
                     continue;
                 }
+                // Skip if already scheduled for early expiry
+                if (info.getExpiration() < now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY) {
+                    continue;
+                }
                 // Use early expiry via ExpireJob for graceful removal
                 if (info instanceof PooledTunnelCreatorConfig) {
                     PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
-                    cfg.setExpiration(now + TunnelPool.PRUNE_EARLY_EXPIRY);
+                    cfg.setExpiration(now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY);
+                    cfg.setTestTooSlow();
                     ExpireJob.scheduleExpiration(_context, cfg);
                     if (_log.shouldDebug()) {
                         _log.debug("Scheduling early expiry for slow tunnel: " + cfg.getReceiveTunnelId(0));

@@ -62,8 +62,18 @@ public class TunnelPool {
     private static final int BUILD_TRIES_LENGTH_OVERRIDE_1 = 10;
     private static final int BUILD_TRIES_LENGTH_OVERRIDE_2 = 12;
     private static final long STARTUP_TIME = 5*60*1000;
-    /** Early expiration time for pruned tunnels (30 seconds) */
-    static final long PRUNE_EARLY_EXPIRY = 30*1000;
+    /** Default early expiration time for pruned tunnels (30 seconds) */
+    static final long DEFAULT_PRUNE_EARLY_EXPIRY = 30*1000;
+    private static final String PROP_PRUNE_EARLY_EXPIRY = "router.pruneEarlyExpiryDelay";
+
+    /**
+     * Get the early expiry time for pruned tunnels.
+     * Reads from property router.tunnel.pruneEarlyExpiry, or uses default (30s).
+     * @return early expiry time in milliseconds
+     */
+    long getPruneEarlyExpiry() {
+        return _context.getProperty(PROP_PRUNE_EARLY_EXPIRY, DEFAULT_PRUNE_EARLY_EXPIRY);
+    }
 
 
     TunnelPool(RouterContext ctx, TunnelPoolManager mgr, TunnelPoolSettings settings, TunnelPeerSelector sel) {
@@ -687,10 +697,14 @@ public class TunnelPool {
                 for (TunnelInfo info : sortedTunnels) {
                     if (toPrune <= 0) break;
                     if (!info.getTunnelFailed() && info instanceof PooledTunnelCreatorConfig) {
+                        // Skip if already scheduled for early expiry
+                        if (info.getExpiration() < now + getPruneEarlyExpiry()) {
+                            continue;
+                        }
                         PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
                         // Use ExpireJob for graceful early expiration instead of direct removal
-                        long earlyExpiry = now + PRUNE_EARLY_EXPIRY;
-                        cfg.setExpiration(earlyExpiry);
+                        cfg.setExpiration(now + getPruneEarlyExpiry());
+                        cfg.setTestOverBudget();
                         ExpireJob.scheduleExpiration(_context, cfg);
                         toRemove.add(info);
                         toPrune--;
@@ -718,10 +732,15 @@ public class TunnelPool {
                 for (TunnelInfo info : sortedExpiring) {
                     if (extraToPrune <= 0) break;
                     long exp = info.getExpiration();
+                    // Skip if already scheduled for early expiry
+                    if (exp < now + getPruneEarlyExpiry()) {
+                        continue;
+                    }
                     if (exp <= pruneExpiryThreshold && !info.getTunnelFailed() && !toRemove.contains(info) && info instanceof PooledTunnelCreatorConfig) {
                         PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
                         // Use ExpireJob for graceful early expiration
-                        cfg.setExpiration(now + PRUNE_EARLY_EXPIRY);
+                        cfg.setExpiration(now + getPruneEarlyExpiry());
+                        cfg.setTestOverBudget();
                         ExpireJob.scheduleExpiration(_context, cfg);
                         toRemove.add(info);
                         extraToPrune--;
@@ -735,7 +754,8 @@ public class TunnelPool {
                     PooledTunnelCreatorConfig cfg = (PooledTunnelCreatorConfig) info;
                     boolean completelyFailed = cfg.getTunnelFailed();
                     if (completelyFailed) {
-                        cfg.setExpiration(now + PRUNE_EARLY_EXPIRY);
+                        cfg.setTestTooSlow();
+                        cfg.setExpiration(now + getPruneEarlyExpiry());
                         ExpireJob.scheduleExpiration(_context, cfg);
                         toRemove.add(info);
                         removed++;

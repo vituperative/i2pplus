@@ -348,6 +348,22 @@ public abstract class TunnelCreatorConfig implements TunnelInfo {
     }
 
     /**
+     * Mark tunnel as scheduled for early expiry (pruned from pool).
+     * @since 0.9.69+
+     */
+    public void setTestTooSlow() {
+        _testStatus = TunnelTestStatus.TOO_SLOW;
+    }
+
+    /**
+     * Mark tunnel as scheduled for early expiry due to pool being over budget.
+     * @since 0.9.69+
+     */
+    public void setTestOverBudget() {
+        _testStatus = TunnelTestStatus.OVER_BUDGET;
+    }
+
+    /**
      * Get the number of consecutive test failures.
      * @return the count of consecutive failures
      * @since 0.9.68+

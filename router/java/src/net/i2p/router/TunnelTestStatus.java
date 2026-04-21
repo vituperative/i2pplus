@@ -9,5 +9,7 @@ public enum TunnelTestStatus {
     TESTING,     // Test is currently in progress
     GOOD,        // Recent successful test
     FAILING,     // One or two consecutive failures
-    FAILED       // Three consecutive failures, marked for removal
+    FAILED,      // Three consecutive failures, marked for removal
+    TOO_SLOW,   // Scheduled for early expiry due to slow tunnel
+    OVER_BUDGET // Scheduled for early expiry due to pool over budget
 }

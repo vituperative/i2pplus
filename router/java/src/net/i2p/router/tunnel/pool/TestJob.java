@@ -173,6 +173,16 @@ public class TestJob extends JobImpl {
             }
         }
 
+        // Skip testing if tunnel is scheduled for early expiry (already pruned)
+        long now = ctx.clock().now();
+        if (cfg.getExpiration() < now + TunnelPool.DEFAULT_PRUNE_EARLY_EXPIRY) {
+            Log log = ctx.logManager().getLog(TestJob.class);
+            if (log.shouldDebug()) {
+                log.debug("Skipping test - tunnel scheduled for early expiry: " + cfg);
+            }
+            return false;
+        }
+
         // Check if job queue is overloaded - skip scheduling if queue is backing up
         int readyCount = ctx.jobQueue().getReadyCount();
         long maxLag = ctx.jobQueue().getMaxLag();

@@ -151,7 +151,7 @@ public class PeerTestJob extends JobImpl {
                 _log.warn("Peer test timeout set below successful test average, setting to: " + getAvgPeerTestTime() + "ms");
             return getAvgPeerTestTime();
         } else {
-            if (avgTestTime > 200)
+            if (avgTestTime > 400)
                 return Math.min(testTimeout, avgTestTime * 3 / 2);
             else
                 return testTimeout;

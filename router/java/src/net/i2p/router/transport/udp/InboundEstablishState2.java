@@ -763,8 +763,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
             // HandshakeState throws IllegalStateException when state is FAILED,
             // IllegalArgumentException for low-order/invalid Curve25519 keys, etc.
             if (_log.shouldWarn()) {
-                _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + this +
-                          " (state may already be failed): " + re.getClass().getSimpleName() + ": " + re.getMessage());
+                _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + this);
             }
             fail();
             throw re;

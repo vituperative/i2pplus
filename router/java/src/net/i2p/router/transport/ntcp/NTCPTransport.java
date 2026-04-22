@@ -1260,7 +1260,7 @@ public class NTCPTransport extends TransportImpl {
                 if (con.isClosed() || con.isEstablished()) {iter.remove();}
                 else if (con.getTimeSinceCreated(now) > ESTABLISH_TIMEOUT) {
                     iter.remove();
-                    con.closeOnTimeout(" -> Establishment timeout (>15s)", null);
+                    con.closeOnTimeout("\n* Reason: Establishment timeout (>15s)", null);
                     expired++;
                 }
             }

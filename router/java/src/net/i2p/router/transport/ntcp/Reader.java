@@ -184,7 +184,7 @@ class Reader {
             if (est.isCorrupt()) {
                 String reason = est.getFailReason();
                 if (reason == null) { reason = "Unknown failure"; }
-                con.closeOnTimeout(" -> EstablishState corrupt: " + reason, null);
+                con.closeOnTimeout("EstablishState corrupt: " + reason, null);
                 return;
             }
             // EstablishState is responsible for passing "extra" data to the con

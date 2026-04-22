@@ -8,6 +8,8 @@ import com.southernstorm.noise.protocol.HandshakeState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
@@ -292,7 +294,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                 src.get(_X, _received, remaining);
                 _received += remaining;
                 if (_log.shouldWarn())
-                    _log.warn("Short buffer got " + remaining + " total now " + _received + " on " + this);
+                    _log.warn("Short buffer -> Received " + _received + " bytes, remaining " + remaining + "\n* " + this);
                 return;
             }
         }
@@ -537,24 +539,36 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                     _log.debug("After start: " + _handshakeState.toString());
                 _handshakeState.readMessage(_X, 0, MSG1_SIZE + extralen, options, 0);
             } catch (GeneralSecurityException gse) {
-                String gseMsg = gse.getMessage();
-                // Read a random number of bytes, store wanted in _padlen1
-                _padlen1 = _context.random().nextInt(PADDING1_FAIL_MAX) - src.remaining();
-                if (_padlen1 > 0) {
-                    // Delayed fail for probing resistance - need more bytes before failure
-                    if (_log.shouldDebug()) {
-                        _log.warn("[NTCP] BAD Establishment handshake message #1 \n* X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                  " more bytes, waiting for " + _padlen1 + " more bytes...", gse);
-                    } else if (_log.shouldWarn()) {
-                        _log.warn("[NTCP] BAD PK msg 1, X = " + Base64.encode(_X, 0, KEY_SIZE) + " with " + src.remaining() +
-                                  " more bytes, waiting for " + _padlen1 + " more bytes" +
-                                  (gseMsg != null && !gseMsg.equals("null") ? "\n* General Security Exception: " + gseMsg : ""));
-                    }
-                    changeState(State.IB_NTCP2_READ_RANDOM);
-                } else {
-                    // Got all we need, fail now
-                    fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining(), gse);
-                }
+                 String gseMsg = gse.getMessage();
+                 // Read a random number of bytes, store wanted in _padlen1
+                 _padlen1 = _context.random().nextInt(PADDING1_FAIL_MAX) - src.remaining();
+                 if (_padlen1 > 0) {
+                      // Delayed fail for probing resistance - need more bytes before failure
+                     if (_log.shouldDebug()) {
+                         _log.debug("[NTCP] BAD Establishment handshake message #1 debug: X=" +
+                                   Base64.encode(_X, 0, 8) + ", " + src.remaining() + " bytes received, " +
+                                   _padlen1 + " bytes waiting");
+                     } else if (_log.shouldWarn()) {
+                     String ip;
+                     try {
+                         ip = _con.getRemoteIP() != null ? InetAddress.getByAddress(_con.getRemoteIP()).getHostAddress() : "unknown";
+                     } catch (UnknownHostException uhe) {
+                         ip = "unknown";
+                     }
+                     _log.warn("[NTCP] Bad NTCP2 handshake #1 from " + ip + ", waiting for " + _padlen1 + " more bytes -> Probable probe");
+                     }
+                     changeState(State.IB_NTCP2_READ_RANDOM);
+                  } else {
+                      // Got all we need, fail now
+                       String ip;
+                       try {
+                           ip = _con.getRemoteIP() != null ? InetAddress.getByAddress(_con.getRemoteIP()).getHostAddress() : "unknown";
+                       } catch (UnknownHostException uhe) {
+                           ip = "unknown";
+                       }
+                       _log.warn("[NTCP] Bad NTCP2 handshake #1 from " + ip + ", all bytes received but handshake failed -> Invalid encryption");
+                      fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining(), gse);
+                  }
                 _transport.getPumper().blockIP(_con.getRemoteIP());
                 return;
             } catch (RuntimeException re) {

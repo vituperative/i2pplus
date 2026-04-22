@@ -907,7 +907,7 @@ class EstablishmentManager {
         catch (RuntimeException e) {
             if (state != null && !isPeerBanned(state)) {
                 if (_log.shouldWarn()) {
-                    _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + state + ": " + e.getClass().getSimpleName() + ": " + e.getMessage());
+                    _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + state);
                 }
             }
             _inboundStates.remove(state.getRemoteHostId());

@@ -221,7 +221,7 @@ public class NTCPConnection implements Closeable {
     public NTCPConnection(RouterContext ctx, NTCPTransport transport, SocketChannel chan, SelectionKey key) {
         this(ctx, transport, null, true);
         _chan = chan;
-        _version = 1;
+        _version = 2;
         _conKey = key;
         _establishState = new InboundEstablishState(ctx, transport, this);
     }
@@ -506,10 +506,19 @@ public class NTCPConnection implements Closeable {
             _log.logCloseLoop("NTCPConnection", this);
             return;
         }
-        if (_log.shouldInfo()) {
-            _log.info("Closing " + toString());
+        String failReason = null;
+        EstablishState es = _establishState;
+        if (es != null) {
+            failReason = es.getFailReason();
         }
         NTCPConnection toClose = locked_close(allowRequeue);
+        if (_log.shouldInfo()) {
+            if (failReason != null) {
+                _log.info("Closing " + toString() + " -> " + failReason);
+            } else {
+                _log.info("Closing " + toString());
+            }
+        }
         if (toClose != null && toClose != this) {
             // won't happen as of 0.9.37
             if (_log.shouldWarn())
@@ -526,8 +535,10 @@ public class NTCPConnection implements Closeable {
      */
     void closeOnTimeout(String cause, Exception e) {
         EstablishState es = _establishState;
+        if (es != null) {
+            es.close(cause, e);
+        }
         close();
-        es.close(cause, e);
     }
 
     /**
@@ -1815,7 +1826,7 @@ public class NTCPConnection implements Closeable {
             if (reason == REASON_BANNED && _remotePeer != null) {
                 byte[] ip = getRemoteIP();
                 int port = getRemotePort();
-                String ipPort = (ip != null && ip.length == 4) ? 
+                String ipPort = (ip != null && ip.length == 4) ?
                     (ip[0] & 0xff) + "." + (ip[1] & 0xff) + "." + (ip[2] & 0xff) + "." + (ip[3] & 0xff) + ":" + port :
                     "UNKNOWN";
                 _banLogger.logBan(_remotePeer.calculateHash(), ipPort, "They banned us", 2*60*60*1000);

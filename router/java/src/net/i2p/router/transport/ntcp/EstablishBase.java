@@ -56,6 +56,7 @@ abstract class EstablishBase implements EstablishState {
     protected volatile State _state;
     private final AtomicBoolean _isCorrupt = new AtomicBoolean();
     private final AtomicBoolean _isComplete = new AtomicBoolean();
+    protected String _failReason;
 
     /**
      * States for NTCP connection establishment process.
@@ -181,7 +182,7 @@ abstract class EstablishBase implements EstablishState {
                 throw new IllegalStateException(prefix() + "received unexpected data on " + _con);
         }
         if (_log.shouldDebug())
-            _log.debug(prefix() + "Receiving: " + src.remaining() + " Received: " + _received);
+            _log.debug(prefix() + "\n* Receiving: " + src.remaining() + " Received: " + _received);
     }
 
     /**
@@ -231,6 +232,7 @@ abstract class EstablishBase implements EstablishState {
 
     /** Caller must synch. */
     protected void fail(String reason, Exception e, boolean bySkew) {
+        _failReason = reason;
         synchronized(_stateLock) {
             if (STATES_DONE.contains(_state))
                 return;
@@ -240,7 +242,19 @@ abstract class EstablishBase implements EstablishState {
         if (!bySkew)
             _context.statManager().addRateData("ntcp.receiveCorruptEstablishment", 1);
         releaseBufs(false);
-        // con.close()?
+    }
+
+    /** Get the failure reason if the handshake failed, or null if not failed/corrupt */
+    public String getFailReason() {
+        if (_failReason != null) { return _failReason; }
+        if (_isCorrupt.get()) {
+            return "State: " + _state;
+        }
+        // If we're closing but not corrupt, still return state info
+        if (_state != State.VERIFIED) {
+            return "State: " + _state;
+        }
+        return null;
     }
 
     /**

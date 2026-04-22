@@ -631,8 +631,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             return;
         }
 
-        if (_state == State.IB_NTCP2_GOT_X) {
-            if (!src.hasRemaining()) {return;}
+        if (_state == State.IB_NTCP2_GOT_MSG1 && src.hasRemaining()) {
             // Skip this if _padlen1 == 0; use _X for the buffer
             int toGet = Math.min(src.remaining(), _padlen1 - _received);
             src.get(_X, _received, toGet);
@@ -651,7 +650,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             return;
         }
 
-        if (_state == State.IB_NTCP2_SENT_Y) {
+        if (_state == State.IB_NTCP2_SENT_Y && src.hasRemaining()) {
             if (!src.hasRemaining()) {return;}
             int msg3tot = MSG3P1_SIZE + _msg3p2len;
             if (_msg3tmp == null) {_msg3tmp = _dataReadBufs.acquire();}

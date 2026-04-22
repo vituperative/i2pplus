@@ -75,6 +75,7 @@ class OutboundNTCP2State implements EstablishState {
 
     private final Object _stateLock = new Object();
     private State _state;
+    private String _failReason;
 
     private final HandshakeState _handshakeState;
     private final RouterInfo _aliceRI;
@@ -184,7 +185,7 @@ class OutboundNTCP2State implements EstablishState {
         if (_state == State.VERIFIED || _state == State.CORRUPT)
             throw new IllegalStateException(this + "received unexpected data on " + _con);
         if (_log.shouldDebug())
-            _log.debug(this + "Receiving: " + src.remaining() + " Received: " + _received);
+            _log.debug(this + "\n* Receiving: " + src.remaining() + " Received: " + _received);
         if (!src.hasRemaining())
             return; // nothing to receive
         receiveOutbound(src);
@@ -562,6 +563,7 @@ class OutboundNTCP2State implements EstablishState {
     protected synchronized void fail(String reason, Exception e, boolean bySkew) {
         if (_state == State.CORRUPT || _state == State.VERIFIED) {return;}
         changeState(State.CORRUPT);
+        _failReason = reason;
         if (_log.shouldDebug()) {
             _log.warn("[NTCP] Outbound Handshake failure " + _handshakeState.toString());
             _log.warn(this + "\n* Failed to establish connection: " + reason, e);
@@ -573,6 +575,17 @@ class OutboundNTCP2State implements EstablishState {
             _context.statManager().addRateData("ntcp.receiveCorruptEstablishment", 1);
         }
         releaseBufs(false);
+    }
+
+    /** Get the failure reason if the handshake failed */
+    @Override
+    public String getFailReason() {
+        if (_failReason != null) { return _failReason; }
+        if (_state == State.CORRUPT || _state == State.VERIFIED) {
+            return "State: " + _state;
+        }
+        // If we're closing but not done, return state
+        return "State: " + _state;
     }
 
     /**

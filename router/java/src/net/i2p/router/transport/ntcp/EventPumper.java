@@ -219,7 +219,7 @@ class EventPumper implements Runnable {
                     if (_log.shouldWarn()) {
                         _log.warn("Throttling retry to " + remote + " (last failed " + (now - lastFailed) + "ms ago, attempt " + consecutiveFailures + ")");
                     }
-                    con.closeOnTimeout("Connection retry throttled", null);
+                    con.closeOnTimeout(" -> Connection retry throttled", null);
                     return;
                 }
             }
@@ -378,7 +378,7 @@ class EventPumper implements Runnable {
                     NTCPConnection con = (NTCPConnection) att;
 
                     if (!key.isValid() && con.getTimeSinceCreated(now) > 2 * NTCPTransport.ESTABLISH_TIMEOUT) {
-                        con.close();
+                        con.closeOnTimeout(" -> Key invalid and connection timeout (>30s)", null);
                         key.cancel();
                         failsafeInvalid++;
                         continue;
@@ -621,7 +621,7 @@ class EventPumper implements Runnable {
         final NTCPConnection con = (NTCPConnection) att;
         final SocketChannel chan = con.getChannel();
         if (chan == null) {
-            con.closeOnTimeout("Channel is null", null);
+            con.closeOnTimeout(" -> Channel is null", null);
             key.cancel();
             return;
         }
@@ -638,7 +638,7 @@ class EventPumper implements Runnable {
                 con.outboundConnected();
                 _context.statManager().addRateData("ntcp.connectSuccessful", 1);
             } else {
-                con.closeOnTimeout("Connect failed (10s timeout exceeded) -> Marking unreachable", null);
+                con.closeOnTimeout(" -> Connect failed (15s timeout exceeded) -> Marking unreachable", null);
                 _transport.markUnreachable(con.getRemotePeer().calculateHash());
                 _context.statManager().addRateData("ntcp.connectFailedTimeout", 1);
             }
@@ -648,7 +648,7 @@ class EventPumper implements Runnable {
             } else if (_log.shouldWarn()) {
                 _log.warn("[NTCP] Failed outbound connection to " + con.getRemotePeer());
             }
-            con.closeOnTimeout("Connect failed: " + ioe.getMessage(), ioe);
+            con.closeOnTimeout(" -> Connect failed: " + ioe.getMessage(), ioe);
             RouterIdentity remote = con.getRemotePeer();
             if (remote != null) {
                 Hash peerHash = remote.calculateHash();
@@ -722,7 +722,7 @@ class EventPumper implements Runnable {
                     } else if (shouldDebug) {
                         _log.debug("EOF on " + con);
                     }
-                    con.close();
+                    con.closeOnTimeout(" -> EOF on inbound connection (no data received)", null);
                     releaseBuf(buf);
                     break;
                 }
@@ -979,7 +979,7 @@ class EventPumper implements Runnable {
                 } else if (warn) {
                     _log.warn("[NTCP] Failed outbound connection to " + con.getRemotePeer());
                 }
-                con.closeOnTimeout("Connect failed: " + e.getMessage(), e);
+                con.closeOnTimeout(" -> Connect failed: " + e.getMessage(), e);
                 _transport.markUnreachable(con.getRemotePeer().calculateHash());
                 _context.statManager().addRateData("ntcp.connectFailedTimeoutIOE", 1);
                 RouterIdentity remote = con.getRemotePeer();

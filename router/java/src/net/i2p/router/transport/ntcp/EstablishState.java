@@ -37,6 +37,9 @@ interface EstablishState {
     /** did the handshake fail for some reason? */
     public boolean isCorrupt();
 
+    /** Get the failure reason if the handshake failed, or null if not failed/corrupt */
+    public String getFailReason();
+
     /**
      *  If synchronized on this, fails with
      *  deadlocks from all over via CSFI.isEstablished().

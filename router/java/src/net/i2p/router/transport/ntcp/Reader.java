@@ -182,7 +182,9 @@ class Reader {
             }
             EventPumper.releaseBuf(buf);
             if (est.isCorrupt()) {
-                con.close();
+                String reason = est.getFailReason();
+                if (reason == null) { reason = "Unknown failure"; }
+                con.closeOnTimeout(" -> EstablishState corrupt: " + reason, null);
                 return;
             }
             // EstablishState is responsible for passing "extra" data to the con

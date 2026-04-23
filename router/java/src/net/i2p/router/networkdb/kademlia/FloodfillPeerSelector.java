@@ -309,7 +309,7 @@ class FloodfillPeerSelector extends PeerSelector {
                         String ipPort = getIPFromRouterInfo(info);
                         _context.banlist().banlistRouter(entry, " <b>➜</b> L tier Floodfill", null, null, now + 4*60*60*1000);
                         _banLogger.logBan(entry, ipPort != null ? ipPort : "UNKNOWN", "L tier Floodfill", 4*60*60*1000);
-                        _context.commSystem().forceDisconnect(entry);
+                        _context.commSystem().forceDisconnect(entry, "L tier Floodfill");
                         if (_log.shouldWarn()) {
                             _log.warn("Banning for 4h and disconnecting from Floodfill [" + entry.toBase64().substring(0,6) + "] -> L tier");
                         }

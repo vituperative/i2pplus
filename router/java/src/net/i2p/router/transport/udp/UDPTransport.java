@@ -3445,15 +3445,27 @@ public class UDPTransport extends TransportImpl {
      * @since 0.9.38
      */
     public void forceDisconnect(Hash peer) {
+        forceDisconnect(peer, null);
+    }
+
+    /**
+     * Tell the transport to disconnect from this peer with a reason for logging.
+     *
+     * @param peer the peer hash
+     * @param reason reason for disconnection (for logging), may be null
+     * @since 0.9.38
+     */
+    public void forceDisconnect(Hash peer, String reason) {
         PeerState ps =  _peersByIdent.get(peer);
         boolean isBanned = _context.banlist().isBanlisted(peer);
         boolean isBannedHard = _context.banlist().isBanlistedForever(peer);
         boolean isBlocklisted = _context.blocklist().isBlocklisted(peer);
         if (ps != null) {
             if (_log.shouldWarn()) {
-                _log.warn("[SSU] Forcing immediate disconnection of " +
+                String reasonStr = reason != null ? " -> " + reason : "";
+                _log.warn("[SSU2] Forcing immediate disconnection of " +
                           (isBannedHard ? "permanently banned " : isBanned ? "temp banned " : isBlocklisted ? "blocklisted " : "") +
-                          "Router [" + peer.toBase64().substring(0,6) + "]");
+                          "Router [" + peer.toBase64().substring(0,6) + "]" + reasonStr);
             }
             dropPeer(ps, true, "router");
         }

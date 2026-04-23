@@ -1626,7 +1626,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
             }
             _banLogger.logBan(h, ipPort, "Blocked country: " + country, 8*60*60*1000L);
             _context.banlist().banlistRouter(h, " <b>➜</b> Blocked country: " + country, null, null, _context.clock().now() + 8*60*60*1000);
-            _context.commSystem().forceDisconnect(h);
+_context.commSystem().forceDisconnect(h, "Blocked country: " + country);
             return true;
         }
         return false;
@@ -2453,7 +2453,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
         public Disconnector(Hash h) {this.h = h;}
-        public void timeReached() {_context.commSystem().forceDisconnect(h);}
+        public void timeReached() {_context.commSystem().forceDisconnect(h, "Corrupt RouterInfo");}
     }
 
 }

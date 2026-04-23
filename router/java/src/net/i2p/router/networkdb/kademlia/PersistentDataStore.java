@@ -376,7 +376,7 @@ public class PersistentDataStore extends TransientDataStore {
                             }
                             _banLogger.logBan(key, ip, "Spoofed IP address (ours)", 72*60*60*1000);
                             _context.banlist().banlistRouter(key, " <b>➜</b> Spoofed IP address (ours)", null, null, _context.clock().now() + 72*60*60*1000);
-                            _context.simpleTimer2().addEvent(new Disconnector(key), 3*1000);
+                            _context.simpleTimer2().addEvent(new Disconnector(key, "Spoofed IP address"), 3*1000);
                             shouldDelete = true;
                         }
                     }
@@ -392,7 +392,7 @@ public class PersistentDataStore extends TransientDataStore {
                                                              (unreachable ? "U" : reachable ? "R" : "") + ")", null,
                                                               null, _context.clock().now() + 24*60*60*1000);
                         }
-                        _context.simpleTimer2().addEvent(new Disconnector(key), 11*60*1000);
+                        _context.simpleTimer2().addEvent(new Disconnector(key, "Invalid version"), 11*60*1000);
                         shouldDelete = true;
                     } else if (isLTier && unreachable) {
                         if (_log.shouldDebug()) {
@@ -403,7 +403,7 @@ public class PersistentDataStore extends TransientDataStore {
                             _banLogger.logBan(key, ip != null ? ip : "UNKNOWN", "LU Router", 60*60*1000);
                             _context.banlist().banlistRouter(key, " <b>➜</b> LU Router", null, null, _context.clock().now() + 60*60*1000);
                         }
-                        _context.simpleTimer2().addEvent(new Disconnector(key), 11*60*1000);
+                        _context.simpleTimer2().addEvent(new Disconnector(key, "Invalid version"), 11*60*1000);
                         shouldDelete = true;
                     } else if (unreachable) {
                         if (_log.shouldDebug()) {
@@ -1016,8 +1016,9 @@ public class PersistentDataStore extends TransientDataStore {
 
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
-        public Disconnector(Hash h) {this.h = h;}
-        public void timeReached() {_context.commSystem().forceDisconnect(h);}
+        private final String reason;
+        public Disconnector(Hash h, String reason) {this.h = h; this.reason = reason;}
+        public void timeReached() {_context.commSystem().forceDisconnect(h, reason);}
     }
 
     public static boolean isShuttingDown(RouterContext ctx) {

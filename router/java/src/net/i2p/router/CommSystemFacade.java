@@ -122,6 +122,15 @@ public abstract class CommSystemFacade implements Service {
      */
     public void forceDisconnect(Hash peer) {}
 
+    /**
+     * Tell the comm system to disconnect from this peer with a reason.
+     *
+     * @param peer the peer hash
+     * @param reason reason for disconnection (for logging), may be null
+     * @since 0.9.38
+     */
+    public void forceDisconnect(Hash peer, String reason) {}
+
     /** @since 0.8.11 */
     public String getOurCountry() { return null; }
 

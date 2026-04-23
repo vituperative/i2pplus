@@ -172,7 +172,7 @@ class RequestThrottler {
                 _banLogger.logBan(h, ipPort, "Transit request burst (10 in 1s)", 4*60*60*1000L);
                 context.banlist().banlistRouter(h, " <b>➜</b> Transit request burst", null, null, context.clock().now() + 4*60*60*1000);
                 if (cachedShouldDisconnect) {
-                    context.commSystem().forceDisconnect(h);
+                    context.commSystem().forceDisconnect(h, "Transit request burst");
                 }
                 return true;
             }
@@ -203,7 +203,7 @@ class RequestThrottler {
                 context.banlist().banlistRouter(h, " <b>➜</b> " + reason, null, null,
                     context.clock().now() + banTime);
                 if (cachedShouldDisconnect) {
-                    context.commSystem().forceDisconnect(h);
+                    context.commSystem().forceDisconnect(h, reason);
                 }
                 return true;
             }
@@ -259,7 +259,7 @@ class RequestThrottler {
                 if (_log.shouldInfo())
                     _log.info("Rejecting Tunnel Requests from temp banned Router [" + routerId + "] -> " +
                               "(Requested: " + count + " / Hard limit: " + limit + " in 165s)");
-                context.commSystem().forceDisconnect(h);
+                context.commSystem().forceDisconnect(h, "Excessive tunnel requests");
             }
         }
 
@@ -320,7 +320,7 @@ class RequestThrottler {
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
         public Disconnector(Hash h) {this.h = h;}
-        public void timeReached() {context.commSystem().forceDisconnect(h);}
+        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version ban");}
     }
 
     /**

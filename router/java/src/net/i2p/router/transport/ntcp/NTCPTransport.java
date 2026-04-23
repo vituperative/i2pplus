@@ -765,6 +765,17 @@ public class NTCPTransport extends TransportImpl {
      * @since 0.9.38
      */
     public void forceDisconnect(Hash peer) {
+        forceDisconnect(peer, null);
+    }
+
+    /**
+     * Tell the transport to disconnect from this peer with a reason for logging.
+     *
+     * @param peer the peer hash
+     * @param reason reason for disconnection (for logging), may be null
+     * @since 0.9.38
+     */
+    public void forceDisconnect(Hash peer, String reason) {
         NTCPConnection con = _conByIdent.remove(peer);
         boolean isBanned = _context.banlist().isBanlisted(peer);
         boolean isBannedHard = _context.banlist().isBanlistedForever(peer);
@@ -772,9 +783,10 @@ public class NTCPTransport extends TransportImpl {
         if (con != null) {
             // Only log if not already banlisted (blocklisted may result in new ban)
             if (!isBanned && !isBannedHard && _log.shouldWarn()) {
+                String reasonStr = reason != null ? " -> " + reason : "";
                 _log.warn("[NTCP] Forcing immediate disconnection of " +
                           (isBannedHard ? "permanently banned " : isBanned ? "temp banned " : isBlocklisted ? "blocklisted " : "") +
-                          "Router [" + peer.toBase64().substring(0,6) + "]");
+                          "Router [" + peer.toBase64().substring(0,6) + "]" + reasonStr);
             }
             con.close();
         }

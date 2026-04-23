@@ -264,7 +264,7 @@ class ParticipatingThrottler {
                                             boolean shouldDisconnect, boolean isBanned, String caps, int bantime, RouterInfo ri) {
         if (VersionComparator.comp(version, MIN_VERSION) < 0 && isLU && shouldBlockOldRouters) {
             if (shouldDisconnect) {
-                context.commSystem().forceDisconnect(h);
+                context.commSystem().forceDisconnect(h, "Old version " + version);
                 if (!isBanned && _log.shouldWarn()) {
                     _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for " + (bantime / 60000) +
                               "m -> " + version + (caps.isEmpty() ? "" : " / " + caps));
@@ -396,6 +396,6 @@ class ParticipatingThrottler {
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
         public Disconnector(Hash h) { this.h = h; }
-        public void timeReached() {context.commSystem().forceDisconnect(h);}
+        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version ban");}
     }
 }

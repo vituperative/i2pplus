@@ -975,7 +975,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             _banLogger.logBan(h, ipPort, "Invalid NTCP address", 4*60*60*1000);
             _context.banlist().banlistRouter(h, " <b>➜</b> Invalid NTCP address",
                                              null, null, _context.clock().now() + 4*60*60*1000);
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid NTCP address");
             if (_log.shouldWarn() && !isBanned) {
                 _log.warn("[NTCP] Banning for 4h and disconnecting from Router [" + h.toBase64().substring(0,6) + "]" +
                           " -> Invalid address");
@@ -1006,7 +1006,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (_log.shouldWarn() && !isBanned)
                 _log.warn("[NTCP] Banning for 24h and disconnecting from Router [" + h.toBase64().substring(0,6) + "]" +
                           " -> Invalid version " + version + " / " + bw + (unreachable ? "U" : ""));
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid NTCP address");
             throw new DataFormatException("Invalid Router version " + version + ": " + h);
         }
 
@@ -1018,7 +1018,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (_log.shouldInfo() && !isBanned)
                 _log.info("[NTCP] Banning for 1h and disconnecting from Router [" + h.toBase64().substring(0,6) + "]" +
                           " -> " + version + " / " + bw + (unreachable ? "U" : ""));
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid NTCP address");
             throw new DataFormatException("Old and slow: " + h);
         }
 
@@ -1031,7 +1031,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                 _log.warn("[NTCP] Banning for 24h and disconnecting from Router [" + h.toBase64().substring(0,6) + "]" +
                           " -> Publishing both R and U caps");
             }
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid NTCP address");
             throw new DataFormatException("Invalid caps (RU): " + h);
         }
 
@@ -1189,7 +1189,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
         public Disconnector(Hash h) { this.h = h; }
-        public void timeReached() {_context.commSystem().forceDisconnect(h);}
+        public void timeReached() {_context.commSystem().forceDisconnect(h, "Handshake timeout");}
     }
 
     /**

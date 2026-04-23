@@ -430,4 +430,12 @@ public interface Transport {
      * @since 0.9.38
      */
     public void forceDisconnect(Hash peer);
+
+    /**
+     * Forcefully disconnect from a peer with a reason for logging.
+     *
+     * @param peer hash of the peer to forcefully disconnect from
+     * @param reason reason for disconnection (for logging)
+     */
+    public void forceDisconnect(Hash peer, String reason);
 }

@@ -426,7 +426,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
             _context.banlist().banlistRouter(h, " <b>➜</b> Invalid SSU address",
                                              null, null, _context.clock().now() + 4 * 60 * 60 * 1000);
             _banLogger.logBan(h, ipPort, "Invalid SSU address", 4 * 60 * 60 * 1000);
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid SSU address");
             if (_log.shouldWarn() && !isBanned) {
                 _log.warn("Banning for 4h and disconnecting from Router [" +
                           h.toBase64().substring(0,6) + "] -> Invalid SSU address");
@@ -460,7 +460,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
                 _log.info("Banning for 1h and disconnecting from Router [" +
                           h.toBase64().substring(0,6) + "] -> " + version + " / " + bw + "U");
             }
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid SSU address");
             throw new RIException("Old and slow: " + h, REASON_BANNED);
         }
     }
@@ -1133,7 +1133,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
         private final Hash h;
         public Disconnector(Hash h) {this.h = h;}
         public void timeReached() {
-            _context.commSystem().forceDisconnect(h);
+            _context.commSystem().forceDisconnect(h, "Invalid SSU address");
         }
     }
 

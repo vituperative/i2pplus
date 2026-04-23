@@ -145,7 +145,7 @@ public class PublishLocalRouterInfoJob extends JobImpl {
                 getContext().router().rebuildNewIdentity();
             }
         } catch (DataFormatException dfe) {
-            _log.error("Error signing the updated local router info!", dfe);
+            _log.error("Error signing the updated local RouterInfo!", dfe);
         }
         _runCount.set(0);
         requeue(getDelay());

@@ -932,7 +932,7 @@ public abstract class TransportImpl implements Transport {
     }
 
     /**
-     * Was the peer Unreachable (outbound only) the last time we tried it?
+     * Was the peer unreachable (outbound only) the last time we tried it?
      * This is NOT reset if the peer contacts us.
      */
     public boolean wasUnreachable(Hash peer) {

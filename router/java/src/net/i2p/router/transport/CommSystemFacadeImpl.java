@@ -504,6 +504,11 @@ public class CommSystemFacadeImpl extends CommSystemFacade {
     }
 
     @Override
+    public void forceDisconnect(Hash peer, String reason) {
+        _manager.forceDisconnect(peer, reason);
+    }
+
+    @Override
     public List<String> getMostRecentErrorMessages() {
         return _manager.getMostRecentErrorMessages();
     }

@@ -546,7 +546,7 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
                                     _pathChallengeSendCount > MAX_PATH_CHALLENGE_SENDS) {
                                     // time exceeded
                                     _migrationState = MigrationState.MIGRATION_STATE_NONE;
-                                    if (shouldLog) {_log.warn("[SSU] Connection migration failed for " + this);}
+                                    if (shouldLog) {_log.warn("[SSU] Connection migration failed..." + this);}
                                 } else if (from.equals(_pendingRemoteHostId)) {
                                     if (shouldLogDebug) {
                                         _log.debug("[SSU] Connection migration pending, received another packet from " + from + ' ' + this);

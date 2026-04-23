@@ -12,11 +12,31 @@ See also: [Project README](../README.md)
 
 ### Translated READMEs
 
+- [README-ar.md](README-ar.md) - Arabic
 - [README-bo.md](README-bo.md) - Tibetan
+- [README-cs.md](README-cs.md) - Czech
+- [README-de.md](README-de.md) - German
+- [README-el.md](README-el.md) - Greek
+- [README-es.md](README-es.md) - Spanish
 - [README-fa.md](README-fa.md) - Persian
+- [README-fr.md](README-fr.md) - French
+- [README-he.md](README-he.md) - Hebrew
 - [README-hi.md](README-hi.md) - Hindi
+- [README-hu.md](README-hu.md) - Hungarian
+- [README-id.md](README-id.md) - Indonesian
+- [README-it.md](README-it.md) - Italian
 - [README-ja.md](README-ja.md) - Japanese
+- [README-ko.md](README-ko.md) - Korean
+- [README-nl.md](README-nl.md) - Dutch
+- [README-pl.md](README-pl.md) - Polish
+- [README-pt.md](README-pt.md) - Portuguese
+- [README-ro.md](README-ro.md) - Romanian
 - [README-ru.md](README-ru.md) - Russian
+- [README-th.md](README-th.md) - Thai
+- [README-tr.md](README-tr.md) - Turkish
+- [README-uk.md](README-uk.md) - Ukrainian
+- [README-ur.md](README-ur.md) - Urdu
+- [README-vi.md](README-vi.md) - Vietnamese
 - [README-zh.md](README-zh.md) - Chinese
 
 ### Sub-project READMEs
@@ -25,7 +45,6 @@ See also: [Project README](../README.md)
 - [INSTALL.md](INSTALL.md) - Building from source
 - [INSTALL-headless.md](INSTALL-headless.md) - Headless installation guide
 - [DIRECTORIES.md](DIRECTORIES.md) - Source tree layout
-- [checklist.md](checklist.md) - Release checklist and process
 - [i2p-sessionban-nftables.md](i2p-sessionban-nftables.md) - Managing I2P session bans with nftables
 
 ### External READMEs
@@ -44,7 +63,6 @@ See also: [Project README](../README.md)
 | ----------------------------------------------- | ---------------------------------------------- |
 | [HACKING.md](HACKING.md)                        | Build systems, developer guide, and workflow   |
 | [DIRECTORIES.md](DIRECTORIES.md)                | Source tree layout and where to find things    |
-| [checklist.md](checklist.md)                    | Release checklist and process                  |
 
 ## Installation
 
@@ -58,17 +76,6 @@ See also: [Project README](../README.md)
 | Document                                                        | Description                                  |
 | --------------------------------------------------------------- | -------------------------------------------- |
 | [i2p-sessionban-nftables.md](i2p-sessionban-nftables.md)        | Managing I2P session bans with nftables      |
-
-## Translated READMEs
-
-| Document                       | Language    |
-| ------------------------------ | ----------- |
-| [README-bo.md](README-bo.md)   | Tibetan     |
-| [README-fa.md](README-fa.md)   | Persian     |
-| [README-hi.md](README-hi.md)   | Hindi       |
-| [README-ja.md](README-ja.md)   | Japanese    |
-| [README-ru.md](README-ru.md)   | Russian     |
-| [README-zh.md](README-zh.md)   | Chinese     |
 
 ## Other
 

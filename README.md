@@ -6,7 +6,7 @@
 
 # I2P+
 
-[Русский](docs/README-ru.md) | [日本語](docs/README-ja.md) | [中文](docs/README-zh.md) | [हिन्दी](docs/README-hi.md) | [བོད་ཡིག](docs/README-bo.md) | [فارسی](docs/README-fa.md)
+[Русский](docs/README-ru.md) | [日本語](docs/README-ja.md) | [中文](docs/README-zh.md) | [हिन्दी](docs/README-hi.md) | [བོད་ཡིག](docs/README-bo.md) | [فارسی](docs/README-fa.md) | [العربية](docs/README-ar.md) | [Español](docs/README-es.md) | [Français](docs/README-fr.md) | [Deutsch](docs/README-de.md) | [Türkçe](docs/README-tr.md) | [Bahasa Indonesia](docs/README-id.md) | [Українська](docs/README-uk.md) | [Português](docs/README-pt.md) | [Polski](docs/README-pl.md) | [한국어](docs/README-ko.md) | [Tiếng Việt](docs/README-vi.md) | [ภาษาไทย](docs/README-th.md) | [اردو](docs/README-ur.md) | [עברית](docs/README-he.md) | [Italiano](docs/README-it.md) | [Nederlands](docs/README-nl.md) | [Română](docs/README-ro.md) | [Čeština](docs/README-cs.md) | [Magyar](docs/README-hu.md) | [Ελληνικά](docs/README-el.md)
 
 This is the source code for the soft-fork of the Java implementation of I2P.
 
@@ -104,7 +104,6 @@ For the various sub-component licenses, see: [LICENSE.txt](docs/licenses/LICENSE
 - [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - Headless (console mode) installation
 - [docs/HACKING.md](docs/HACKING.md) - Developer guide and build systems
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Source tree layout and where to find things
-- [docs/checklist.md](docs/checklist.md) - Release checklist and process
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Managing I2P session bans with nftables
 - [docs/history.txt](docs/history.txt) - Full changelog
 

@@ -1,0 +1,137 @@
+[![CodeQL](https://github.com/I2PPlus/i2pplus/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/I2PPlus/i2pplus/actions/workflows/codeql-analysis.yml)
+[![Java CI](https://github.com/I2PPlus/i2pplus/actions/workflows/ant.yml/badge.svg)](https://github.com/I2PPlus/i2pplus/actions/workflows/ant.yml)
+[![I2P+ Update zip](https://i2pplus.github.io/download.svg)](https://i2pplus.github.io/i2pupdate.zip)
+[![I2P+ I2PSnark standalone](https://i2pplus.github.io/i2psnarkdownload.svg)](https://i2pplus.github.io/installers/i2psnark-standalone.zip)
+[![I2P+ Javadocs](https://i2pplus.github.io/javadocsdownload.svg)](https://i2pplus.github.io/javadoc.zip)
+
+# I2P+
+
+[English](../README.md) | [Русский](README-ru.md) | [日本語](README-ja.md) | [中文](README-zh.md) | [हिन्दी](README-hi.md) | [བོད་ཡིག](README-bo.md) | [فارسی](README-fa.md) | [العربية](README-ar.md) | [Español](README-es.md) | [Français](README-fr.md) | [Deutsch](README-de.md) | [Türkçe](README-tr.md) | [Bahasa Indonesia](README-id.md) | [Українська](README-uk.md) | [Português](README-pt.md) | [Polski](README-pl.md) | [한국어](README-ko.md) | [Tiếng Việt](README-vi.md) | [ภาษาไทย](README-th.md) | [اردو](README-ur.md) | [עברית](README-he.md) | [Italiano](README-it.md) | [Nederlands](README-nl.md) | [Română](README-ro.md) | [Čeština](README-cs.md) | [Magyar](README-hu.md) | [Ελληνικά](README-el.md)
+
+یہ I2P کے جاوا نفاذ کا سافٹ فورک سورس کوڈ ہے۔
+
+تازہ ترین ریلیز: https://i2pplus.github.io/
+
+## انسٹالیشن
+
+انسٹالیشن ہدایات کے لیے [INSTALL.md](docs/INSTALL.md) یا https://i2pplus.github.io/ دیکھیں۔
+
+## دستاویز
+
+https://geti2p.net/how
+
+/faq
+
+اے پی آئی: http://docs.i2p-projekt.de/javadoc/
+یا 'ant javadoc' چلایں پھر build/javadoc/index.html سے شروع کریں۔
+
+## حصہ لینے کا طریقہ / I2P پر ہیک کرنا
+
+براہ کرم [HACKING.md](docs/HACKING.md) اور docs ڈائریکٹری میں دیگر دستاویزات دیکھیں۔
+
+## سورس کوڈ سے پیکجز بنانا
+
+سورس کنٹرول سے ڈویلپمنٹ برانچ حاصل کرنے کے لیے: https://gitlab.com/i2p.plus/I2P.Plus/
+
+### تقاضے
+
+- جاوا ایس ڈی کے (بہترینOracle/Sun یا OpenJDK) 1.8.0 یا اس سے زیادہ
+  - غیر لینکس آپریٹنگ سسٹم اور JVM: https://trac.i2p2.de/wiki/java دیکھیں
+  - ایمبیڈڈ کیلے کچھ سبسیسٹمز (core, router, mstreaming, streaming, i2ptunnel)
+    کو صرف جاوا 1.6 کی ضرورت ہے
+- اپاچی اینٹ 1.9.8 یا اس سے زیادہ
+- GNU gettext پیکج سے نصب xgettext, msgfmt, اور msgmerge ٹولز
+  http://www.gnu.org/software/gettext/
+- بلڈ اینوائرمنٹ کو UTF-8 لوکیل کا استعمال کرنا چاہیے۔
+
+### اینٹ بلڈ پروسیس
+
+x86 سسٹم پر درج ذیل چلایں (یہ IzPack4 کا استعمال کرکے بلڈ کرے گا):
+
+    ant pkg
+
+غیر x86 پر، اس کے بجائے درج ذیل میں سے ایک کا استعمال کریں:
+
+    ant installer-linux
+    ant installer-freebsd
+    ant installer-osx
+    ant installer-windows
+
+اگر آپ IzPack5 کے ساتھ بلڈ کرنا چاہتے ہیں، اس سے ڈاؤن لوڈ کریں: http://izpack.org/downloads/ پھر انسٹال کریں، اور پھر درج ذیل کمانڈ(ز) چلایں:
+
+    ant installer5-linux
+    ant installer5-freebsd
+    ant installer5-osx
+    ant installer5-windows
+
+موجودہ انسٹالیشن کے لیے غیر سائن اپڈیٹ بنانے کے لیے، چلایں:
+
+    ant updater
+
+اگر آپ کو پورے انسٹالر کو بلڈ کرنے میں مسائل ہیں (Java14 اور اس کے بعد izpack سے متعلقہ pack200 کے باعث بلڈ ایررز ہو سکتے ہیں)،
+آپ ایک پوری انسٹالیشن zip بناسکتے ہیں جو نکالی جا سکتی ہے اور原地 پر چلایا جا سکتا ہے:
+
+     ant zip-linux
+     ant zip-freebsd
+     ant zip-macos
+     ant zip-windows
+
+دوسرے بلڈ اختیارات دیکھنے کے لیے 'ant' کو بغیر دلائل کے چلایں۔
+
+### ڈاکر
+
+I2P کو ڈاکر میں چلانے کے بارے میں مزید معلومات کے لیے [docker/README.md](docker/README.md) دیکھیں
+
+## رابطہ کی معلومات
+
+مدد کی ضرورت ہے؟ I2P IRC نیٹ ورک پر IRC چینل #saltR پر جائیں
+
+بگ رپورٹس: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues or https://github.com/I2PPlus/i2pplus/issues
+
+## لائسنسز
+
+I2P+ کو AGPL v.3 کے تحت لائسنس دیا گیا ہے۔
+
+variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [LICENSE.txt](docs/licenses/LICENSE.txt)
+
+## یہ بھی دیکھیں
+
+### دستاویزات
+
+- [docs/README.md](docs/README.md) - مکمل دستاویزات انڈیکس
+- [docs/INSTALL.md](docs/INSTALL.md) - انسٹالیشن گائیڈ
+- [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - ہیڈلیس (کنسول موڈ) انسٹالیشن
+- [docs/HACKING.md](docs/HACKING.md) - ڈیولپر گائیڈ اور بلڈ سسٹمز
+- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - سورس ٹری لے آؤٹ اور کہاں چیزیں تلاش کرنی ہیں
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - nftables کے ساتھ I2P سیشن پابندیاں کا انتظام
+- [docs/history.txt](docs/history.txt) - مکمل چینج لاگ
+
+### سب پروجیکٹ ریڈمیز
+
+- [apps/addressbook/README.md](apps/addressbook/README.md) - ایڈریس بک ایپلی کیشن
+- [apps/desktopgui/README.md](apps/desktopgui/README.md) - ڈیسکٹاپ گوئی ایپلی کیشن
+- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P کنٹرول اے پی آئی
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - I2PSnark بٹ ٹورنٹ کلائنٹ
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - I2P ٹنل ایپلی کیشن
+- [apps/imagegen/README.md](apps/imagegen/README.md) - امیج جنریشن ٹولز
+- [apps/jetty/README.md](apps/jetty/README.md) - Jetty ایچ ٹی پی سرور
+- [apps/jrobin/README.md](apps/jrobin/README.md) - جی روبن مانیٹرنگ لائبریری
+- [apps/ministreaming/README.md](apps/ministreaming/README.md) - منیمل اسٹریمنگ لائبریری
+- [apps/pack200/README.md](apps/pack200/README.md) - Pack200 کمپریشن
+- [apps/proxyscript/README.md](apps/proxyscript/README.md) - پراکسی اسکرپٹس
+- [apps/README.md](apps/README.md) - ایپلی کیشن اوور ویو
+- [apps/routerconsole/README.md](apps/routerconsole/README.md) - روٹر کنسول
+- [apps/sam/README.md](apps/sam/README.md) - سیمپل اینینیمس میسیجنگ
+- [apps/streaming/README.md](apps/streaming/README.md) - اسٹریمنگ لائبریری
+- [apps/susidns/README.md](apps/susidns/README.md) - ڈی این ایس سرور
+- [apps/susimail/README.md](apps/susimail/README.md) - I2P ای میل کلائنٹ
+- [apps/systray/README.md](apps/systray/README.md) - سسٹرے ایپلی کیشن
+- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - نیٹیو بگ انٹیجر لائبریری (GMP)
+- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - سی پی یو ڈیٹیکشن نیٹیو لائبریری
+- [core/README.md](core/README.md) - کور لائبریری دستاویزات
+- [docker/README.md](docker/README.md) - ڈاکر میں I2P+ چلانا
+- [docs/licenses/README.md](docs/licenses/README.md) - تھرڈ پارٹ�� لائسنسز
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - کرپٹوگرافی (GMP) کے لیے نیٹیو جے این آئی لائبریری
+- [installer/resources/README.md](installer/resources/README.md) - بنڈلڈ انسٹالر ریسورسز
+- [scripts/README.md](scripts/README.md) - ڈویلپمنٹ اور ایڈمنسٹریشن کے لیے یوٹیلیٹی اسکرپٹس
+- [scripts/tests/README.md](scripts/tests/README.md) - ویلیڈیشن اور ٹیسٹنگ اسکرپٹس

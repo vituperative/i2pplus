@@ -8,6 +8,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -937,6 +938,28 @@ public class PeerState2 extends PeerState implements SSU2Payload.PayloadCallback
                             _migrationState = MigrationState.MIGRATION_STATE_NONE; // Reset on failure
                             messagePartiallyReceived(); // ACK-eliciting
                         }
+                    } else if (_pathChallengeData != null && DataHelper.eq(data, _pathChallengeData)) {
+                        // Challenge verified but address changed - same peer with new port (NAT remap)
+                        byte[] newIP = from.getIP();
+                        byte[] expectedIP = _pendingRemoteHostId.getIP();
+                        if (Arrays.equals(newIP, expectedIP)) {
+                            // Same IP, different port - update address
+                            if (_log.shouldInfo()) {
+                                _log.info("[SSU] Path response verified, updating port from " +
+                                         _pendingRemoteHostId.getPort() + " to " + from.getPort() + ' ' + this);
+                            }
+                            _transport.changePeerAddress(this, from);
+                        } else {
+                            // Different IP - warn but allow (may be legitimate change)
+                            if (_log.shouldWarn()) {
+                                _log.warn("[SSU] Path response from changed IP (verified), updating address... \n* Expected: " +
+                                         _pendingRemoteHostId + " -> Received from: " + from + ' ' + this);
+                            }
+                            _transport.changePeerAddress(this, from);
+                        }
+                        _pathChallengeData = null;
+                        _migrationState = MigrationState.MIGRATION_STATE_NONE;
+                        messagePartiallyReceived();
                     } else {
                         if (_log.shouldWarn()) {
                             _log.warn("[SSU] Path response from unexpected address... \n* Expected: " + _pendingRemoteHostId

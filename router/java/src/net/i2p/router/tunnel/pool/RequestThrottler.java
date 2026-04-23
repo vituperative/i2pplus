@@ -235,7 +235,7 @@ class RequestThrottler {
             if (_log.shouldInfo()) {
                 _log.info("Dropping all connections from [" + routerId + "] -> Low share / " + v);
             }
-            context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);
+            context.simpleTimer2().addEvent(new Disconnector(h, v), 11*60*1000);
             return true;
         }
 
@@ -248,7 +248,7 @@ class RequestThrottler {
                 String banReason = "Excessive tunnel requests";
                 _banLogger.logBan(h, ipPort, banReason, bantime);
                 context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
-                context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);
+                context.simpleTimer2().addEvent(new Disconnector(h, v), 11*60*1000);
                 if (_log.shouldWarn()) {
                     _log.warn("Banning " + (isLowShare || isUnreachable ? "slow or unreachable" : "") +
                               " Router [" + routerId + "] for " + period + "m" +
@@ -270,7 +270,7 @@ class RequestThrottler {
             _banLogger.logBan(h, ipPort, banReason, 30*60*1000L);
             context.banlist().banlistRouter(h, banReason, null, null, context.clock().now() + 30*60*1000);
             // drop after any accepted tunnels have expired
-            context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);
+            context.simpleTimer2().addEvent(new Disconnector(h, v), 11*60*1000);
             if (_log.shouldWarn())
                 _log.warn("Banning Router [" + routerId + "] for 30m -> " +
                           "Excessive tunnel requests (Requested: " + count + " / Hard limit: " + limit + ")");
@@ -319,8 +319,9 @@ class RequestThrottler {
      */
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
-        public Disconnector(Hash h) {this.h = h;}
-        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version ban");}
+        private final String version;
+        public Disconnector(Hash h, String version) {this.h = h; this.version = version;}
+        public void timeReached() {context.commSystem().forceDisconnect(h, version != null ? "Old version (" + version + ")" : "Old version ban");}
     }
 
     /**

@@ -174,7 +174,7 @@ class ParticipatingThrottler {
         String version = ri != null ? ri.getVersion() : "";
 
         if (version.equals("0") || version.equals("")) {
-            handleNoVersion(shouldDisconnect, h, isBanned, caps, bantime, ri);
+            handleNoVersion(shouldDisconnect, h, isBanned, caps, bantime, ri, "none");
             return Result.DROP;
         }
         if (checkVersionAndCompressibility(version, isCompressible, shouldDisconnect, h, isBanned, caps, ri)) return Result.DROP;
@@ -210,8 +210,8 @@ class ParticipatingThrottler {
      * @param caps router capabilities string
      * @param bantime duration of the ban in milliseconds
      */
-    private void handleNoVersion(boolean shouldDisconnect, Hash h, boolean isBanned, String caps, int bantime, RouterInfo ri) {
-        if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);}
+    private void handleNoVersion(boolean shouldDisconnect, Hash h, boolean isBanned, String caps, int bantime, RouterInfo ri, String version) {
+        if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h, version), 11*60*1000);}
         if (!isBanned && _log.shouldWarn()) {
             _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for " + (bantime / 60000) + "m -> No router version in RouterInfo");
         }
@@ -234,7 +234,7 @@ class ParticipatingThrottler {
      */
     private boolean checkVersionAndCompressibility(String version, boolean isCompressible, boolean shouldDisconnect, Hash h, boolean isBanned, String caps, RouterInfo ri) {
         if (VersionComparator.comp(version, "0.9.57") < 0 && isCompressible) {
-            if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);}
+            if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h, version), 11*60*1000);}
             if (!isBanned && _log.shouldWarn()) {
                 _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for 24h -> Compressible RouterInfo / " + version);
             }
@@ -295,7 +295,7 @@ class ParticipatingThrottler {
     private boolean checkUnreachableAndOld(String version, boolean isUnreachable, boolean isFast, boolean shouldBlockOldRouters, Hash h,
                                            boolean shouldDisconnect, boolean isBanned, String caps) {
         if (VersionComparator.comp(version, MIN_VERSION) < 0 && isUnreachable && shouldBlockOldRouters && !isFast) {
-            if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h), 11*60*1000);}
+            if (shouldDisconnect) {context.simpleTimer2().addEvent(new Disconnector(h, version), 11*60*1000);}
             if (_log.shouldWarn()) {
                 _log.warn("Ignoring Tunnel Request from Router [" + h.toBase64().substring(0,6) + "] -> " + version + (caps.isEmpty() ? "" : " / " + caps));
             }
@@ -358,7 +358,7 @@ class ParticipatingThrottler {
         String banReason = "Excessive tunnel requests";
         _banLogger.logBan(h, ipPort, banReason, bantime);
         context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
-        context.simpleTimer2().addEvent(new Disconnector(h), 11 * 60 * 1000);
+        context.simpleTimer2().addEvent(new Disconnector(h, "excessive requests"), 11 * 60 * 1000);
         if (_log.shouldWarn()) {
             _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for " + (bantime / 60000) +
                       "m -> Excessive tunnel requests -> Count / Limit: " +
@@ -395,7 +395,8 @@ class ParticipatingThrottler {
      */
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
-        public Disconnector(Hash h) { this.h = h; }
-        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version ban");}
+        private final String version;
+        public Disconnector(Hash h, String version) { this.h = h; this.version = version; }
+        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version (" + version + ")");}
     }
 }

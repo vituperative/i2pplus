@@ -1629,6 +1629,12 @@
       </delete>
       <delete includeemptydirs="true" quiet="true">
         <fileset dir=".">
+          <include name="*.so"/>
+          <include name="*.so.*"/>
+        </fileset>
+      </delete>
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir=".">
           <include name="apps/*/bin"/>
           <include name="apps/*/bin/main"/>
           <include name="apps/*/bin/test"/>

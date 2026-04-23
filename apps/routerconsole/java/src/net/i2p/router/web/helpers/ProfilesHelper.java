@@ -62,25 +62,6 @@ public class ProfilesHelper extends HelperBase {
     }
 
     /** @return empty string, writes directly to _out */
-    public String getBanlistSummary() {
-        try {
-            int banned = _context.banlist().getRouterCount();
-            BanlistRenderer rend = new BanlistRenderer(_context);
-            StringBuilder buf = new StringBuilder(1024);
-            buf.append("<p class=infohelp id=bannedpeercount>")
-               .append(_t("Total number of banned peers")).append(": <b>").append(banned).append("</b>");
-            if (banned > 300) {
-                buf.append(".&nbsp;").append(_t("Note: \'LU\' class routers have been excluded from the list."))
-                   .append("&nbsp;").append(_t("To view, see {0}Banned{1}.", "<a href=\"/profiles?f=3\">", "</a>"));
-            }
-            buf.append("</p>\n");
-            _out.append(buf);
-            rend.renderStatusHTML(_out);
-        } catch (IOException ioe) {ioe.printStackTrace();}
-        return "";
-    }
-
-    /** @return empty string, writes directly to _out */
     public String getBanlistCompact() {
         try {
             BanlistRenderer rend = new BanlistRenderer(_context);

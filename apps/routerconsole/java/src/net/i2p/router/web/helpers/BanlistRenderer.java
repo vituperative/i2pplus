@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -139,6 +140,7 @@ class BanlistRenderer {
      */
     private List<IPBanEntry> readSessionBansIPOnly() {
         List<IPBanEntry> ipBans = new ArrayList<>();
+        Set<String> seenIPs = new HashSet<>();
         File logDir = new File(_context.getRouterDir(), "sessionbans");
         File logFile = new File(logDir, "sessionbans.txt");
         if (!logFile.exists()) {
@@ -165,8 +167,11 @@ class BanlistRenderer {
                     if ((hash.isEmpty() || hash.equals("UNKNOWN")) && !ipPort.isEmpty()) {
                         long expires = parseDuration(durationStr, now);
                         if (expires > now) {
-                            // Store the full IP:PORT string in the ip field
-                            ipBans.add(new IPBanEntry(ipPort, hostname, reason, expires, durationStr));
+                            String ipOnly = extractIP(ipPort);
+                            if (!seenIPs.contains(ipOnly)) {
+                                seenIPs.add(ipOnly);
+                                ipBans.add(new IPBanEntry(ipPort, hostname, reason, expires, durationStr));
+                            }
                         }
                     }
                 }
@@ -289,56 +294,6 @@ class BanlistRenderer {
             this.expires = expires;
             this.durationStr = durationStr;
         }
-    }
-
-    public void renderStatusHTML(Writer out) throws IOException {
-        int bannedCount = _context.banlist().getRouterCount();
-        StringBuilder buf = new StringBuilder(bannedCount * 512 + 8192);
-        Map<Hash, Banlist.Entry> entries = new TreeMap<Hash, Banlist.Entry>(HashComparator.getInstance());
-
-        entries.putAll(_context.banlist().getEntries());
-        if (entries.isEmpty()) {
-            buf.append("<i>").append(_t("none").replace("none", "No bans currently active")).append("</i>");
-            out.append(buf);
-            return;
-        }
-
-        buf.append("<ul id=banlist>");
-
-        for (Map.Entry<Hash, Banlist.Entry> e : entries.entrySet()) {
-            Hash key = e.getKey();
-            Banlist.Entry entry = e.getValue();
-            long expires = entry.expireOn-_context.clock().now();
-            if (expires <= 0) {continue;}
-            if (entries.size() > 300 && (entry.causeCode != null && entry.causeCode.contains("LU")) ||
-                (entry.cause != null && entry.cause.contains("LU"))) {
-                continue;
-            }
-            buf.append("<li class=lazy>").append(_context.commSystem().renderPeerHTML(key, false));
-            buf.append(' ').append("<span class=banperiod>");
-            String expireString = DataHelper.formatDuration2(expires);
-            if (key.equals(Hash.FAKE_HASH) || key.equals(Banlist.HASH_ZERORI)) {buf.append(_t("Permanently banned"));}
-            else if (expires < 5l*24*60*60*1000) {buf.append(_t("Temporary ban expiring in {0}", expireString));}
-            else {buf.append(_t("Banned for {0} / until restart", expireString));}
-            buf.append("</span>");
-            Set<String> transports = entry.transports;
-            if ((transports != null) && (!transports.isEmpty())) {
-                buf.append(" on the following transport: ").append(transports);
-            }
-            if (entry.cause != null) {
-                buf.append("<hr>\n");
-                if (entry.causeCode != null) {buf.append(_t(entry.cause, entry.causeCode));}
-                else {buf.append(_t(entry.cause));}
-            }
-            if (!key.equals(Hash.FAKE_HASH)) {
-                buf.append(" <a href=\"configpeer?peer=").append(key.toBase64())
-                   .append("#unsh\" title=\"Unban\">[").append(_t("unban now")).append("]</a>");
-            }
-            buf.append("</li>\n");
-        }
-        buf.append("</ul>\n");
-        out.append(buf);
-        out.flush();
     }
 
     /* @since 0.9.59+ */
@@ -549,19 +504,18 @@ String countryName =  _context.commSystem().getCountryName(countryCode);
                .append("<td class=country data-sort=").append(countryCode).append(">")
                .append("<img width=28 height=21 title=\"").append(countryName)
                .append("\" src=\"/flags.jsp?c=").append(countryCode).append("\">")
-               .append("</td>")
-               .append("<td class=hash>")  // No hash available for IP-only bans
-               .append("</td>")
-                .append("<td class=ip>")
-                .append(ip != null ? ip : "")
-                .append("</td><td class=port data-sort=").append(port != null ? port : "0").append(">")
-                .append(port != null ? port : "")
-                .append("</td>");
-             if (enableReverseLookups()) {
-                 buf.append("<td class=hostname>")
-                    .append(hostname != null && !hostname.isEmpty() && !"unknown".equals(hostname) ? hostname : "")
-                    .append("</td>");
-             }
+               .append("</td>").append("<td class=hash></td>")
+               .append("<td class=routerversion></td>")
+               .append("<td class=ip>")
+               .append(ip != null ? ip : "")
+               .append("</td><td class=port data-sort=").append(port != null ? port : "0").append(">")
+               .append(port != null ? port : "")
+               .append("</td>");
+            if (enableReverseLookups()) {
+                buf.append("<td class=hostname>")
+                   .append(hostname != null && !hostname.isEmpty() && !"unknown".equals(hostname) ? hostname : "")
+                   .append("</td>");
+            }
             buf.append("<td class=reason>")
                .append(ipBan.reason.isEmpty() ? "IP Ban" : ipBan.reason)
                .append("</td><td class=expires data-sort=").append(ipBan.expires).append(">")
@@ -571,7 +525,7 @@ String countryName =  _context.commSystem().getCountryName(countryCode);
         }
 
         buf.append("</tbody>\n<tfoot id=sessionBanlistFooter><tr><th colspan=")
-           .append(enableReverseLookups() ? "8" : "7")
+           .append(enableReverseLookups() ? "9" : "8")
            .append(">")
            .append(_t("Total session-only bans"))
            .append(": ").append(tempBanned)

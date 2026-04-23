@@ -1,6 +1,8 @@
 package net.i2p.router;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,6 +49,7 @@ public class BanLogger {
     private static volatile boolean _globalArchiveDone = false;
     private static volatile boolean _headerWritten = false;
     private static final Set<String> _loggedHashes = Collections.synchronizedSet(new HashSet<String>());
+    private static final Set<String> _loggedIPs = Collections.synchronizedSet(new HashSet<String>());
 
     public BanLogger() {
         _dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -92,9 +95,70 @@ public class BanLogger {
             _initialized = true;
             _self = this;
 
-            // HashPatternDetector disabled - requires explicit opt-in
-            // TODO: Re-enable when ready
+            loadActiveIPs();
         }
+    }
+
+    /**
+     * Load active IPs from existing sessionbans.txt to prevent duplicate logging.
+     * Only loads IPs that haven't expired yet.
+     */
+    private void loadActiveIPs() {
+        if (_logFile == null || !_logFile.exists()) {return;}
+        long now = System.currentTimeMillis();
+        try (BufferedReader reader = new BufferedReader(new FileReader(_logFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#")) continue;
+                String[] parts = line.split("\\s*\\|\\s*");
+                if (parts.length >= 5) {
+                    String hash = parts[1].trim();
+                    String ip = parts[2].trim();
+                    String durationStr = parts[4].trim();
+                    if ("UNKNOWN".equals(hash) && !ip.isEmpty()) {
+                        long expires = parseDuration(durationStr, now);
+                        if (expires > now) {
+                            _loggedIPs.add(ip);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if (_log.shouldLog(Log.WARN))
+                _log.warn("Failed to load active IPs from ban log", e);
+        }
+    }
+
+    /**
+     * Check if an IP already has an active ban in sessionbans.txt.
+     */
+    private boolean hasActiveBan(String ip) {
+        if (_logFile == null || !_logFile.exists() || ip == null) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        try (BufferedReader reader = new BufferedReader(new FileReader(_logFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("#")) continue;
+                String[] parts = line.split("\\s*\\|\\s*");
+                if (parts.length >= 5) {
+                    String hash = parts[1].trim();
+                    String loggedIP = parts[2].trim();
+                    String durationStr = parts[4].trim();
+                    if ("UNKNOWN".equals(hash) && ip.equals(loggedIP)) {
+                        long expires = parseDuration(durationStr, now);
+                        if (expires > now) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if (_log.shouldLog(Log.WARN))
+                _log.warn("Failed to check active ban for " + ip, e);
+        }
+        return false;
     }
 
     /**
@@ -261,6 +325,20 @@ public class BanLogger {
     }
 
     /**
+     * Log a ban by IP only (no router hash available).
+     * Uses "UNKNOWN" for the hash column.
+     *
+     * @param hash This parameter is ignored, hash will always be "UNKNOWN"
+     * @param ip IP address with port (format: "1.2.3.4:5678" or "ipv6:port")
+     * @param reason Reason for the ban
+     * @param durationMs Ban duration in milliseconds, or 0 for permanent
+     */
+    public void logBanIPOnly(String ip, String reason, long durationMs) {
+        String durationStr = formatDuration(durationMs);
+        writeLog("UNKNOWN", ip, reason, durationStr);
+    }
+
+    /**
      * Log a permanent ban (forever).
      *
      * @param hash Router hash (may be null)
@@ -377,16 +455,33 @@ public class BanLogger {
 
     /**
      * Internal method to write the log entry.
-     * Skips logging if this hash has already been logged in this session.
+     * Skips logging if this IP already has an active ban in sessionbans.txt,
+     * or if this hash is already banlisted.
      */
     private void writeLog(String hashStr, String ip, String reason, String durationStr) {
         // Strip HTML formatting from reason for plain text log file
         if (reason != null) {
             reason = reason.replace("<b>➜</b>", "").replace("  ", " ").trim();
         }
-        // Skip if we've already logged this hash (prevents duplicate ban logging)
-        if (!"UNKNOWN".equals(hashStr) && !_loggedHashes.add(hashStr)) {
-            return; // Already logged this hash
+        // Skip if this hash is already banlisted
+        if (_context != null && !"UNKNOWN".equals(hashStr)) {
+            try {
+                Hash hash = new Hash();
+                hash.fromBase64(hashStr);
+                if (_context.banlist().isBanlisted(hash)) {
+                    return;
+                }
+            } catch (Exception e) {
+                // Ignore hash parsing errors
+            }
+        }
+        // Skip if this IP already has an active ban in the file
+        if ("UNKNOWN".equals(hashStr)) {
+            if (hasActiveBan(ip)) {
+                return;
+            }
+        } else if (!_loggedHashes.add(hashStr)) {
+            return;
         }
 
         String timestamp = _dateFormat.format(new Date());
@@ -431,6 +526,37 @@ public class BanLogger {
             return (durationMs / (60 * 60 * 1000)) + "h";
         } else {
             return (durationMs / (24 * 60 * 60 * 1000)) + "d";
+        }
+    }
+
+    /**
+     * Parse duration string to expiration timestamp.
+     */
+    private static long parseDuration(String durationStr, long now) {
+        if (durationStr == null || durationStr.isEmpty()) {
+            return now;
+        }
+        durationStr = durationStr.trim().toUpperCase();
+        if ("FOREVER".equals(durationStr)) {
+            return Long.MAX_VALUE;
+        }
+        long multiplier = 1;
+        if (durationStr.endsWith("D")) {
+            multiplier = 24 * 60 * 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("H")) {
+            multiplier = 60 * 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("M")) {
+            multiplier = 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("MS")) {
+            durationStr = durationStr.substring(0, durationStr.length() - 2);
+        }
+        try {
+            return now + (Long.parseLong(durationStr) * multiplier);
+        } catch (NumberFormatException e) {
+            return now;
         }
     }
 

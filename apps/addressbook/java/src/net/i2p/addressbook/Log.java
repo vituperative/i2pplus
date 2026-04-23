@@ -26,7 +26,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
 
 /**
  * A simple log with automatic time stamping.
@@ -35,6 +38,8 @@ import java.util.Date;
  *
  */
 class Log {
+
+    private static final int MAX_LINES = 600;
 
     private final File file;
 
@@ -58,16 +63,36 @@ class Log {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.file, true), "UTF-8"));
-            String timestamp = new Date().toString();
-            bw.write(timestamp + " -- " + entry);
+            String timestamp = Instant.now().toString();
+            bw.write(timestamp);
+            bw.write(" -- ");
+            bw.write(entry);
             bw.newLine();
+            bw.close();
+            trimLog();
         } catch (IOException exp) {}
-        finally {
-            if (bw != null) {
-                try {bw.close();}
-                catch (IOException ioe) {}
+    }
+
+    private void trimLog() {
+        try {
+            Path path = file.toPath();
+            List<String> lines = Files.readAllLines(path);
+            if (lines.size() > MAX_LINES) {
+                int remove = lines.size() - MAX_LINES;
+                StringBuilder sb = new StringBuilder();
+                for (int i = remove; i < lines.size(); i++) {
+                    sb.append(fixEntry(lines.get(i))).append('\n');
+                }
+                Files.write(path, sb.toString().getBytes("UTF-8"));
             }
+        } catch (IOException e) {}
+    }
+
+    private String fixEntry(String line) {
+        if (line.matches("\\d{4}-\\d{2}-\\d{2}T.*Z--.*")) {
+            return line.replaceFirst("Z--", "Z -- ");
         }
+        return line;
     }
 
 }

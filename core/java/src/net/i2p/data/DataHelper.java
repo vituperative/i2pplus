@@ -308,7 +308,7 @@ public class DataHelper {
                 key = cached;
             }
             if (enforceOrder && key.compareTo(prev) <= 0) {
-                throw new DataFormatException("Option key " + key + " is out of order");
+                throw new DataFormatException("Option key " + key + " out of order (prev: " + prev + ")");
             }
             prev = key;
             int b = in.read();

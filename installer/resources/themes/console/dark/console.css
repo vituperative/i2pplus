@@ -1623,7 +1623,7 @@ h3.sybils+div,h3.sybils+a[name]+table{margin-top:-1px}
 #banSummary li:active,#banSummary li:active .badge{box-shadow:var(--bevel_hover),var(--btn_shadow_active)}
 #sessionBanned{margin:11px auto 9px}
 #sessionBanned td:nth-child(n+2){border-left:var(--border_softer)}
-#sessionBanned td.hash::before{width:26px;height:20px;display:inline-block;vertical-align:middle;background:var(--client) no-repeat left center/18px;content:""}
+#sessionBanned td.hash:not(:empty)::before{width:26px;height:20px;display:inline-block;vertical-align:middle;background:var(--client) no-repeat left center/18px;content:""}
 #sessionBanned .banFF td.hash::before{background:var(--floodfill) no-repeat left center/18px}
 #sessionBanned .b64{padding:5px 8px;display:inline-block;vertical-align:middle;line-height:1;font-family:var(--monospaced);font-size:90%;font-weight:500;box-shadow:var(--bevel);background:var(--badge);user-select:all}
 #sessionBanned th{user-select:none}

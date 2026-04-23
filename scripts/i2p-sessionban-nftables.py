@@ -127,7 +127,7 @@ def parse_duration_hours(duration: str) -> int:
         return int(match.group(1))
     if match := re.match(r"^(\d+)D$", duration):
         return int(match.group(1)) * 24
-    if match := re.match(r"^(\d+)\?$", duration):
+    if match := re.match(r"^(\d+)M$", duration):
         return int(match.group(1)) * 24 * 30
     return 0
 
@@ -213,7 +213,7 @@ def get_ban_files(ban_dir: Path, ban_file: Path, window_hours: int = BAN_WINDOW_
     for f in ban_dir.glob("sessionbans-*.txt"):
         try:
             match = re.search(
-                r"sessionbans-(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})\.", f.name
+                r"sessionbans-(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})", f.name
             )
             if match:
                 dt = datetime(
@@ -277,6 +277,8 @@ def extract_all_categories(
         "blocklist": r"Blocklist",
         "sybil": r"Sybil",
         "no_version": r"No version in RouterInfo",
+        "bad_packets": r"Sending bad packets",
+        "handshake_timeout": r"Handshake timeout",
     }
     for key, pattern in reason_patterns.items():
         categories[key] = extract_ips_multithreaded(
@@ -441,7 +443,6 @@ def deduplicate_nft_output(nft_output: str) -> str:
             if not is_block_start and not is_block_end and not is_keyword:
                 if stripped in seen_rules:
                     dupes += 1
-                    depth += depth_delta
                     continue
                 seen_rules.add(stripped)
 
@@ -561,17 +562,35 @@ def init_table_and_sets(ipv4_only: bool = False, log_file: Optional[str] = None)
 
 def get_current_set_ips_from_file(ruleset_path: Path, ipv4_only: bool = False) -> Tuple[Set[str], Set[str]]:
     """Parse IPs from saved nftables ruleset file.
-
-    The saved ruleset may have IPv6 elements (IPv4 set is typically empty in the file).
-    Extracts IPv6 IPs by finding the elements block in the file.
+    
+    Simpler approach - extract all IPs by looking for patterns.
     """
     ipv4_ips: Set[str] = set()
     ipv6_ips: Set[str] = set()
-
+    
     content = ruleset_path.read_text()
-
-    # Find the IPv6 set position and its elements
+    
+    v4_start = content.find(f'set {SET_IPV4}')
     v6_start = content.find(f'set {SET_IPV6}')
+    
+    if v4_start > 0:
+        elem_start = content.find('elements = {', v4_start)
+        if elem_start > 0:
+            elem_end = content.find('}', elem_start)
+            if elem_end > elem_start:
+                elem_block = content[elem_start + 11:elem_end]
+                for entry in elem_block.split(","):
+                    entry = entry.strip()
+                    if not entry:
+                        continue
+                    entry = entry.rstrip(",").rstrip(";")
+                    if not entry:
+                        continue
+                    ip_str = entry.split("/")[0] if "/" in entry else entry
+                    normalized = normalize_ip(ip_str)
+                    if normalized and is_ipv4(normalized):
+                        ipv4_ips.add(normalized)
+    
     if v6_start > 0:
         elem_start = content.find('elements = {', v6_start)
         if elem_start > 0:
@@ -589,16 +608,14 @@ def get_current_set_ips_from_file(ruleset_path: Path, ipv4_only: bool = False) -
                     normalized = normalize_ip(ip_str)
                     if normalized and ":" in normalized:
                         ipv6_ips.add(normalized)
-
+    
     return ipv4_ips, ipv6_ips
 
 
 def get_current_set_ips(ipv4_only: bool = False, log_file: Optional[str] = None) -> Tuple[Set[str], Set[str]]:
-    """Read current IPs from nftables sets/nft files.
+    """Read current IPs from nftables sets.
 
-    IPv6 comes from the saved ruleset file (contains stored elements).
-    IPv4 comes from the tracking file since kernel queries require root
-    and the ruleset file typically has an empty IPv4 set.
+    Uses both saved ruleset file and tracking file to get all active bans.
     """
     ipv4_ips: Set[str] = set()
     ipv6_ips: Set[str] = set()
@@ -606,14 +623,17 @@ def get_current_set_ips(ipv4_only: bool = False, log_file: Optional[str] = None)
     tracking_path = Path(BAN_TRACKING)
 
     if ruleset_path.exists():
-        ipv4_ips, ipv6_ips = get_current_set_ips_from_file(ruleset_path, ipv4_only)
+        file_v4, file_v6 = get_current_set_ips_from_file(ruleset_path, ipv4_only)
+        ipv4_ips.update(file_v4)
+        ipv6_ips.update(file_v6)
 
-    # Tracking file has all IPs that were added to nftables
-    if not ipv4_ips and tracking_path.exists():
+    if tracking_path.exists():
         tracking = load_tracking(tracking_path)
         for ip in tracking:
             if is_ipv4(ip):
                 ipv4_ips.add(ip)
+            elif is_ipv6(ip):
+                ipv6_ips.add(ip)
 
     return ipv4_ips, ipv6_ips
 
@@ -1002,16 +1022,19 @@ def main():
         sybil_count = len(categories.get("sybil", set()))
         no_version_count = len(categories.get("no_version", set()))
         bad_handshake_count = len(categories.get("bad_handshake", set()))
+        bad_packets_count = len(categories.get("bad_packets", set()))
+        handshake_timeout_count = len(categories.get("handshake_timeout", set()))
 
         log(
-            f"Long-term bans (>=4h): {long_count}, "
-            f"XG Router: {xg_count}, "
-            f"LU Router: {lu_count}, "
-            f"Old and Slow: {old_slow_count}, "
-            f"Blocklist: {blocklist_count}, "
-            f"Sybil: {sybil_count}, "
-            f"No version: {no_version_count}, "
-            f"Bad Handshake: {bad_handshake_count}",
+            "Long-term bans (>=4h): " + str(long_count) + ", "
+            "XG Router: " + str(xg_count) + ", "
+            "LU Router: " + str(lu_count) + ", "
+            "Old and Slow: " + str(old_slow_count) + ", "
+            "Blocklist: " + str(blocklist_count) + ", "
+            "Sybil: " + str(sybil_count) + ", "
+            "No version: " + str(no_version_count) + ", "
+            "Handshake timeout: " + str(handshake_timeout_count) + ", "
+            "Sending bad packets: " + str(bad_packets_count),
             log_file,
         )
 

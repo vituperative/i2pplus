@@ -68,10 +68,12 @@ public class LogBean extends BaseBean
 
                 for (int i = lines.size() - 1; i >= 0; i--) { // Reverse order, most recent first
                     if (!lines.get(i).contains("Bad hostname")) {
-                        String[] parts = lines.get(i).split(" -- ");
+                        String[] parts = lines.get(i).split("\\s*--\\s*");
+                        if (parts.length < 2) {continue;}
                         String date = parts[0].replace("GMT", "UTC");
                         String message = parts[1];
                         String[] messageParts = message.split(" ");
+                        if (messageParts.length < 4) {continue;}
                         String domain = messageParts[2].replace("[","").replace("]","");
                         String subhost = messageParts[3].replace("http://", "");
 
@@ -140,7 +142,8 @@ public class LogBean extends BaseBean
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (!line.contains("Bad hostname")) {
-                        String[] parts = line.split(" -- ");
+                        String[] parts = line.split("\\s*--\\s*");
+                        if (parts.length < 2) {continue;}
                         String date = parts[0].replace("GMT", "UTC");
                         if (isToday(date)) {
                             todayEntryCount++;
@@ -159,16 +162,23 @@ public class LogBean extends BaseBean
     }
 
     private boolean isToday(String dateStr) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH)
-                                                        .withZone(ZoneOffset.UTC);
         try {
-            Instant instant = Instant.from(formatter.parse(dateStr));
+            DateTimeFormatter isoFormatter = DateTimeFormatter.ISO_INSTANT;
+            Instant instant = Instant.from(isoFormatter.parse(dateStr));
             LocalDate logDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
             LocalDate today = LocalDate.now(ZoneId.systemDefault());
             return logDate.equals(today);
         } catch (DateTimeParseException e) {
-            //e.printStackTrace();
-            return false;
+            try {
+                DateTimeFormatter oldFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH)
+                                                                .withZone(ZoneOffset.UTC);
+                Instant instant = Instant.from(oldFormatter.parse(dateStr));
+                LocalDate logDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate today = LocalDate.now(ZoneId.systemDefault());
+                return logDate.equals(today);
+            } catch (DateTimeParseException e2) {
+                return false;
+            }
         }
     }
 

@@ -1,17 +1,65 @@
 /* I2P+ geomap.js by dr|z3d */
 /* Heavily modified from https://cartosvg.com/mercator */
 
-(function () {
+/**
+ * @module geomap
+ * @description Interactive SVG world map for the NetDB page showing router distribution
+ * by country, floodfill, or bandwidth tier. Supports hover infoboxes, color-coded
+ * shape classes based on router counts, and periodic data refresh from /netdb.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
+(function () {
+  'use strict';
+
+  // ============ CONFIGURATION ============
+  const CONFIG = {
+    STORE_INTERVAL: 15_000,    // Refresh router counts every 15s
+    DEBOUNCE_DELAY: 30,        // UI event debounce (ms)
+    FETCH_TIMEOUT: 15_000,     // Retry delay on error (ms)
+    MAX_RETRY_DELAY: 120_000,  // Max exponential backoff cap (ms)
+    RETRY_MULTIPLIER: 1.5,     // Exponential backoff factor
+    MAP_WIDTH: 720,
+    MAP_HEIGHT: 475,
+  };
+
+  // ============ DOM REFERENCES ============
   const geomap = document.querySelector("#geomap");
   const infobox = document.querySelector("#netdbmap #info");
-  const currentRouterClass = getQueryParameter("class") || "countries";
+  const parser = new DOMParser();
+
+  // ============ STATE ============
   let debugging = false;
   let verbose = false;
-  const parser = new DOMParser();
-  const STORE_INTERVAL = 15000, DEBOUNCE_DELAY = 30, TIMEOUT = 15000;
-  const width = 720, height = 475;
+  let currentRouterClass = getQueryParameter("class") || "countries";
+  let routerCounts = {};
+  let retryAttempt = 0;
+  let fetchIntervalId = null;
 
+  // ============ CACHED DATA ============
+  // Pre-compute count threshold classes for efficient removal
+  const COUNT_CLASSES = new Set([
+    'count_1', 'count_10', 'count_50', 'count_100',
+    'count_200', 'count_300', 'count_400', 'count_500'
+  ]);
+
+  // Thresholds in descending order for efficient lookup (no reverse() needed)
+  const COUNT_THRESHOLDS = [
+    { threshold: 500, className: "count_500" },
+    { threshold: 400, className: "count_400" },
+    { threshold: 300, className: "count_300" },
+    { threshold: 200, className: "count_200" },
+    { threshold: 100, className: "count_100" },
+    { threshold: 50, className: "count_50" },
+    { threshold: 10, className: "count_10" },
+    { threshold: 1, className: "count_1" },
+  ];
+
+  // WeakMap for private element state (avoids DOM property pollution)
+  const elementState = new WeakMap();
+
+  // ============ MAP DATA ============
   const map = {
     data: {
       countries: {
@@ -211,51 +259,159 @@
         Zimbabwe: { region: "Africa", code: "zw" },
       },
     },
-
     infoboxHTML: {
       countries: '<span><b>Country: </b> <img class=mapflag width=9 height=6 src="/flags.jsp?c=${data.code}"> ${shapeId} (${data.code})</span><br>' +
         "<span><b>Region: </b>${data.region}</span><br>\n" + "<span><b>Routers: 0</b></span>\n",
     },
   };
 
+  // ============ UTILITIES ============
+
+  /**
+   * Retrieves a URL query parameter by name.
+   * @function getQueryParameter
+   * @param {string} name - The query parameter name
+   * @returns {string|null} The parameter value, or null if not present
+   */
+  function getQueryParameter(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+
+  // Template rendering helper - cleaner than chained replace()
+  /**
+   * Renders a template string with variable substitution.
+   * @function renderTemplate
+   * @param {string} template - The template string with ${variable} placeholders
+   * @param {Object} context - The context object containing variable values
+   * @returns {string} The rendered template
+   */
+  function renderTemplate(template, context) {
+    return template.replace(/\$\{([^}]+)\}/g, (_, path) => {
+      return path.split('.').reduce((obj, key) => obj?.[key], context);
+    });
+  }
+
+  // Debounce with proper return value handling
+  /**
+   * Creates a debounced version of the given function.
+   * @function debounce
+   * @param {Function} func - The function to debounce
+   * @param {number} wait - The debounce delay in milliseconds
+   * @param {boolean} [immediate=false] - Whether to call on the leading edge
+   * @returns {Function} The debounced function
+   */
+  function debounce(func, wait, immediate = false) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      const callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      }, wait);
+      if (callNow) func.apply(context, args);
+    };
+  }
+
+  // Exponential backoff scheduler for retry logic
+  /**
+   * Schedules a retry with exponential backoff.
+   * @function scheduleRetry
+   * @param {Function} callback - The function to retry
+   * @param {number} [attempt=0] - The current attempt number
+   * @returns {void}
+   */
+  function scheduleRetry(callback, attempt = 0) {
+    const delay = Math.min(
+      CONFIG.FETCH_TIMEOUT * Math.pow(CONFIG.RETRY_MULTIPLIER, attempt),
+      CONFIG.MAX_RETRY_DELAY
+    );
+    setTimeout(callback, delay);
+  }
+
+  // ============ FLAG LOADING ============
+
   const preloadedFlags = new Set();
+
+  /**
+   * Preloads country flag images into a hidden container for faster rendering.
+   * @function preloadFlags
+   * @param {string[]} codes - Array of ISO country codes to preload flags for
+   * @returns {void}
+   */
   function preloadFlags(codes) {
     const flagContainer = document.createElement("div");
     flagContainer.id = "preloadFlags";
     flagContainer.hidden = true;
     document.body.appendChild(flagContainer);
+
     const newImages = codes
       .filter(code => !preloadedFlags.has(code))
       .map(code => {
         const img = new Image();
         img.src = `/flags.jsp?c=${code}`;
-        const errorMessage = `Failed to load flag for code: ${code}`;
         flagContainer.appendChild(img);
         return new Promise((resolve) => {
           img.onload = () => {
             preloadedFlags.add(code);
             resolve();
           };
+          img.onerror = () => {
+            if (debugging) console.warn(`Failed to load flag: ${code}`);
+            resolve(); // Resolve anyway to not block Promise.all
+          };
         });
       });
-    Promise.all(newImages).then(() => { document.body.removeChild(flagContainer); }).catch();
+
+    Promise.all(newImages)
+      .then(() => {
+        if (flagContainer.parentNode) {
+          document.body.removeChild(flagContainer);
+        }
+      })
+      .catch(err => {
+        if (debugging) console.warn("Flag preload error:", err);
+        if (flagContainer.parentNode) {
+          document.body.removeChild(flagContainer);
+        }
+      });
   }
+
+  // Preload all country flags on init
   preloadFlags(Object.values(map.data.countries).map(country => country.code));
 
-  let routerCounts = {};
+  // ============ ROUTER COUNTS ============
+
+  /**
+   * Fetches router data from /netdb, parses country/floodfill/tier counts,
+   * and stores them in localStorage for map rendering.
+   * @async
+   * @function storeRouterCounts
+   * @returns {Promise<void>}
+   */
   async function storeRouterCounts() {
     const url = "/netdb";
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+
+      const doc = parser.parseFromString(await response.text(), "text/html");
       const rows = doc.querySelectorAll("#cclist tr");
-      routerCounts = JSON.parse(localStorage.getItem("routerCounts")) || { countries: {}, floodfill: {}, tierX: {} };
+
+      // Initialize with existing data to preserve any cached values
+      routerCounts = {
+        countries: {},
+        floodfill: {},
+        tierX: {},
+        ...(JSON.parse(localStorage.getItem("routerCounts")) || {})
+      };
 
       rows.forEach(row => {
         const processRow = (type, selector, countSelector) => {
           const link = row.querySelector(selector);
-          const count = row.querySelector(countSelector)?.textContent.trim();
+          const countEl = row.querySelector(countSelector);
+          const count = countEl?.textContent.trim();
           if (link && count) {
             const cc = link.href.match(/cc=([a-zA-Z]{2})/)?.[1];
             if (cc) routerCounts[type][cc] = parseInt(count, 10);
@@ -267,175 +423,335 @@
         const country = row.querySelector('a[href^="/netdb?c="]');
         if (country && row.children[3]) {
           const cc = country.href.split("=")[1];
-          routerCounts.countries[cc] = parseInt(row.children[3].textContent.trim(), 10);
+          const count = parseInt(row.children[3].textContent.trim(), 10);
+          if (!isNaN(count)) routerCounts.countries[cc] = count;
         }
       });
 
+      // Calculate totals efficiently
       const totals = {
-        countries: Object.values(routerCounts.countries).reduce((sum, count) => sum + count, 0),
-        floodfill: Object.values(routerCounts.floodfill).reduce((sum, count) => sum + count, 0),
-        tierX: Object.values(routerCounts.tierX).reduce((sum, count) => sum + count, 0)
+        countries: Object.values(routerCounts.countries).reduce((a, b) => a + b, 0),
+        floodfill: Object.values(routerCounts.floodfill).reduce((a, b) => a + b, 0),
+        tierX: Object.values(routerCounts.tierX).reduce((a, b) => a + b, 0)
       };
-
       routerCounts.totals = totals;
 
-      if (debugging) {console.log(routerCounts);}
+      // Persist to localStorage
       localStorage.setItem("routerCounts", JSON.stringify(routerCounts));
       localStorage.setItem("currentRouterClass", currentRouterClass);
+
+      // Reset retry counter on success
+      retryAttempt = 0;
+
+      if (debugging) console.log("Router counts updated:", routerCounts);
+
+      // Update UI
       updateShapeClasses(currentRouterClass);
 
-      if (!storeRouterCounts.intervalId) {
-        storeRouterCounts.intervalId = setInterval(() => {
+      // Start/restart interval if not already running
+      if (!fetchIntervalId) {
+        fetchIntervalId = setInterval(() => {
           storeRouterCounts();
           updateShapeClasses(currentRouterClass);
-        }, STORE_INTERVAL);
+        }, CONFIG.STORE_INTERVAL);
       }
+
     } catch (error) {
-      if (debugging) console.error("Error fetching or processing data:", error);
+      if (debugging) console.error("Error fetching router counts:", error);
+
+      // Clear cached data on error to avoid stale display
       localStorage.removeItem("routerCounts");
       localStorage.removeItem("currentRouterClass");
-      setTimeout(storeRouterCounts, TIMEOUT);
+
+      // Schedule retry with exponential backoff
+      scheduleRetry(storeRouterCounts, ++retryAttempt);
     }
   }
 
+  // Use module-level routerCounts (no localStorage parse needed)
+  /**
+   * Gets the router count for a specific country/shape and classification.
+   * @function getRouterCount
+   * @param {string} shapeId - The country/shape identifier
+   * @param {string} [routerClass="countries"] - The classification type (countries, floodfill, tierX)
+   * @returns {number} The router count for the given shape and class
+   */
   function getRouterCount(shapeId, routerClass = "countries") {
-    const code = (map.data.countries[shapeId]?.code) || "";
-    const count = routerCounts[routerClass]?.[code] || 0;
-    return count;
+    const code = map.data.countries[shapeId]?.code;
+    return code ? (routerCounts[routerClass]?.[code] || 0) : 0;
   }
 
   function getRouterTotalByClass(routerClass) {
-    const routerCounts = JSON.parse(localStorage.getItem("routerCounts")) || {};
-    return routerCounts.totals ? routerCounts.totals[routerClass] : 0;
+    return routerCounts.totals?.[routerClass] || 0;
   }
 
-  function getQueryParameter(name) { return new URLSearchParams(window.location.search).get(name); }
+  /**
+   * Gets the total router count for a specific classification.
+   * @function getRouterTotalByClass
+   * @param {string} routerClass - The classification type (countries, floodfill, tierX)
+   * @returns {number} The total count, or 0 if unavailable
+   */
 
-  function changeRouterClass(routerClass) {
-    localStorage.setItem("currentRouterClass", routerClass);
-    window.location.href = `${window.location.pathname}?routerClass=${routerClass}`;
+  // ============ UI UPDATES ============
+
+  /**
+   * Updates the CSS class of an SVG shape based on the router count threshold.
+   * @function updateShapeClass
+   * @param {string} shapeId - The SVG element ID to update
+   * @param {number} count - The router count for this shape
+   * @returns {void}
+   */
+  function updateShapeClass(shapeId, count) {
+    const svgElement = document.getElementById(shapeId);
+    if (!svgElement) return;
+
+    if (debugging && verbose) {
+      console.log(`Updating ${shapeId}: count=${count}`);
+    }
+
+    // Remove all count classes efficiently using precomputed Set
+    svgElement.classList.remove(...COUNT_CLASSES);
+
+    // Find matching threshold (array already in descending order)
+    const match = COUNT_THRESHOLDS.find(({ threshold }) => count >= threshold);
+    if (match) svgElement.classList.add(match.className);
   }
 
+  /**
+   * Updates all SVG shape classes for the given router classification.
+   * @function updateShapeClasses
+   * @param {string} routerClass - The classification type to update
+   * @returns {void}
+   */
+  function updateShapeClasses(routerClass) {
+    if (!routerCounts[routerClass]) return;
+
+    // Use requestIdleCallback for non-critical updates when available
+    const updateFn = () => {
+      Object.keys(map.data.countries).forEach(shapeId => {
+        updateShapeClass(shapeId, getRouterCount(shapeId, routerClass));
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(updateFn, { timeout: 100 });
+    } else {
+      requestAnimationFrame(updateFn);
+    }
+  }
+
+  /**
+   * Populates the infobox element with country data, flag, and router count.
+   * @function createInfobox
+   * @param {Object} data - Country data with region and code
+   * @param {string} infoboxTemplate - HTML template for the infobox
+   * @param {string} shapeId - The country/shape name
+   * @param {string} [routerClass="countries"] - The current classification type
+   * @returns {void}
+   */
+  function createInfobox(data, infoboxTemplate, shapeId, routerClass = "countries") {
+    if (!data) return;
+
+    const routerCount = getRouterCount(shapeId, routerClass);
+    const tierName = routerClass !== "countries"
+      ? routerClass.replace("tier", "Bandwidth tier ").replace("floodfill", "Floodfills")
+      : "";
+
+    // Use template helper for cleaner substitution
+    let html = renderTemplate(infoboxTemplate, { shapeId, data });
+
+    // Special case replacements
+    html = html
+      .replace(/<b>Routers: 0<\/b>/g, `<b>${tierName || "Routers"}:</b> ${routerCount}`)
+      .replace("United States of America", "USA");
+
+    infobox.innerHTML = html;
+    infobox.classList.remove("hidden");
+  }
+
+  /**
+   * Renders the total router count in the infobox for the current classification.
+   * @function renderTotals
+   * @returns {void}
+   */
+  function renderTotals() {
+    const label = currentRouterClass === "floodfill" ? "Floodfills" :
+                  currentRouterClass === "tierX" ? "X tier Routers" : "Routers";
+    const total = getRouterTotalByClass(currentRouterClass);
+
+    requestAnimationFrame(() => {
+      infobox.innerHTML = `<b>Known ${label}:</b> ${total}`;
+    });
+  }
+
+  // ============ EVENT HANDLERS ============
+
+  // Define debounced functions once at module scope (fixes recreation bug)
+  const debouncedHandleEvent = debounce(handleEventCore, CONFIG.DEBOUNCE_DELAY);
+  const debouncedRenderTotals = debounce(renderTotals, CONFIG.DEBOUNCE_DELAY);
+
+  /**
+   * Core handler for mouse events on map paths.
+   * @function handleEventCore
+   * @param {Event} event - The mouse event
+   * @returns {void}
+   */
+  function handleEventCore(event) {
+    const target = event.target;
+    const sectionId = target?.parentNode?.id;
+
+    if (target?.matches("path[id]")) {
+      const shapeId = target.id;
+      target.classList.add("hover");
+
+      const data = map.data[sectionId]?.[shapeId];
+      if (data) {
+        createInfobox(data, map.infoboxHTML[sectionId], shapeId, currentRouterClass);
+        const count = getRouterCount(shapeId, currentRouterClass);
+        target.classList.toggle("link", count > 0);
+
+        // Prefetch netdb page for countries with routers
+        const caps = getCapsParam();
+        if (count > 0 && !document.querySelector('link[href="/netdb?c=' + data.code + caps + '"]')) {
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.href = "/netdb?c=" + data.code + caps;
+          document.head.appendChild(link);
+        }
+      }
+    } else {
+      renderTotals();
+    }
+  }
+
+  // Throttled DOM repositioning for mousemove (reduces layout thrashing)
+  let lastRepositionTime = 0;
+  const REPOSITION_THROTTLE = 100; // ms
+
+  /**
+   * Gets the caps query parameter value based on the current router class.
+   * @function getCapsParam
+   * @returns {string} The caps parameter string (e.g., "&caps=f" for floodfill, "&caps=X" for tierX)
+   */
+  function getCapsParam() {
+    if (currentRouterClass === "floodfill") return "&caps=f";
+    if (currentRouterClass === "tierX") return "&caps=X";
+    return "";
+  }
+
+  /**
+   * Handles throttled DOM repositioning of hovered path elements.
+   * @function handleMouseReposition
+   * @param {Element} target - The target element to reposition
+   * @returns {void}
+   */
+  function handleMouseReposition(target) {
+    const now = performance.now();
+    if (now - lastRepositionTime < REPOSITION_THROTTLE) return;
+
+    if (target.tagName === "path" && target.parentNode?.tagName === "g") {
+      const container = target.parentNode;
+      const state = elementState.get(target) || {};
+
+      if (state.previousPos === undefined) {
+        state.previousPos = Array.from(container.children).indexOf(target);
+        elementState.set(target, state);
+      }
+
+      if (target !== container.lastElementChild) {
+        container.appendChild(target);
+        lastRepositionTime = now;
+      }
+    }
+  }
+
+  // ============ EVENT BINDINGS ============
+
+  geomap.addEventListener("mouseenter", debouncedHandleEvent);
+
+  geomap.addEventListener("mouseout", ({ target }) => {
+    // Restore element position using WeakMap state
+    const state = elementState.get(target);
+    if (state?.previousPos !== undefined) {
+      const container = target.parentNode;
+      const children = Array.from(container.children);
+      const referenceNode = children[state.previousPos];
+      if (referenceNode && referenceNode !== target) {
+        container.insertBefore(target, referenceNode);
+      }
+    }
+    debouncedRenderTotals();
+  });
+
+  geomap.addEventListener("mouseleave", () => {
+    renderTotals();
+    // Remove hover state from all paths
+    geomap.querySelectorAll("path.hover").forEach(el => el.classList.remove("hover"));
+  });
+
+  geomap.addEventListener("mousemove", event => {
+    const { target } = event;
+    debouncedHandleEvent(event);
+    handleMouseReposition(target);
+  });
+
+  geomap.addEventListener("click", (e) => {
+    const path = e.target.closest("path[id]");
+    if (!path) return;
+
+    const country = map.data.countries[path.id];
+    const count = getRouterCount(path.id, currentRouterClass);
+
+    if (country && count > 0) {
+      path.classList.add("link");
+      const caps = getCapsParam();
+      window.location.href = "/netdb?c=" + country.code + caps;
+    }
+  });
+
+  // ============ INITIALIZATION ============
+
+  /**
+   * Highlights the active navigation button based on the current URL query parameter.
+   * @function setNavButtonActive
+   * @returns {void}
+   */
   function setNavButtonActive() {
     const active = getQueryParameter("class");
     const navButtons = document.querySelectorAll("#nav span");
     navButtons.forEach(btn => btn.classList.remove("active"));
-    const activeIdMap = {floodfill: "byff", tierX: "byX"};
+
+    const activeIdMap = { floodfill: "byff", tierX: "byX" };
     const activeId = activeIdMap[active] || "bycc";
-    document.getElementById(activeId).classList.add("active");
+    document.getElementById(activeId)?.classList.add("active");
   }
-
-  function updateShapeClass(shapeId, count) {
-    const svgElement = document.getElementById(shapeId);
-    if (!svgElement) return;
-    if (debugging && verbose) console.log(`Updating shapeId: ${shapeId}, count: ${count}`);
-
-    const countThresholds = [
-      { threshold: 1, className: "count_1" },
-      { threshold: 10, className: "count_10" },
-      { threshold: 50, className: "count_50" },
-      { threshold: 100, className: "count_100" },
-      { threshold: 200, className: "count_200" },
-      { threshold: 300, className: "count_300" },
-      { threshold: 400, className: "count_400" },
-      { threshold: 500, className: "count_500" },
-    ];
-
-    const highestThreshold = countThresholds.reverse().find(({ threshold }) => count >= threshold);
-    svgElement.classList.remove(...Array.from(svgElement.classList).filter(cls => cls.startsWith('count_')));
-    if (highestThreshold) svgElement.classList.add(highestThreshold.className);
-  }
-
-  function updateShapeClasses(routerClass) {
-    if (routerCounts[routerClass]) {
-      Object.keys(map.data.countries).forEach(shapeId => {
-        updateShapeClass(shapeId, getRouterCount(shapeId, routerClass));
-      });
-    }
-  }
-
-  function createInfobox(data, infoboxTemplate, shapeId, routerClass = "countries") {
-    if (!data) return;
-    const routerCount = getRouterCount(shapeId, routerClass);
-    const tierName = routerClass !== "countries" ? routerClass.replace("tier", "Bandwidth tier ").replace("floodfill", "Floodfills") : "";
-    infobox.innerHTML = infoboxTemplate
-      .replace(/\$\{shapeId\}/g, shapeId)
-      .replace(/\$\{data\.code\}/g, data.code)
-      .replace(/\$\{data\.region\}/g, data.region)
-      .replace(/<b>Routers: 0<\/b>/g, `<b>${tierName || "Routers"}:</b> ${routerCount}`)
-      .replace("United States of America", "USA");
-    infobox.classList.remove("hidden");
-  }
-
-  function renderTotals() {
-    const totalCounts = {
-      countries: getRouterTotalByClass("countries"),
-      floodfill: getRouterTotalByClass("floodfill"),
-      tierX: getRouterTotalByClass("tierX")
-    };
-    requestAnimationFrame(() => {
-      infobox.innerHTML = `<b>Known ${currentRouterClass === "floodfill" ? "Floodfills" :
-                                      currentRouterClass === "tierX" ? "X tier Routers" :
-                                      "Routers"}:</b> ${totalCounts[currentRouterClass]}`;
-    });
-  }
-
-  function debounce(func, wait, immediate = false) {
-    let timeout;
-    return function () {
-      const context = this, args = arguments;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => { if (!immediate) { func.apply(context, args); } }, wait);
-      if (immediate && !timeout) { func.apply(context, args); }
-    };
-  }
-
-  const handleEvent = debounce(event => {
-    const target = event.target;
-    const sectionId = target?.parentNode.id;
-      if (target?.matches("path[id]")) {
-        const shapeId = target.id;
-        target.classList.add("hover");
-        const data = map.data[sectionId]?.[shapeId];
-      if (data) {createInfobox(data, map.infoboxHTML[sectionId], shapeId, currentRouterClass);}
-    } else {renderTotals();}
-  }, DEBOUNCE_DELAY);
-
-  geomap.addEventListener("mouseenter", handleEvent);
-
-  geomap.addEventListener("mouseout", ({ target }) => {
-    if (target.previousPos) {
-      const container = target.parentNode;
-      container.insertBefore(target, container.children[target.previousPos]);
-    }
-    debounce(renderTotals, DEBOUNCE_DELAY);
-  });
-
-  geomap.addEventListener("mouseleave", () => { renderTotals(); });
-
-  geomap.addEventListener("mousemove", event => {
-    const { target } = event;
-    const container = target.parentNode;
-    handleEvent(event);
-    if (target.tagName === "path" && container.tagName === "g") {
-      const currentPathIndex = Array.from(container.children).indexOf(target);
-      target.previousPos = target.previousPos ?? currentPathIndex;
-      if (target !== container.lastElementChild) {container.appendChild(target);}
-    }
-  });
 
   document.addEventListener("DOMContentLoaded", () => {
     const routerClassFromURL = getQueryParameter("class") || "countries";
+    currentRouterClass = routerClassFromURL;
+
     localStorage.setItem("currentRouterClass", routerClassFromURL);
     storeRouterCounts();
-    if (debugging) {console.log("Current routerClass is " + routerClassFromURL);}
+
+    if (debugging) console.log("Initialized with routerClass:", routerClassFromURL);
+
     updateShapeClasses(routerClassFromURL);
     setNavButtonActive();
-    setTimeout(() => { geomap.querySelector("#countries").removeAttribute("style"); }, 300);
+
+    // Delayed style removal for smooth load
+    setTimeout(() => {
+      const countriesGroup = geomap.querySelector("#countries");
+      if (countriesGroup) countriesGroup.removeAttribute("style");
+    }, 300);
   });
 
+  // ============ CLEANUP ============
+
   window.addEventListener("beforeunload", () => {
-    if (storeRouterCounts.intervalId) clearInterval(storeRouterCounts.intervalId);
+    if (fetchIntervalId) {
+      clearInterval(fetchIntervalId);
+      fetchIntervalId = null;
+    }
   });
 
 })();

@@ -55,10 +55,10 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     private static final String PROP_SLOW_TUNNEL_THRESHOLD = "router.tunnel.slowThreshold";
     private static final String PROP_SLOW_TUNNEL_MIN = "router.tunnel.slowThresholdMin";
     private static final String PROP_SLOW_TUNNEL_INTERVAL = "router.tunnel.slowTunnelInterval";
-    private static final String PROP_PRUNE_EARLY_EXPIRY = "router.pruneEarlyExpiryDelay";
+    private static final String PROP_PRUNE_EARLY_EXPIRY = "router.tunnel.pruneEarlyExpiryDelay";
     private static final long DEFAULT_PRUNE_EARLY_EXPIRY = 30*1000; // 30 seconds
     private static final int DEFAULT_SLOW_THRESHOLD_MS = 0; // 0 means use 1.5x average
-    private static final int DEFAULT_RUN_INTERVAL_MS = 180*1000; // 3m default
+    private static final int DEFAULT_RUN_INTERVAL_MS = 60*1000; // 1m default
     private static final long REFRESH_DELAY_AFTER_REMOVAL = 5*1000; // wait for new tunnels to build
     private static final double MAX_SHARE_RATIO = 100000d;
 
@@ -670,7 +670,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
             int runNum = _runCount.incrementAndGet();
             _mgr._log.info("RemoveSlowTunnelsJob run #" + runNum + " completed in " + duration + "ms");
 
-            // Use configurable interval (default 90s), increase if queue is overloaded
+            // Use configurable interval (default 30s), increase if queue is overloaded
             long interval = _mgr._context.getProperty(PROP_SLOW_TUNNEL_INTERVAL, DEFAULT_RUN_INTERVAL_MS);
             int maxWaiting = _mgr._context.getProperty("router.maxWaitingJobs", 750);
             int readyCount = _mgr._context.jobQueue().getReadyCount();
@@ -678,9 +678,10 @@ public class TunnelPoolManager implements TunnelManagerFacade {
             long avgLag = _mgr._context.jobQueue().getAvgLag();
             // If queue overloaded, increase interval to reduce load (check both max and avg lag)
             if (readyCount > maxWaiting || maxLag >= 10 || avgLag >= 10) {
-                interval = 5 * 60 * 1000; // 5 minutes
+                interval = 90 * 1000; // 90s
                 if (_mgr._log.shouldWarn()) {
-                    _mgr._log.warn("Job queue overloaded (Ready jobs: " + readyCount + ", Max lag: " + maxLag + "ms, Avg lag: " + avgLag + "ms) -> Increasing interval to 5min...");
+                    _mgr._log.warn("Job queue overloaded (Ready jobs: " + readyCount + ", Max lag: " + maxLag +
+                                   "ms, Avg lag: " + avgLag + "ms) -> Increasing interval to 90s...");
                 }
             }
             _mgr._log.info("Remove Slow Tunnels Job: Requeueing in " + (interval / 1000) + "s...");
@@ -829,7 +830,8 @@ public class TunnelPoolManager implements TunnelManagerFacade {
 
         int configuredThreshold = _context.getProperty(PROP_SLOW_TUNNEL_THRESHOLD, DEFAULT_SLOW_THRESHOLD_MS);
         if (_log.shouldInfo()) {
-            _log.info("Replace slow tunnels: avg latency = " + String.format("%.0f", avg) + "ms, min latency = " + minLatency + "ms, configured threshold = " + configuredThreshold + "ms");
+            _log.info("Replace slow tunnels: avg latency = " + String.format("%.0f", avg) + "ms, min latency = " +
+                      minLatency + "ms, configured threshold = " + configuredThreshold + "ms");
         }
         double threshold;
         if (configuredThreshold > 0) {
@@ -893,7 +895,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
 
             // PHASE B: Schedule early expiry for slow tunnels OUTSIDE the lock
             long now = _context.clock().now();
-            long pruneDelay = _context.getProperty("router.pruneEarlyExpiryDelay", 30000L);
+            long pruneDelay = _context.getProperty("router.tunnel.pruneEarlyExpiryDelay", 30000L);
             for (TunnelInfo info : toRemove) {
                 // Re-verify tunnel is still valid (another thread may have removed it)
                 if (info.getTunnelFailed() || info.getExpiration() <= now) {

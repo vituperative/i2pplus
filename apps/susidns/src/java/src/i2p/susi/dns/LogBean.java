@@ -70,7 +70,7 @@ public class LogBean extends BaseBean
                     if (!lines.get(i).contains("Bad hostname")) {
                         String[] parts = lines.get(i).split("\\s*--\\s*");
                         if (parts.length < 2) {continue;}
-                        String date = parts[0].replace("GMT", "UTC");
+                        String date = formatDate(parts[0]);
                         String message = parts[1];
                         String[] messageParts = message.split(" ");
                         if (messageParts.length < 4) {continue;}
@@ -159,6 +159,30 @@ public class LogBean extends BaseBean
             }
         }
         return todayEntryCount;
+    }
+
+    /**
+     * Format date string to human-readable format.
+     * Handles both ISO format (2026-04-23T00:37:54.808039834Z) and
+     * old format (Wed Apr 22 19:33:27 UTC 2026).
+     */
+    private String formatDate(String dateStr) {
+        try {
+            DateTimeFormatter isoFormatter = DateTimeFormatter.ISO_INSTANT;
+            Instant instant = Instant.from(isoFormatter.parse(dateStr));
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'UTC' yyyy", Locale.ENGLISH);
+            return instant.atZone(ZoneOffset.UTC).format(outputFormatter);
+        } catch (DateTimeParseException e) {
+            try {
+                DateTimeFormatter oldFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH)
+                                                                  .withZone(ZoneOffset.UTC);
+                Instant instant = Instant.from(oldFormatter.parse(dateStr));
+                DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'UTC' yyyy", Locale.ENGLISH);
+                return instant.atZone(ZoneOffset.UTC).format(outputFormatter);
+            } catch (DateTimeParseException e2) {
+                return dateStr;
+            }
+        }
     }
 
     private boolean isToday(String dateStr) {

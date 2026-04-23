@@ -3066,7 +3066,8 @@ body.isDown::after{width:80px;height:80px;top:calc(50% - 40px);left:calc(50% - 4
 
 /* session bans */
 #banSummary h2 {margin:2px auto 0}
-#banSummary li{margin:2px 0;padding:0;min-width:300px;display:inline-block}
+#banSummary li{margin:2px 0;padding:0;min-width:300px;display:inline-block;cursor:pointer}
+#banSummary li.active{box-shadow:var(--bevel);background:var(--badge)}
 #banSummary ul{margin:-1px 0 -2px;padding:5px 8px 4px;columns:300px 5;list-style-type:none;border:var(--border_inner);background:var(--th)}
 #banSummary ul:empty{display:none}
 #banSummary .badge{margin:0 4px 0 0;padding:2px 4px;min-width:48px;display:inline-block;text-align:center;letter-spacing:0.05em;font-weight:600;box-shadow:var(--bevel);background:var(--badge)}

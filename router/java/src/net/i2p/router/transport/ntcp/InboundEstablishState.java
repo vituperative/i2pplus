@@ -1018,7 +1018,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             if (_log.shouldInfo() && !isBanned)
                 _log.info("[NTCP] Banning for 1h and disconnecting from Router [" + h.toBase64().substring(0,6) + "]" +
                           " -> " + version + " / " + bw + (unreachable ? "U" : ""));
-            _context.commSystem().forceDisconnect(h, "Old and slow");
+            _context.commSystem().forceDisconnect(h, "Old and slow (" + version + ")");
             throw new DataFormatException("Old and slow: " + h);
         }
 

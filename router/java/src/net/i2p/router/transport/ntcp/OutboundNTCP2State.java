@@ -267,14 +267,14 @@ class OutboundNTCP2State implements EstablishState {
         // set keys
         String s = _con.getRemoteAddress().getOption("s");
         if (s == null) {
-            fail("No NTCP2 S");
+            fail("\n* No NTCP2 S");
             return;
         }
         byte[] bk = Base64.decode(s);
         if (bk == null || bk.length != KEY_SIZE ||
             (bk[KEY_SIZE - 1] & 0x80) != 0 ||
             DataHelper.eq(bk, 0, ZEROKEY, 0, KEY_SIZE)) {
-            fail("Bad NTCP2 S: " + s);
+            fail("\n* Bad NTCP2 S: " + s);
             return;
         }
         _handshakeState.getRemotePublicKey().setPublicKey(bk, 0);
@@ -294,14 +294,14 @@ class OutboundNTCP2State implements EstablishState {
                 _log.error("Bad message #1 out", gse);
             else if (_log.shouldWarn())
                 _log.error("Bad message #1 out " + (gseNotNull ? "\n* General Security Exception: " + gse.getMessage() : ""));
-            fail("Bad message #1 out", gse);
+            fail("\n* Bad message #1 out", gse);
             return;
         } catch (RuntimeException re) {
             if (_log.shouldDebug())
                 _log.error("Bad message #1 out", re);
             else if (_log.shouldWarn())
                 _log.error("Bad message #1 out \n* Runtime Exception: " + re.getMessage());
-            fail("Bad message #1 out", re);
+            fail("\n* Bad message #1 out", re);
             return;
         }
         if (_log.shouldDebug())
@@ -348,17 +348,17 @@ class OutboundNTCP2State implements EstablishState {
                 return;
             _context.aes().decrypt(_tmp, 0, _tmp, 0, _bobHash, _bobIV, KEY_SIZE);
             if (DataHelper.eqCT(_tmp, 0, ZEROKEY, 0, KEY_SIZE)) {
-                fail("Bad message #2, Y = 0");
+                fail("\n* Bad message #2, Y = 0");
                 return;
             }
             byte[] options2 = new byte[OPTIONS2_SIZE];
             try {
                 _handshakeState.readMessage(_tmp, 0, MSG2_SIZE, options2, 0);
             } catch (GeneralSecurityException gse) {
-                fail("Bad message #2, Y = " + Base64.encode(_tmp, 0, KEY_SIZE), gse);
+                fail("\n* Bad message #2, Y = " + Base64.encode(_tmp, 0, KEY_SIZE), gse);
                 return;
             } catch (RuntimeException re) {
-                fail("Bad message #2, Y = " + Base64.encode(_tmp, 0, KEY_SIZE), re);
+                fail("\n* Bad message #2, Y = " + Base64.encode(_tmp, 0, KEY_SIZE), re);
                 return;
             }
             if (_log.shouldDebug())
@@ -376,7 +376,7 @@ class OutboundNTCP2State implements EstablishState {
                 if (_context.clock().getUpdatedSuccessfully()) {
                     // usual case
                     _context.statManager().addRateData("ntcp.invalidOutboundSkew", diff);
-                    fail("Clock Skew: " + _peerSkew, null, true);
+                    fail("\n* Clock Skew: " + _peerSkew, null, true);
                     // Only banlist if we know what time it is
                     byte[] ip = _con.getRemoteIP();
                     int port = _con.getRemotePort();
@@ -416,7 +416,7 @@ class OutboundNTCP2State implements EstablishState {
             changeState(State.OB_GOT_PADDING);
             if (src.hasRemaining()) {
                 // Outbound conn can never have extra data after msg 2
-                fail("Extra data after message #2: " + src.remaining());
+                fail("\n* Extra data after message #2: " + src.remaining());
                 return;
             }
             prepareOutbound3();
@@ -475,12 +475,12 @@ class OutboundNTCP2State implements EstablishState {
             // buffer length error
             if (!_log.shouldWarn())
                 _log.error("Bad message #3 out", gse);
-            fail("Bad message #3 out", gse);
+            fail("\n* Bad message #3 out", gse);
             return;
         } catch (RuntimeException re) {
             if (!_log.shouldWarn())
                 _log.error("Bad message #3 out", re);
-            fail("Bad message #3 out", re);
+            fail("\n* Bad message #3 out", re);
             return;
         }
         // send it all at once

@@ -1,23 +1,40 @@
-/* I2P+ refreshInbox.js for SusiMail by dr|z3d */
-/* Perform an ajax fetch and handle page refresh when checkign mails */
-/* License: AGPLv3 or later */
+/**
+ * @module refreshInbox
+ * @file I2P+ SusiMail inbox refresher.
+ * Performs AJAX polling to refresh the mailbox view and notification
+ * elements without a full page reload.
+ * @author dr|z3d
+ * @license AGPLv3 or later
+ */
 
+/** @type {HTMLFormElement|null} */
 const form = document.querySelector('form[action="/susimail/"]');
+/** @type {HTMLElement|null} */
 const mailboxControls = document.getElementById("mailboxcontrols");
+/** @type {HTMLElement|null} */
 const mailbox = document.getElementById("mailbox");
+/** @type {HTMLElement|null} */
 const notify = document.getElementById("notify");
+/** @type {HTMLElement|null} */
 const pageRefresh = document.getElementById("pageRefresh");
+/** @type {HTMLElement|null} */
 const serverRefresh = document.getElementById("serverRefresh");
 
 if (notify) { setTimeout(() => { notify.remove(); }, 4000); }
 
+/**
+ * Starts the inbox polling interval when the mailbox and refresh button
+ * are present. Fetches the page, diffs relevant DOM sections, and
+ * updates them in-place.
+ */
 if (mailbox && pageRefresh) {
   removeDupeNotices();
   const interval = setInterval(() => {
     if (document.getElementById("serverRefresh")) {
       clearInterval(interval);
       return;
-    } else if (pageRefresh) {pageRefresh.classList.add("checking");}
+    }
+    if (pageRefresh) {pageRefresh.classList.add("checking");}
     fetch(`/susimail?${new Date().getTime()}`)
       .then(response => response.text())
       .then(html => {
@@ -38,6 +55,11 @@ if (mailbox && pageRefresh) {
   }, 5000);
 }
 
+/**
+ * Removes duplicate notification elements, keeping only the first one.
+ * @function removeDupeNotices
+ * @returns {void}
+ */
 function removeDupeNotices() {
   const notices = document.querySelectorAll(".notifications");
   if (!notices) {return;}

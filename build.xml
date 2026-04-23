@@ -1348,21 +1348,89 @@
     <echo message="Warning, javadoc embeds timestamps in the output, run with 'TZ=UTC ant javadoc' if you plan to distribute"/>
   </target>
 
-  <!-- sudo apt install jsdoc-toolkit -->
-  <target name="jsdoc">
-    <exec executable="jsdoc" failonerror="true">
-      <arg value="-d=dist/jsdoc"/>
-      <arg value="-P"/>
-      <arg value="installer/resources/package.json"/>
-      <arg value="-r"/>
-      <arg value="apps/i2psnark/resources/js"/>
-      <arg value="apps/i2ptunnel/jsp/js"/>
-      <arg value="apps/routerconsole/jsp/js"/>
-      <arg value="apps/susidns/src/js"/>
-      <arg value="apps/susimail/src/js"/>
-      <arg value="installer/resources/themes/geomap"/>
+  <target name="jsdoc" description="Create jsdoc with docdash template (requires npm)">
+    <exec executable="npx" failonerror="true">
+      <arg value="jsdoc"/>
+      <arg value="-c"/>
+      <arg value="tools/jsdoc/jsdoc.json"/>
+      <arg value="-t"/>
+      <arg value="tools/jsdoc/docdash-template"/>
     </exec>
-    <echo message="jsdoc written to dist/jsdoc"/>
+    <exec executable="./tools/jsdoc/jsdoc-patch.js" failonerror="false">
+      <arg value="dist/jsdoc"/>
+    </exec>
+    <exec executable="sh" failonerror="false">
+      <arg value="-c"/>
+      <arg value="npx jsdoc -X -c tools/jsdoc/jsdoc.json 2>/dev/null | node scripts/jsdoc-api-table.js dist/jsdoc"/>
+    </exec>
+    <if>
+      <isset property="htmlmin.present"/>
+      <then>
+        <exec executable="sh" failonerror="false">
+          <arg value="-c"/>
+          <arg value="minify -q -r dist/jsdoc -o dist"/>
+        </exec>
+      </then>
+    </if>
+    <echo message="jsdoc (docdash) written to dist/jsdoc"/>
+  </target>
+
+  <target name="jsdoc-minami" description="Create jsdoc with minami template (requires npm)">
+    <exec executable="npx" failonerror="true">
+      <arg value="jsdoc"/>
+      <arg value="-c"/>
+      <arg value="tools/jsdoc/jsdoc-minami.json"/>
+      <arg value="-t"/>
+      <arg value="node_modules/minami"/>
+    </exec>
+    <exec executable="./tools/jsdoc/jsdoc-patch-minami.js" failonerror="false">
+      <arg value="dist/jsdoc"/>
+    </exec>
+    <if>
+      <isset property="htmlmin.present"/>
+      <then>
+        <exec executable="sh" failonerror="false">
+          <arg value="-c"/>
+          <arg value="minify -q -r dist/jsdoc -o dist"/>
+        </exec>
+      </then>
+    </if>
+    <echo message="jsdoc (minami) written to dist/jsdoc"/>
+  </target>
+
+  <target name="jsdoc-tui" description="Create jsdoc with tui-jsdoc-template (requires npm)">
+    <exec executable="npx" failonerror="true">
+      <arg value="jsdoc"/>
+      <arg value="-c"/>
+      <arg value="tools/jsdoc/jsdoc-minami.json"/>
+      <arg value="-t"/>
+      <arg value="node_modules/tui-jsdoc-template"/>
+    </exec>
+    <exec executable="./tools/jsdoc/jsdoc-patch-tui.js" failonerror="false">
+      <arg value="dist/jsdoc"/>
+    </exec>
+    <if>
+      <isset property="htmlmin.present"/>
+      <then>
+        <exec executable="sh" failonerror="false">
+          <arg value="-c"/>
+          <arg value="minify -q -r dist/jsdoc -o dist"/>
+        </exec>
+      </then>
+    </if>
+    <echo message="jsdoc (tui) written to dist/jsdoc"/>
+  </target>
+
+  <target name="jsdoc-zip" depends="jsdoc" description="Create jsdoc zip with docdash template">
+    <zip destfile="dist/jsdoc.zip" basedir="dist" level="9" includes="jsdoc\**"/>
+  </target>
+
+  <target name="jsdoc-minami-zip" depends="jsdoc-minami" description="Create jsdoc zip with minami template">
+    <zip destfile="dist/jsdoc-minami.zip" basedir="dist" level="9" includes="jsdoc\**"/>
+  </target>
+
+  <target name="jsdoc-tui-zip" depends="jsdoc-tui" description="Create jsdoc zip with tui-jsdoc-template">
+    <zip destfile="dist/jsdoc-tui.zip" basedir="dist" level="9" includes="jsdoc\**"/>
   </target>
 
   <!-- sets release.number and api.version -->

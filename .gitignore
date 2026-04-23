@@ -200,3 +200,6 @@ router/java/logs/
 # Logger config
 logger.config
 core/java/logger.config
+
+# JSDoc template dependencies
+tools/jsdoc/docdash-template/node_modules/

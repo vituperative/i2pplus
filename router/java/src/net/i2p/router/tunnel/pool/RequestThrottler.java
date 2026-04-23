@@ -321,7 +321,10 @@ class RequestThrottler {
         private final Hash h;
         private final String version;
         public Disconnector(Hash h, String version) {this.h = h; this.version = version;}
-        public void timeReached() {context.commSystem().forceDisconnect(h, version != null ? "Old version (" + version + ")" : "Old version ban");}
+        public void timeReached() {
+            String reason = (version == null || version.isEmpty()) ? "Old version" : "Old version (" + version + ")";
+            context.commSystem().forceDisconnect(h, reason);
+        }
     }
 
     /**

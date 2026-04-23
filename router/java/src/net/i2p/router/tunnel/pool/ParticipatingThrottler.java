@@ -358,7 +358,7 @@ class ParticipatingThrottler {
         String banReason = "Excessive tunnel requests";
         _banLogger.logBan(h, ipPort, banReason, bantime);
         context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
-        context.simpleTimer2().addEvent(new Disconnector(h, "excessive requests"), 11 * 60 * 1000);
+        context.simpleTimer2().addEvent(new Disconnector(h, banReason), 11 * 60 * 1000);
         if (_log.shouldWarn()) {
             _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for " + (bantime / 60000) +
                       "m -> Excessive tunnel requests -> Count / Limit: " +
@@ -397,6 +397,9 @@ class ParticipatingThrottler {
         private final Hash h;
         private final String version;
         public Disconnector(Hash h, String version) { this.h = h; this.version = version; }
-        public void timeReached() {context.commSystem().forceDisconnect(h, "Old version (" + version + ")");}
+        public void timeReached() {
+            String reason = (version == null || version.isEmpty()) ? "Old version" : "Old version (" + version + ")";
+            context.commSystem().forceDisconnect(h, reason);
+        }
     }
 }

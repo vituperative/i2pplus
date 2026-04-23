@@ -148,7 +148,7 @@
     <echo message="  debianhowto                                  Instructions on building Debian packages"/>
     <echo message="  pkg                                          Run &apos;distclean&apos; then package everything up (updater, installer)"/>
     <echo message="  pkg-portable-win32                           Build a minimal, portable install for Win32 &#10140; ./portable-win32.zip"/>
-    <echo message="  slackpkg                                     Build Slackware package in ./Slackware/i2p"/>
+    <echo message="  slackpkg                                     Build Slackware package in ./distro/Slackware/i2p"/>
     <echo message="  tarball                                      Create tar archive for clean install &#10140; ./dist/i2p.tar.bz2"/>
     <echo message=""/>
     <echo message=" === Documentation ==="/>
@@ -192,7 +192,7 @@
 
   <target name="debianhowto">
     <echo message="To build debian packages, ensure that you have the necessary build-dependencies installed, "/>
-    <echo message="indicated in the file &apos;debian/control&apos; in the &apos;Build-Depends&apos; field."/>
+    <echo message="indicated in the file &apos;distro/debian/control&apos; in the &apos;Build-Depends&apos; field."/>
     <echo message="&#8199;"/>
     <echo message="The following command will install the build dependencies:"/>
     <echo message="sudo apt install debhelper ant debconf default-jdk gettext libgmp-dev po-debconf fakeroot \"/>
@@ -1624,6 +1624,18 @@
       <delete includeemptydirs="false" quiet="true">
         <fileset dir="./dist" excludes="README.md"/>
       </delete>
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir="./logs"/>
+      </delete>
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir=".">
+          <include name="apps/*/bin"/>
+          <include name="apps/*/bin/main"/>
+          <include name="apps/*/bin/test"/>
+          <include name="apps/*/*/bin"/>
+          <include name="apps/*/*/*/bin"/>
+        </fileset>
+      </delete>
       <!-- Ensure dist directory exists after cleanup -->
       <mkdir dir="./dist"/>
       <!-- Use exec to run ant subprojects quietly -->
@@ -1870,7 +1882,7 @@
     <copy quiet="true" file="installer/lib/wrapper/all/wrapper.jar" todir="pkg-temp/lib"/>
   </target>
 
-  <!-- This is the target called by debian/rules -->
+  <!-- This is the target called by distro/debian/rules -->
   <target name="preppkg-unix" depends="preppkg-base, prep-script-translation">
     <parallel>
       <copy quiet="true" file="installer/resources/unix/runplain.sh" todir="pkg-temp/"/>
@@ -3072,7 +3084,7 @@
   </target>
 
   <target name="slackpkg">
-    <ant dir="Slackware/i2p/" target="slackpkg"/>
+    <ant dir="distro/Slackware/i2p/" target="slackpkg"/>
   </target>
 
   <!-- Requires sloccount package - https://dwheeler.com/sloccount/sloccount.html -->
@@ -4247,27 +4259,27 @@
 
   <target name="copy-precise">
     <copy quiet="true" todir="debian" overwrite="true">
-      <fileset dir="debian-alt/precise/"/>
+      <fileset dir="distro/debian-alt/precise/"/>
     </copy>
   </target>
   <target name="copy-trusty">
     <copy quiet="true" todir="debian" overwrite="true">
-      <fileset dir="debian-alt/trusty/"/>
+      <fileset dir="distro/debian-alt/trusty/"/>
     </copy>
   </target>
   <target name="copy-xenial">
     <copy quiet="true" todir="debian" overwrite="true">
-      <fileset dir="debian-alt/xenial/"/>
+      <fileset dir="distro/debian-alt/xenial/"/>
     </copy>
   </target>
   <target name="copy-bionic">
     <copy quiet="true" todir="debian" overwrite="true">
-      <fileset dir="debian-alt/bionic/"/>
+      <fileset dir="distro/debian-alt/bionic/"/>
     </copy>
   </target>
   <target name="copy-disco">
     <copy quiet="true" todir="debian" overwrite="true">
-      <fileset dir="debian-alt/disco/"/>
+      <fileset dir="distro/debian-alt/disco/"/>
     </copy>
   </target>
 
@@ -4286,29 +4298,29 @@
   </target>
 
   <target name="debcheckpatch">
-    <echo message="Checking debian/patches/0001-path-substitution.patch"/>
-    <exec executable="patch" failonerror="true" input="debian/patches/0001-path-substitution.patch">
+    <echo message="Checking distro/debian/patches/0001-path-substitution.patch"/>
+    <exec executable="patch" failonerror="true" input="distro/debian/patches/0001-path-substitution.patch">
       <arg value="--dry-run"/>
       <arg value="-F0"/>
       <arg value="-p1"/>
     </exec>
     <echo/>
-    <echo message="Checking debian/patches/0002-jetty-compatibility.patch"/>
-    <exec executable="patch" failonerror="true" input="debian/patches/0002-jetty-compatibility.patch">
+    <echo message="Checking distro/debian/patches/0002-jetty-compatibility.patch"/>
+    <exec executable="patch" failonerror="true" input="distro/debian/patches/0002-jetty-compatibility.patch">
       <arg value="--dry-run"/>
       <arg value="-F0"/>
       <arg value="-p1"/>
     </exec>
     <echo/>
-    <echo message="Checking debian/patches/0003-json-simple-3.patch"/>
-    <exec executable="patch" failonerror="true" input="debian/patches/0003-json-simple-3.patch">
+    <echo message="Checking distro/debian/patches/0003-json-simple-3.patch"/>
+    <exec executable="patch" failonerror="true" input="distro/debian/patches/0003-json-simple-3.patch">
       <arg value="--dry-run"/>
       <arg value="-F0"/>
       <arg value="-p1"/>
     </exec>
     <echo/>
-    <echo message="Checking debian-alt/xenial/patches/0002-jetty-old-api.patch"/>
-    <exec executable="patch" failonerror="true" input="debian-alt/xenial/patches/0002-jetty-old-api.patch">
+    <echo message="Checking distro/debian-alt/xenial/patches/0002-jetty-old-api.patch"/>
+    <exec executable="patch" failonerror="true" input="distro/debian-alt/xenial/patches/0002-jetty-old-api.patch">
       <arg value="--dry-run"/>
       <arg value="-F0"/>
       <arg value="-p1"/>
@@ -4329,7 +4341,7 @@
 
   <target name="debian-binary" depends="getExtendedVersion">
     <exec executable="fakeroot" failonerror="true">
-      <arg value="debian/rules"/>
+      <arg value="distro/debian/rules"/>
       <arg value="patch"/>
       <arg value="binary"/>
       <arg value="clean"/>
@@ -4346,7 +4358,7 @@
 
   <target name="debian-clean" depends="getExtendedVersion">
     <exec executable="fakeroot" failonerror="true">
-      <arg value="debian/rules"/>
+      <arg value="distro/debian/rules"/>
       <arg value="clean"/>
     </exec>
     <delete dir="./.pc"/>
@@ -4359,7 +4371,7 @@
     <property name="checkoutDir" value="../i2p-${Extended.Version}"/>
     <ant target="checkoutFromVCS"/>
     <delete includeemptydirs="true" quiet="false" failonerror="false">
-      <fileset dir="../i2p-${Extended.Version}/debian-alt/"/>
+      <fileset dir="../i2p-${Extended.Version}/distro/debian-alt/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/" includes="*.xml"/>
       <fileset dir="../i2p-${Extended.Version}/installer/c/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/doc/"/>
@@ -4416,12 +4428,12 @@
     <tar longfile="gnu" destfile="../${debian.tarball.name}" compression="bzip2">
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${Extended.Version}">
         <include name="**/**"/>
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <exclude name="**/*.sh"/>
         <!-- Anything added above, add in debian-release-tarball also -->
       </tarfileset>
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${Extended.Version}" filemode="755">
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <include name="**/*.sh"/>
       </tarfileset>
     </tar>
@@ -4437,7 +4449,7 @@
     <property name="checkoutDir" value="../i2p-${Extended.Version}"/>
     <ant target="checkoutFromVCS"/>
     <delete includeemptydirs="true" quiet="false" failonerror="false">
-      <fileset dir="../i2p-${Extended.Version}/debian-alt/"/>
+      <fileset dir="../i2p-${Extended.Version}/distro/debian-alt/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/" includes="*.xml"/>
       <fileset dir="../i2p-${Extended.Version}/installer/c/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/doc/"/>
@@ -4497,12 +4509,12 @@
     <tar longfile="gnu" destfile="../${debian.tarball.name}" compression="bzip2">
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${Extended.Version}">
         <include name="**/**"/>
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <exclude name="**/*.sh"/>
         <!-- Anything added above, add in debian-release-tarball also -->
       </tarfileset>
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${Extended.Version}" filemode="755">
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <include name="**/*.sh"/>
       </tarfileset>
     </tar>
@@ -4521,7 +4533,7 @@
     <property name="checkoutDir" value="../i2p-${Extended.Version}"/>
     <ant target="checkoutFromVCS"/>
     <delete includeemptydirs="true" quiet="false" failonerror="false">
-      <fileset dir="../i2p-${Extended.Version}/debian-alt/"/>
+      <fileset dir="../i2p-${Extended.Version}/distro/debian-alt/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/" includes="*.xml"/>
       <fileset dir="../i2p-${Extended.Version}/installer/c/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/doc/"/>
@@ -4575,12 +4587,12 @@
     <tar longfile="gnu" destfile="../${debian.tarball.name}" compression="bzip2">
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${release.number}">
         <include name="**/**"/>
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <exclude name="**/*.sh"/>
         <!-- Anything added above, add in debian-tarball also -->
       </tarfileset>
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${release.number}" filemode="755">
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <include name="**/*.sh"/>
       </tarfileset>
     </tar>
@@ -4593,7 +4605,7 @@
     <property name="checkoutDir" value="../i2p-${Extended.Version}"/>
     <ant target="checkoutFromVCS"/>
     <delete includeemptydirs="true" quiet="false" failonerror="false">
-      <fileset dir="../i2p-${Extended.Version}/debian-alt/"/>
+      <fileset dir="../i2p-${Extended.Version}/distro/debian-alt/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/" includes="*.xml"/>
       <fileset dir="../i2p-${Extended.Version}/installer/c/"/>
       <fileset dir="../i2p-${Extended.Version}/installer/doc/"/>
@@ -4645,12 +4657,12 @@
     <tar longfile="gnu" destfile="../${debian.tarball.name}" compression="bzip2">
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${release.number}">
         <include name="**/**"/>
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <exclude name="**/*.sh"/>
         <!-- Anything added above, add in debian-tarball also -->
       </tarfileset>
       <tarfileset dir="../i2p-${Extended.Version}" prefix="/i2p-${release.number}" filemode="755">
-        <exclude name="debian/**"/>
+        <exclude name="distro/debian/**"/>
         <include name="**/*.sh"/>
       </tarfileset>
     </tar>

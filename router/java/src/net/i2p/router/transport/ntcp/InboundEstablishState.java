@@ -381,28 +381,16 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         // get inet-addr
         byte[] ip = _con.getRemoteIP();
         if (_context.banlist().isBanlistedForever(aliceHash)) {
-            if (_log.shouldWarn()) {
-                _log.warn("[NTCP] Dropping Inbound connection from " + (_context.banlist().isBanlistedForever(aliceHash) ?
-                          "permanently" : "") + " banlisted peer at " + Addresses.toString(ip) +
-                          " [" + aliceHash.toBase64().substring(0,6) + "]");
-            }
-            // So next time we will not accept the con from this IP, rather than doing the whole handshake
+            // Already banned - don't log warning (just drop connection silently)
             if (ip != null) {_context.blocklist().add(ip);}
             if (getVersion() < 2) {
                 fail("Banlisting incompatible Router [" + aliceHash.toBase64().substring(0,6) + "] -> No NTCP2 support");
-            } else if (_log.shouldInfo()) {
-                _log.info("Router is banlisted " + (_context.banlist().isBanlistedForever(aliceHash) ? "forever" : "") +
-                          " [" + aliceHash.toBase64().substring(0,6) + "]");
             }
             _msg3p2FailReason = NTCPConnection.REASON_BANNED;
             return false;
         } else if (_context.banlist().isBanlistedHostile(aliceHash) || _context.banlist().isBanlisted(aliceHash)) {
             _context.commSystem().mayDisconnect(aliceHash);
-            boolean isHostile = _context.banlist().isBanlistedHostile(aliceHash);
-            if (_log.shouldInfo()) {
-                _log.info("Router [" + aliceHash.toBase64().substring(0,6) + "] is temp banned" +
-                          (isHostile ? " and tagged as hostile" : "") + ", not validating");
-            }
+            // Already banned - don't log info (just skip validation silently)
             return false;
         }
 
@@ -551,11 +539,13 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                      } else if (_log.shouldWarn()) {
                      String ip;
                      try {
-                         ip = _con.getRemoteIP() != null ? InetAddress.getByAddress(_con.getRemoteIP()).getHostAddress() : "unknown";
-                     } catch (UnknownHostException uhe) {
-                         ip = "unknown";
-                     }
-                     _log.warn("[NTCP] Bad NTCP2 handshake #1 from " + ip + ", waiting for " + _padlen1 + " more bytes -> Probable probe");
+                          ip = _con.getRemoteIP() != null ? InetAddress.getByAddress(_con.getRemoteIP()).getHostAddress() : "unknown";
+                      } catch (UnknownHostException uhe) {
+                          ip = "unknown";
+                      }
+                      _log.warn("[NTCP] BAD NTCP2 handshake #1 from " + ip + ", waiting for " + _padlen1 + " more bytes -> Probable probe");
+                      // Track probe attempts for repeat offender detection
+                      _context.banlist().badPacket(ip, null);
                      }
                      changeState(State.IB_NTCP2_READ_RANDOM);
                   } else {
@@ -566,7 +556,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                        } catch (UnknownHostException uhe) {
                            ip = "unknown";
                        }
-                       _log.warn("[NTCP] Bad NTCP2 handshake #1 from " + ip + ", all bytes received but handshake failed -> Invalid encryption");
+                       _log.warn("[NTCP] BAD NTCP2 handshake #1 from " + ip + ", all bytes received but handshake failed -> Invalid encryption");
                       fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining(), gse);
                   }
                 _transport.getPumper().blockIP(_con.getRemoteIP());

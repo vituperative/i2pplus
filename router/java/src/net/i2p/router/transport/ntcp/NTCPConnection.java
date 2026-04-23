@@ -538,6 +538,12 @@ public class NTCPConnection implements Closeable {
         if (es != null) {
             es.close(cause, e);
         }
+        if (_isInbound && !isEstablished()) {
+            byte[] ip = getRemoteIP();
+            if (ip != null) {
+                _transport.getPumper().trackFailedInboundHandshake(ip);
+            }
+        }
         close();
     }
 

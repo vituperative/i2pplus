@@ -215,6 +215,10 @@ class PeerStateDestroyed implements SSU2Payload.PayloadCallback, SSU2Sender {
                 // for direct from IES2, these could be retransmitted session confirmed
                 if (_log.shouldWarn())
                     _log.warn("BAD " + len + " byte data packet (Type: " + header.getType() + ") from " + this);
+                // Track bad packets for repeat offender detection (skip if already blocklisted)
+                if (!_context.blocklist().isBlocklisted(_remoteHostId.toString())) {
+                    _context.banlist().badPacket(_remoteHostId.toString(), null);
+                }
                 return;
             }
             long n = header.getPacketNumber();

@@ -909,6 +909,8 @@ class EstablishmentManager {
                 if (_log.shouldWarn()) {
                     _log.warn("[SSU] PROBING ATTACK or corrupt SessionConfirmed from " + state);
                 }
+                // Track probing attempts
+                _context.banlist().badPacket(state.getRemoteHostId().toString(), null);
             }
             _inboundStates.remove(state.getRemoteHostId());
             return;

@@ -30,6 +30,7 @@ import net.i2p.data.router.RouterIdentity;
 import net.i2p.router.CommSystemFacade.Status;
 import net.i2p.router.RouterContext;
 import net.i2p.router.transport.FIFOBandwidthLimiter;
+import net.i2p.router.BanLogger;
 import net.i2p.stat.Rate;
 import net.i2p.stat.RateAverages;
 import net.i2p.stat.RateConstants;
@@ -73,6 +74,7 @@ class EventPumper implements Runnable {
     private final Queue<NTCPConnection> _wantsConRegister = new ConcurrentLinkedQueue<>();
     private final NTCPTransport _transport;
     private final ObjectCounter<String> _blockedIPs;
+    private final ObjectCounter<String> _failedInboundHandshake;
     private long _expireIdleWriteTime;
     private static final boolean _useDirect = false;
     private final boolean _nodelay;
@@ -149,6 +151,7 @@ class EventPumper implements Runnable {
         _expireIdleWriteTime = MAX_EXPIRE_IDLE_TIME;
         _nodelay = ctx.getBooleanPropertyDefaultTrue(PROP_NODELAY);
         _blockedIPs = new ObjectCounter<>();
+        _failedInboundHandshake = new ObjectCounter<>();
         _context.statManager().createRateStat("ntcp.pumperKeySetSize", "Number of NTCP Pumper KeySetSize events", "Transport [NTCP]", RATES);
         _context.statManager().createRateStat("ntcp.pumperLoopsPerSecond", "Number of NTCP Pumper loops/s", "Transport [NTCP]", RATES);
         _context.statManager().createRateStat("ntcp.zeroRead", "Number of NTCP zero length read events", "Transport [NTCP]", RATES);
@@ -712,6 +715,9 @@ class EventPumper implements Runnable {
                                 _log.info("EOF on Inbound connection before receiving any data, blocking IP: "
                                           + ipStr + (count > 1 ? " (Count: " + count + ")" : ""));
                             }
+                            if (!_context.blocklist().isBlocklisted(ipStr)) {
+                                _context.banlist().corruptConnection(ipStr, null);
+                            }
                         } else {
                             count = 1;
                             if (shouldInfo) {
@@ -1022,6 +1028,30 @@ class EventPumper implements Runnable {
         if (ip == null) return;
         String ba = Addresses.toString(ip);
         _blockedIPs.increment(ba);
+    }
+
+    /**
+     * Track failed inbound handshake and ban if too many failures.
+     * Ban reason: "Handshake timeout"
+     * @param hash optional router hash if available
+     */
+    public void trackFailedInboundHandshake(byte[] ip, Hash hash) {
+        if (ip == null) return;
+        String ba = Addresses.toString(ip);
+        int count = _failedInboundHandshake.increment(ba);
+        if (count == 4) {
+            BanLogger bl = BanLogger.getInstance();
+            if (bl != null) {
+                bl.logBan(hash, ba, "Handshake timeout", 60 * 60 * 1000);
+            }
+        }
+    }
+
+    /**
+     * Track failed inbound handshake (IP only, no hash).
+     */
+    public void trackFailedInboundHandshake(byte[] ip) {
+        trackFailedInboundHandshake(ip, null);
     }
 
     private long _lastExpired;

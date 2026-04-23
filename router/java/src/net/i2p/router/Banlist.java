@@ -21,8 +21,10 @@ import net.i2p.data.Base64;
 import net.i2p.data.DataHelper;
 import net.i2p.data.Hash;
 import net.i2p.time.BuildTime;
+import net.i2p.util.Addresses;
 import net.i2p.util.ConcurrentHashSet;
 import net.i2p.util.Log;
+import net.i2p.router.BanLogger;
 
 /**
  * Manages router banlist entries with configurable expiration times and transport-specific bans.
@@ -33,6 +35,20 @@ public class Banlist {
     private final Log _log;
     private final RouterContext _context;
     private final Map<Hash, Entry> _entries;
+
+    // IP-based bad packet offender tracking
+    // Key: IP address (String), Value: {timestamp, count}
+    private final ConcurrentHashMap<String, long[]> _badPacketIPs;
+    // Key: IP address (String), Value: {timestamp, count}
+    private final ConcurrentHashMap<String, long[]> _corruptConnectionIPs;
+    // Key: IP address (String), Value: {timestamp, count}
+    private final ConcurrentHashMap<String, long[]> _portHoppingIPs;
+    // Global threshold: number of offenses before temp ban
+    private static final int MAX_OFFENSES = 3;
+    // Time window: offenses within this period count toward threshold (ms)
+    private static final long OFFENSE_WINDOW = 15*60*1000; // 15 minutes
+    // Startup grace period: don't track offenses in first 3 minutes after startup
+    private static final long STARTUP_GRACE = 3*60*1000; // 3 minutes
 
     /**
      *  hash of 387 zeros
@@ -87,6 +103,10 @@ public class Banlist {
      * Ban duration for private IP addresses.
      */
     public final static long BANLIST_DURATION_PRIVATE = 2*60*60*1000;
+    /**
+     * Ban duration for repeat bad packet offenders.
+     */
+    public final static long BANLIST_DURATION_BAD_PACKETS = 60*60*1000; // 1 hour
     private final static long BANLIST_CLEANER_START_DELAY = BANLIST_DURATION_PARTIAL;
 
     /**
@@ -106,6 +126,9 @@ public class Banlist {
         _context = context;
         _log = context.logManager().getLog(Banlist.class);
         _entries = new ConcurrentHashMap<Hash, Entry>(16);
+        _badPacketIPs = new ConcurrentHashMap<String, long[]>(64);
+        _corruptConnectionIPs = new ConcurrentHashMap<String, long[]>(64);
+        _portHoppingIPs = new ConcurrentHashMap<String, long[]>(64);
         _context.jobQueue().addJob(new Cleanup(_context));
         banlistRouterForever(Hash.FAKE_HASH, " <b>➜</b> " + "Invalid Hash"); // i2pd bug?
         banlistRouterForever(HASH_ZERORI, " <b>➜</b> " + "Invalid Hash (All zeros)");
@@ -145,7 +168,144 @@ public class Banlist {
                     _log.info("Removing expired ban from [" + peer.toBase64().substring(0,6) + "]");
                 }
             }
-            requeue(30*1000);
+            requeue(5*60*1000);
+        }
+    }
+
+    /**
+     * Record a bad packet from an IP.
+     * If threshold exceeded, ban the IP.
+     * @param ip IP address (format: "1.2.3.4" or "1.2.3.4:port")
+     * @param version router version info (may be null)
+     */
+    public void badPacket(String ip, String version) {
+        if (ip == null) return;
+        if (_context.router().getUptime() < STARTUP_GRACE) return;
+        long now = _context.clock().now();
+
+        long[] data = _badPacketIPs.get(ip);
+        if (data == null) {
+            // First bad packet from this IP
+            data = new long[] {now, 1};
+            _badPacketIPs.put(ip, data);
+            return;
+        }
+
+        // Check if within window
+        if (now - data[0] > OFFENSE_WINDOW) {
+            // Window expired, reset count
+            data[0] = now;
+            data[1] = 1;
+        } else {
+            // Within window, increment
+            data[1]++;
+        }
+
+        if (data[1] >= MAX_OFFENSES) {
+            // Ban the IP
+            String reason = " <b>➜</b> Sending bad packets";
+            if (version != null) {
+                reason += " [" + version + "]";
+            }
+
+            if (_log.shouldWarn()) {
+                _log.warn("Bad packet limit exceeded for " + ip + ": banning for " + BANLIST_DURATION_BAD_PACKETS/60000 + " min");
+            }
+
+            BanLogger banLogger = new BanLogger();
+            banLogger.initialize(_context);
+            banLogger.logBanIPOnly(ip, reason, BANLIST_DURATION_BAD_PACKETS);
+
+            _context.blocklist().add(ip, reason);
+
+            // Remove from tracker
+            _badPacketIPs.remove(ip);
+        }
+    }
+
+    /**
+     * Record a corrupt connection (EOF/no data during establishment) from an IP.
+     * If threshold exceeded, ban the IP.
+     * @param ip IP address (format: "1.2.3.4" or "1.2.3.4:port")
+     * @param version router version info (may be null)
+     */
+    public void corruptConnection(String ip, String version) {
+        if (ip == null) return;
+        if (_context.router().getUptime() < STARTUP_GRACE) return;
+        long now = _context.clock().now();
+
+        long[] data = _corruptConnectionIPs.get(ip);
+        if (data == null) {
+            data = new long[] {now, 1};
+            _corruptConnectionIPs.put(ip, data);
+            return;
+        }
+
+        if (now - data[0] > OFFENSE_WINDOW) {
+            data[0] = now;
+            data[1] = 1;
+        } else {
+            data[1]++;
+        }
+
+        if (data[1] >= MAX_OFFENSES) {
+            String reason = " <b>➜</b> Corrupt connection (no data)";
+            if (version != null) {
+                reason += " [" + version + "]";
+            }
+
+            if (_log.shouldWarn()) {
+                _log.warn("Corrupt connection limit exceeded for " + ip + ": banning for " + BANLIST_DURATION_BAD_PACKETS/60000 + " min");
+            }
+
+            BanLogger banLogger = new BanLogger();
+            banLogger.initialize(_context);
+            banLogger.logBanIPOnly(ip, reason, BANLIST_DURATION_BAD_PACKETS);
+
+            _context.blocklist().add(ip, reason);
+
+            _corruptConnectionIPs.remove(ip);
+        }
+    }
+
+    /**
+     * Record a port hopping attempt from an IP.
+     * If threshold exceeded, ban the IP.
+     * @param ip IP address (format: "1.2.3.4")
+     */
+    public void portHopping(String ip) {
+        if (ip == null) return;
+        if (_context.router().getUptime() < STARTUP_GRACE) return;
+        long now = _context.clock().now();
+
+        long[] data = _portHoppingIPs.get(ip);
+        if (data == null) {
+            data = new long[] {now, 1};
+            _portHoppingIPs.put(ip, data);
+            return;
+        }
+
+        if (now - data[0] > OFFENSE_WINDOW) {
+            data[0] = now;
+            data[1] = 1;
+        } else {
+            data[1]++;
+        }
+
+        if (data[1] >= MAX_OFFENSES) {
+            String reason = " <b>➜</b> Port hopping";
+
+            if (_log.shouldWarn()) {
+                _log.warn("Port hopping limit exceeded for " + ip + ": banning for " + BANLIST_DURATION_BAD_PACKETS/60000 + " min");
+            }
+
+            BanLogger banLogger = new BanLogger();
+            banLogger.initialize(_context);
+            banLogger.logBanIPOnly(ip, reason, BANLIST_DURATION_BAD_PACKETS);
+
+            _context.blocklist().add(ip, reason);
+
+            _portHoppingIPs.remove(ip);
         }
     }
 

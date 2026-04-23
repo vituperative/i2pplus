@@ -1,7 +1,11 @@
-/* I2P+ lsCompact.js by dr|z3d */
-/* Compact non-debug Leaseset tables, add Signature and Encryption types counters,
-/* and implement auto-refresh */
-/* License: AGPL3 or later */
+/**
+ * @module lsCompact
+ * @description Compacts non-debug Leaseset tables, adds signature and encryption
+ * type counters, sorts leasesets by priority, and implements periodic auto-refresh.
+ * Handles both single and summary leaseset views.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 import { lsDebug } from "/js/lsDebug.js";
 import { onVisible, onHidden } from "/js/onVisible.js";
@@ -16,8 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let lsCount = 0;
   const debug = document.getElementById("leasesetdebug");
 
+  /**
+   * Compacts leaseset tables by repositioning encryption keys after expiry cells.
+   * @function compact
+   * @returns {void}
+   */
   function compact() {
-    if (!container || document.getElementById("leasesetdebug")) return;
+    if (!container || document.getElementById("leasesetdebug")) { return; }
     document.querySelectorAll("table.leaseset").forEach(table => {
       const expiry = table.querySelector(".expiry");
       const ekeys = Array.from(table.querySelectorAll(".ekey"));
@@ -25,14 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
         ekeys.forEach(el => el.remove());
         ekeys.forEach(ekey => expiry.insertAdjacentElement("afterend", ekey));
         const oldTr = table.querySelector("tr.ekeys");
-        if (oldTr) oldTr.remove();
+        if (oldTr) { oldTr.remove(); }
       }
     });
   }
 
+  /**
+   * Counts signature and encryption types across all leasesets and displays
+   * summary counters in the summary table.
+   * @function countTypes
+   * @returns {void}
+   */
   function countTypes() {
     const summary = document.getElementById("leasesetsummary") || document.getElementById("leasesetdebug");
-    if (!summary) return;
+    if (!summary) { return; }
 
     const signatureCounts = {};
     document.querySelectorAll("span.nowrap.stype").forEach(span => {
@@ -60,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tbody = summary.querySelector("tbody") || summary;
     const existingRow = tbody.querySelector("#sigEncCount");
-    if (existingRow) existingRow.remove();
+        if (existingRow) { existingRow.remove(); }
 
     const row = document.createElement("tr");
     row.id = "sigEncCount";
@@ -111,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const counters = leaseCountsRow.querySelectorAll(".lsCounter.sets");
         if (counters.length > 0) {
           const totalCount = Array.from(counters).reduce((sum, el) => {
-            const val = parseInt(el.textContent);
+            const val = parseInt(el.textContent, 10);
             return val ? sum + val : sum;
           }, 0);
           lsLocalCount.textContent = totalCount;
@@ -121,6 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
     summary.removeAttribute("hidden");
   }
 
+  /**
+   * Injects CSS styles for leaseset counter labels and badges.
+   * @function styleLabels
+   * @returns {void}
+   */
   function styleLabels() {
     const style = document.createElement("style");
     style.type = "text/css";
@@ -140,6 +160,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.head.appendChild(style);
   }
 
+  /**
+   * Sorts leaseset tables by priority (published > unpublished > known client > client b32)
+   * and adds count rows for each category.
+   * @function sortLeasesets
+   * @returns {void}
+   */
   function sortLeasesets() {
     document.querySelectorAll("table.leaseset").forEach(table => {
       const lastTh = table.querySelector("th:last-child");
@@ -163,9 +189,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tables = Array.from(document.querySelectorAll("table.leaseset"));
     tables.sort((a, b) => {
-      const prioA = parseInt(a.dataset.sortPriority);
-      const prioB = parseInt(b.dataset.sortPriority);
-      if (prioA !== prioB) return prioA - prioB;
+      const prioA = parseInt(a.dataset.sortPriority, 10);
+      const prioB = parseInt(b.dataset.sortPriority, 10);
+      if (prioA !== prioB) { return prioA - prioB; }
       return a.dataset.sortText.localeCompare(b.dataset.sortText);
     });
 
@@ -185,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (summaryTable) {
         const tbody = summaryTable.querySelector("tbody") || summaryTable;
         const existingRow = tbody.querySelector("#leasesetCounts");
-        if (existingRow) existingRow.remove();
+    if (existingRow) { existingRow.remove(); }
 
         const row = document.createElement("tr");
         row.id = "leasesetCounts";
@@ -202,19 +228,24 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         row.appendChild(cell);
         tbody.appendChild(row);
-        lsCount = Array.from(document.querySelectorAll("#leasesetCounts span.lsCounter")).reduce((sum, el) => sum + parseInt(el.textContent) || 0, 0);
+        lsCount = Array.from(document.querySelectorAll("#leasesetCounts span.lsCounter")).reduce((sum, el) => sum + parseInt(el.textContent, 10) || 0, 0);
         lsLocalCount.textContent = lsCount;
       }
     }
   }
 
+  /**
+   * Fetches updated leaseset content and replaces the current container.
+   * @function refreshLeasesets
+   * @returns {void}
+   */
   function refreshLeasesets() {
-    if (!container) return;
+    if (!container) { return; }
     progressx.show(theme); progressx.progress(.7);
     const url = window.location.href;
     fetch(url)
       .then(response => {
-        if (!response.ok) throw new Error("Network response was not ok");
+        if (!response.ok) { throw new Error("Network response was not ok"); }
         progressx.progress(.8);
         return response.text();
       })
@@ -223,9 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const temp = document.createElement("div");
         temp.innerHTML = html;
         const newContainer = temp.querySelector(".leasesets_container");
-        if (!newContainer) return;
+        if (!newContainer) { return; }
         const oldContainer = document.querySelector(".leasesets_container");
-        if (!oldContainer) return;
+        if (!oldContainer) { return; }
         oldContainer.parentNode.replaceChild(newContainer, oldContainer);
         container = newContainer;
         progressx.progress(.9)
@@ -241,12 +272,22 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => { });
   }
 
+  /**
+   * Starts the periodic leaseset refresh interval.
+   * @function startRefresh
+   * @returns {void}
+   */
   function startRefresh() {
     if (isRefreshing) { return; }
     isRefreshing = true;
     refreshInterval = setInterval(() => { requestAnimationFrame(refreshLeasesets); }, 15000);
   }
 
+  /**
+   * Stops the periodic leaseset refresh interval.
+   * @function stopRefresh
+   * @returns {void}
+   */
   function stopRefresh() {
     if (!isRefreshing) { return; }
     isRefreshing = false;
@@ -255,6 +296,11 @@ document.addEventListener("DOMContentLoaded", () => {
     progressx.hide();
   }
 
+  /**
+   * Initializes the leaseset compact view with refresh, styling, sorting, and debug.
+   * @function initLSCompact
+   * @returns {void}
+   */
   function initLSCompact() {
     startRefresh();
     progressx.show(theme);

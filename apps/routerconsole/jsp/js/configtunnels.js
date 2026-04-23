@@ -1,11 +1,20 @@
-/* I2P+ configtunnels.js by dr|z3d */
-/* Toggle display of tunnel count badges according to toggle state */
-/* License: AGPL3 or later */
+/**
+ * @module configtunnels
+ * @description Toggles the display of tunnel count badges (in/out) based on
+ * whether the tunnel configuration section is expanded or collapsed.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 document.addEventListener("DOMContentLoaded", () => {
+  /**
+   * Sets up toggle listeners on tunnel config headers to show/hide tunnel count badges.
+   * @function showHideTunnelCounts
+   * @returns {void}
+   */
   function showHideTunnelCounts() {
     const table = document.querySelector("#tunnelconfig");
-    if (!table) return;
+    if (!table) { return; }
     setupToggles("#tunnelconfig thead", "#tunnelconfig thead+tbody", "table-row-group");
 
     table.addEventListener("click", function(event) {
@@ -22,11 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const tOut = toggle.querySelector(".th_title.left .tOut");
 
       if (toggle.classList.contains("expanded")) {
-        if (tIn) tIn.style.display = "none";
-        if (tOut) tOut.style.display = "none";
+        if (tIn) { tIn.style.display = "none"; }
+        if (tOut) { tOut.style.display = "none"; }
       } else {
-        if (tIn) tIn.removeAttribute("style");
-        if (tOut) tOut.removeAttribute("style");
+        if (tIn) { tIn.removeAttribute("style"); }
+        if (tOut) { tOut.removeAttribute("style"); }
       }
     });
 

@@ -1,6 +1,11 @@
-/* I2P+ viewprofile.js by dr|z3d */
-/* Tabulate individual profiles and add section toggler */
-/* License: AGPL3 or later */
+/**
+ * @module viewprofile
+ * @description Parses raw profile text data from the #viewprofile pre element
+ * into a structured HTML table with section headers, formatted values (speed in MB/s,
+ * readable dates, response times), and collapsible section toggles.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 (function() {
   document.addEventListener("DOMContentLoaded", () => {
@@ -100,6 +105,12 @@
     setTimeout(addToggles, 50);
   });
 
+  /**
+   * Extracts tooltip content from bracketed text in a title string.
+   * @function extractTooltip
+   * @param {string} title - The title string potentially containing [tooltip] text
+   * @returns {string[]} Tuple of [clean title, tooltip content]
+   */
   function extractTooltip(title) {
     const match = title.match(/\[(.*?)\]/);
     if (match) {
@@ -110,6 +121,13 @@
     return [title, ""];
   }
 
+  /**
+   * Cleans and formats a raw profile value by removing brackets, GMT suffixes,
+   * and replacing special codes with readable text.
+   * @function cleanValue
+   * @param {string} value - The raw value string to clean
+   * @returns {string} The cleaned and formatted value
+   */
   function cleanValue(value) {
     let cleanedValue = value.replace(/\[.*?\]/g, "").trim();
     cleanedValue = cleanedValue.replace(/GMT/g, "");
@@ -121,9 +139,15 @@
     return cleanedValue;
   }
 
+  /**
+   * Converts an epoch millisecond timestamp to a human-readable date string.
+   * @function convertEpochToReadableDate
+   * @param {string} epoch - The epoch timestamp as a string
+   * @returns {string} A formatted date string or "Never" if epoch is "0"
+   */
   function convertEpochToReadableDate(epoch) {
     if (epoch === "0") {return "Never";}
-    const date = new Date(parseInt(epoch));
+    const date = new Date(parseInt(epoch, 10));
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -137,10 +161,22 @@
     return `${dayOfWeek} ${month} ${dayOfMonth} ${hours}:${minutes}:${seconds} ${date.getFullYear()}`;
   }
 
+  /**
+   * Converts bytes to kilobytes with two decimal places.
+   * @function convertBtoKB
+   * @param {number} bytes - The value in bytes
+   * @returns {string} The value in KB as a formatted string
+   */
   function convertBtoKB(bytes) {
     return (bytes / 1024).toFixed(2);
   }
 
+/**
+ * Sets up collapsible section toggles for the profile table, expanding
+ * router info, NetDb history, and tunnel history sections by default.
+ * @function addToggles
+ * @returns {void}
+ */
 function addToggles() {
   document.querySelectorAll(".section").forEach(section => {
     let next = section.nextElementSibling;

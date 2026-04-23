@@ -1,11 +1,22 @@
-/* I2P+ sectionToggle.js by dr|z3d */
-/* Sidebar section toggler for the I2P+ web console */
-/* License: AGPLv3 or later */
+/**
+ * @module sectionToggle
+ * @description Provides sidebar section toggle functionality for the I2P+ web console.
+ * Manages expand/collapse state persistence via localStorage, badge visibility,
+ * and specialized handling for services, updates, tunnels, and local tunnel sections.
+ * @author dr|z3d
+ * @license AGPLv3 or later
+ */
 
 import { stickySidebar } from "/js/stickySidebar.js";
 
 const sb = document.getElementById("sidebar");
 
+/**
+ * Initializes sidebar section toggle controls, restoring persisted states
+ * and attaching click listeners for toggle interactions.
+ * @function sectionToggler
+ * @returns {void}
+ */
 function sectionToggler() {
   const jobBadge = sb.querySelector('h3 a[href="/jobs"] .badge');
   const tunnelsBadge = sb.querySelector('h3 a[href="/tunnels"] .badge');
@@ -47,11 +58,16 @@ function sectionToggler() {
     toggle_sb_queue: sb_queue,
     toggle_sb_services: sb_services,
     toggle_sb_tunnels: sb_tunnels,
-    toggle_sb_updatesection: sb_updatesection,
+    toggle_sb_updatesection: sb_updatesection
   };
 
   let listenersAdded = false;
 
+  /**
+   * Initializes localStorage with default sidebar section visibility states.
+   * @function initializeLocalStorage
+   * @returns {Promise<Object>} Resolves with the default state object
+   */
   function initializeLocalStorage() {
     return new Promise((resolve) => {
       const defaultState = {
@@ -67,13 +83,19 @@ function sectionToggler() {
         queue: false,
         services: false,
         tunnels: false,
-        updatesection: false,
+        updatesection: false
       };
       localStorage.setItem("sidebarSections", JSON.stringify(defaultState));
       resolve(defaultState);
     });
   }
 
+  /**
+   * Saves the current toggle state of the active element to localStorage.
+   * @async
+   * @function saveToggleStates
+   * @returns {Promise<void>}
+   */
   async function saveToggleStates() {
     const toggleInput = document.activeElement;
     if (toggleInput && toggleInput.id.startsWith("toggle_sb_")) {
@@ -86,6 +108,11 @@ function sectionToggler() {
     }
   }
 
+  /**
+   * Restores toggle states from localStorage and applies visibility to sections.
+   * @function restoreToggleStates
+   * @returns {void}
+   */
   function restoreToggleStates() {
     const sidebarSections = JSON.parse(localStorage.getItem("sidebarSections"));
     if (sidebarSections) {
@@ -116,11 +143,16 @@ function sectionToggler() {
     }
   }
 
+  /**
+   * Attaches delegated click listeners for toggle interactions on the sidebar.
+   * @function addToggleListeners
+   * @returns {void}
+   */
   function addToggleListeners() {
-    if (listenersAdded) return;
+    if (listenersAdded) { return; }
     const handleToggle = (event) => {
       const id = event.target.id;
-      if (!(id in toggleElements)) return;
+      if (!(id in toggleElements)) { return; }
       const currentState = event.target.checked;
       toggleElementVisibility(event.target, currentState);
       saveToggleStates();
@@ -130,6 +162,13 @@ function sectionToggler() {
     listenersAdded = true;
   }
 
+  /**
+   * Toggles the visibility of a sidebar section and manages related elements.
+   * @function toggleElementVisibility
+   * @param {HTMLInputElement} toggleInput - The toggle checkbox input element
+   * @param {boolean} isVisible - Whether the section should be visible
+   * @returns {void}
+   */
   function toggleElementVisibility(toggleInput, isVisible) {
     const element = toggleElements[toggleInput.id];
     if (!element) {
@@ -152,14 +191,14 @@ function sectionToggler() {
           hr.style.display = null;
         }
         toggleInput.checked = true;
-        if (element.classList) element.classList.remove("collapsed");
+        if (element.classList) { element.classList.remove("collapsed"); }
       } else {
         if (hr) {
           hr.hidden = true;
           hr.style.display = "none";
         }
         toggleInput.checked = false;
-        if (element.classList) element.classList.add("collapsed");
+        if (element.classList) { element.classList.add("collapsed"); }
       }
 
       if (toggleInput.id === "toggle_sb_localtunnels") {
@@ -181,6 +220,12 @@ function sectionToggler() {
     }
   }
 
+  /**
+   * Handles the services section visibility, toggling between icon and text link display.
+   * @function handleServicesVisibility
+   * @param {boolean} isVisible - Whether the services section is expanded
+   * @returns {void}
+   */
   function handleServicesVisibility(isVisible) {
     if (sb_services !== null) {
       const hr = sb.querySelector("#sb_services.collapsed+hr");
@@ -217,6 +262,12 @@ function sectionToggler() {
     }
   }
 
+  /**
+   * Handles the update section visibility and collapsed class toggling.
+   * @function handleUpdateSectionVisibility
+   * @param {boolean} isVisible - Whether the update section is expanded
+   * @returns {void}
+   */
   function handleUpdateSectionVisibility(isVisible) {
     if (sb_updatesection !== null) {
       sb_updatesection.hidden = false;
@@ -238,15 +289,21 @@ function sectionToggler() {
     client: "/themes/console/images/client.svg",
     snark: "/themes/console/images/snark.svg",
     i2pchat: "/themes/console/images/i2pchat.svg",
-    ping: "/themes/console/images/ping.svg",
+    ping: "/themes/console/images/ping.svg"
   };
 
   let cachedCounts = null;
 
+  /**
+   * Handles local tunnels section collapsed state with tunnel type count display.
+   * @function handleLocalTunnelsVisibility
+   * @param {boolean} isVisible - Whether the local tunnels section is expanded
+   * @returns {void}
+   */
   function handleLocalTunnelsVisibility(isVisible) {
-    if (!localtunnelSummary) return;
+    if (!localtunnelSummary) { return; }
     if (isVisible) {
-      if (!localtunnelSummary.hidden) localtunnelSummary.hidden = true;
+      if (!localtunnelSummary.hidden) { localtunnelSummary.hidden = true; }
       return;
     }
 
@@ -257,15 +314,15 @@ function sectionToggler() {
     }
 
     if (cachedCounts && Object.entries(newCounts).every(([key, val]) => cachedCounts[key] === val)) {
-      if (localtunnelSummary.hidden) localtunnelSummary.hidden = false;
+      if (localtunnelSummary.hidden) { localtunnelSummary.hidden = false; }
       return;
     }
 
     cachedCounts = newCounts;
     const row = localtunnelSummary.querySelector("tr#localtunnelsActive");
-    if (!row) return;
+    if (!row) { return; }
     const cell = row.querySelector("td");
-    if (!cell) return;
+    if (!cell) { return; }
 
     const fragment = document.createDocumentFragment();
     for (const [type, count] of Object.entries(newCounts)) {
@@ -281,15 +338,27 @@ function sectionToggler() {
     }
     cell.innerHTML = "";
     cell.appendChild(fragment);
-    if (localtunnelSummary.hidden) localtunnelSummary.hidden = false;
+    if (localtunnelSummary.hidden) { localtunnelSummary.hidden = false; }
   }
 
+  /**
+   * Toggles the job queue badge visibility based on section state.
+   * @function handleQueueVisibility
+   * @param {boolean} isVisible - Whether the queue section is expanded
+   * @returns {void}
+   */
   function handleQueueVisibility(isVisible) {
     if (jobBadge) {
       jobBadge.hidden = isVisible;
     }
   }
 
+  /**
+   * Toggles the tunnels badge visibility based on section state.
+   * @function handleTunnelsVisibility
+   * @param {boolean} isVisible - Whether the tunnels section is expanded
+   * @returns {void}
+   */
   function handleTunnelsVisibility(isVisible) {
     if (tunnelsBadge) {
       tunnelsBadge.hidden = isVisible;
@@ -303,12 +372,17 @@ function sectionToggler() {
   });
 }
 
+/**
+ * Counts news items in the sidebar and updates the news badge display.
+ * @function countNewsItems
+ * @returns {void}
+ */
 function countNewsItems() {
   const sbNewsHeadings = document.getElementById("sb_newsheadings");
   const newsBadge = document.getElementById("newsCount");
   const doubleCount = sb.querySelector("#newsCount+#newsCount");
-  if (!sbNewsHeadings || !newsBadge) return;
-  if (doubleCount) doubleCount.remove();
+  if (!sbNewsHeadings || !newsBadge) { return; }
+  if (doubleCount) { doubleCount.remove(); }
   const newsCount = sbNewsHeadings.querySelectorAll("table tr").length;
   newsBadge.hidden = newsCount <= 0 || !sbNewsHeadings.classList.contains("collapsed");
   if (newsCount > 0 && newsBadge.innerHTML !== newsCount.toString()) {

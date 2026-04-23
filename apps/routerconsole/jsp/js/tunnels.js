@@ -1,7 +1,11 @@
-/* I2P+ tunnels.js by dr|z3d */
-/* Handle automatic refresh for console tunnels page and */
-/* enable persistent toggling of tunnel ids and tunnel rows */
-/* License: AGPL3 or later */
+/**
+ * @module tunnels
+ * @description Handles automatic refresh for the console tunnels page and
+ * enables persistent toggling of tunnel IDs and tunnel table row visibility
+ * via localStorage. Updates tunnel in/out counts on refresh.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 import { refreshElements } from './refreshElements.js';
 
@@ -33,7 +37,8 @@ nav.addEventListener("click", function(event) {
   if (!isAdvancedMode) {
     toggleIds.remove();
     return;
-  } else if (event.target.id === "toggleTunnelIds") {
+  }
+  if (event.target.id === "toggleTunnelIds") {
     const isHidden = document.querySelector("body").classList.contains("idsHidden");
     if (isHidden) {
       bodyTag.classList.remove("idsHidden");
@@ -47,6 +52,11 @@ nav.addEventListener("click", function(event) {
   }
 });
 
+/**
+ * Restores tunnel table visibility state from localStorage on page load.
+ * @function persistTunnelTableVisibility
+ * @returns {void}
+ */
 function persistTunnelTableVisibility() {
   if (tunnelTableVisibility) {
     if (!tunnelsHidden) {
@@ -60,6 +70,11 @@ function persistTunnelTableVisibility() {
   }
 }
 
+/**
+ * Restores tunnel ID visibility state from localStorage on page load.
+ * @function persistTunnelIdVisibility
+ * @returns {void}
+ */
 function persistTunnelIdVisibility() {
   if (!isAdvancedMode) {return;}
   if (tunnelIdVisibility) {
@@ -74,12 +89,17 @@ function persistTunnelIdVisibility() {
   }
 }
 
+/**
+   * Recalculates and updates tunnel in/out count displays for each pool.
+   * @function updateTunnelCounts
+   * @returns {void}
+   */
 function updateTunnelCounts() {
   const pools = container.querySelectorAll(".tablewrap");
   pools.forEach(pool => {
     const summary = pool.querySelector("table.poolsummary");
     const tunnelTable = pool.querySelector("table.tunnels_client");
-    if (!summary || !tunnelTable) return;
+    if (!summary || !tunnelTable) { return; }
 
     const inCount = tunnelTable.querySelectorAll('td.direction[data-sort="in"]').length;
     const outCount = tunnelTable.querySelectorAll('td.direction[data-sort="out"]').length;

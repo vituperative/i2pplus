@@ -1,8 +1,18 @@
-/* I2P+ lsDebug.js by dr|z3d */
-/* Consolidate debug and keyspace tables on Leasesets debug page */
-/* License: AGPL3 or later */
+/**
+ * @module lsDebug
+ * @description Consolidates debug and keyspace tables on the Leasesets debug page
+ * by merging the median distance row into the RAP row, combining estimate rows,
+ * and appending keyspace rows to the debug table.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
-function lsDebug() {
+/**
+ * Merges and consolidates the leaseset debug and keyspace tables into a single view.
+ * @function lsDebug
+ * @returns {void}
+ */
+function lsDebug() { // NOPMD - ConsistentReturn (arrow function implicit returns misdetected)
   const getById = id => document.getElementById(id);
   const sel = (el, sel) => el?.querySelector(sel);
   const text = el => el?.textContent.trim();
@@ -11,7 +21,7 @@ function lsDebug() {
   const debugTbody = document.querySelector("#leasesetdebug tbody");
   const keyspaceTbody = document.querySelector("#leasesetKeyspace tbody");
   const leasesetKeyspace = getById("leasesetKeyspace");
-  if (!(rapRow && debugTbody && keyspaceTbody && leasesetKeyspace)) return;
+  if (!(rapRow && debugTbody && keyspaceTbody && leasesetKeyspace)) { return; }
 
   const medianRow = document.querySelector("#leasesetKeyspace #medianDistance");
   if (medianRow) {
@@ -41,8 +51,8 @@ function lsDebug() {
 
     const td = (html, isHTML = false) => {
       const el = document.createElement("td");
-      if (isHTML) el.innerHTML = html;
-      else el.textContent = html;
+      if (isHTML) { el.innerHTML = html; }
+      else { el.textContent = html; }
       return el;
     };
 

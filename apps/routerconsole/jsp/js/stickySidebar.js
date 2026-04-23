@@ -1,12 +1,28 @@
-/* I2P+ StickySidebar by dr|z3d */
-/* License: AGPLv3 or later */
+/**
+ * @module stickySidebar
+ * @description Makes the sidebar stick to the top of the viewport when the
+ * sidebar content is shorter than the viewport height. Dynamically calculates
+ * and applies sticky positioning.
+ * @author dr|z3d
+ * @license AGPLv3 or later
+ */
 
+/**
+ * Calculates sidebar and viewport heights and applies/removes sticky positioning.
+ * @function stickySidebar
+ * @returns {void}
+ */
 function stickySidebar() {
-  if (stickySidebarEnabled === false) return;
+  if (stickySidebarEnabled === false) { return; }
   const sbWrap = document.getElementById("sb_wrap");
   const sb = document.getElementById("sidebar");
-  if (!sbWrap || !sb) return;
+  if (!sbWrap || !sb) { return; }
 
+  /**
+   * Compares sidebar height to viewport and toggles sticky CSS accordingly.
+   * @function calcHeight
+   * @returns {void}
+   */
   function calcHeight() {
     const sbHeight = sb.getBoundingClientRect().height;
     const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;

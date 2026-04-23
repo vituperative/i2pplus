@@ -1,7 +1,11 @@
-/* I2P+ refreshElements.js by dr|z3d */
-/* Refresh elements via fetch using a background worker */
-/* Usage: refreshElement("target selectors", "target url", refresh interval (ms)) */
-/* License: AGPL3 or later */
+/**
+ * @module refreshElements
+ * @description Refreshes DOM elements via fetch using a SharedWorker for background
+ * requests. Uses morphdom for efficient DOM diffing and supports visibility-based
+ * refresh scheduling.
+ * @author dr|z3d
+ * @license AGPL3 or later
+ */
 
 import morphdom from "/js/morphdom.js";
 
@@ -15,7 +19,7 @@ fetchWorker.port.start();
 
 fetchWorker.port.onmessage = function(e) {
   const { responseText } = e.data;
-  if (!responseText || !currentUrl) return;
+  if (!responseText || !currentUrl) { return; }
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(responseText, "text/html");
@@ -44,6 +48,17 @@ fetchWorker.port.onmessage = function(e) {
   });
 };
 
+/**
+ * Sets up periodic element refresh using a SharedWorker for fetch requests.
+ * Automatically pauses when the document is hidden and resumes on visibility.
+ * @function refreshElements
+ * @param {string|string[]} targetSelectors - CSS selector(s) for elements to refresh
+ * @param {string} url - The URL to fetch content from
+ * @param {number} delay - The refresh interval in milliseconds
+ * @returns {void}
+ * @example refreshElements("#sidebar", "/sidebar", 10000)
+ * @example refreshElements(["#peers", "#status"], "/peers", 5000)
+ */
 export function refreshElements(targetSelectors, url, delay) {
   let selectors = [];
 
@@ -57,7 +72,7 @@ export function refreshElements(targetSelectors, url, delay) {
   currentUrl = url;
 
   function refresh() {
-    if (document.visibilityState !== "visible" || isRefreshing) return;
+    if (document.visibilityState !== "visible" || isRefreshing) { return; }
 
     isRefreshing = true;
     progressx?.show(theme);

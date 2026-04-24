@@ -93,44 +93,47 @@ API: https://i2pplus.github.io/javadoc/
 
 Για τις άδειες των διάφορων υποσυστατικών, δείτε: [README.md](docs/LICENSE.md)
 
-## Δείτε επίσης
-
-### Τεκμηρίωση
+## Τεκμηρίωση
 
 - [docs/README.md](docs/README.md) - Πλήρες ευρετήριο τεκμηρίωσης
 - [docs/INSTALL.md](docs/INSTALL.md) - Οδηγός εγκατάστασης
-- [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - Εγκατάσταση χωρίς γραφικό περιβάλλον (λειτουργία κονσόλας)
+- [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - Εγκατάσταση χωρίς GUI (λειτουργία κονσόλας)
 - [docs/HACKING.md](docs/HACKING.md) - Οδηγός προγραμματιστή και συστήματα build
-- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Δομή δέντρου πηγαίου κώδικα και πού να βρείτε πράγματα
-- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Διαχείριση απαγορεύσεων συνεδριών I2P με nftables
-- [docs/history.txt](docs/history.txt) - Πλήρες ιστορικό αλλαγών
+- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Διάταξη δέντρου πηγαίου κώδικα
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Διαχείριση απαγορεύσεων συνεδρίας I2P με nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - Άδειες τρίτων μερών
+- [docs/history.txt](docs/history.txt) - Πλήρες αρχείο αλλαγών
 
-### README υπο-έργων
+### Υπο-έργα
 
+- [apps/README.md](apps/README.md) - Επισκόπηση εφαρμογών
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Εφαρμογή βιβλίου διευθύνσεων
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Εφαρμογή Desktop GUI
-- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
-- [apps/i2psnark/README.md](apps/i2psnark/README.md) - I2PSnark BitTorrent πελάτης
-- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Εφαρμογή I2P Tunnel
+- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - API ελέγχου I2P
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - Πελάτης BitTorrent I2PSnark
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Εφαρμογή τούνελ I2P
 - [apps/imagegen/README.md](apps/imagegen/README.md) - Εργαλεία δημιουργίας εικόνων
-- [apps/jetty/README.md](apps/jetty/README.md) - Jetty HTTP server
+- [apps/jetty/README.md](apps/jetty/README.md) - HTTP διακομιστής Jetty
 - [apps/jrobin/README.md](apps/jrobin/README.md) - Βιβλιοθήκη παρακολούθησης JRobin
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Ελάχιστη βιβλιοθήκη streaming
 - [apps/pack200/README.md](apps/pack200/README.md) - Συμπίεση Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy scripts
-- [apps/README.md](apps/README.md) - Επισκόπηση εφαρμογών
-- [apps/routerconsole/README.md](apps/routerconsole/README.md) - Κονσόλα router
-- [apps/sam/README.md](apps/sam/README.md) - Απλή ανώνυμη ανταλλαγή μηνυμάτων
+- [apps/routerconsole/README.md](apps/routerconsole/README.md) - Κονσόλα δρομολογητή
+- [apps/sam/README.md](apps/sam/README.md) - Απλή Ανώνυμη Ανταλλαγή Μηνυμάτων
 - [apps/streaming/README.md](apps/streaming/README.md) - Βιβλιοθήκη streaming
-- [apps/susidns/README.md](apps/susidns/README.md) - DNS server
-- [apps/susimail/README.md](apps/susimail/README.md) - I2P πελάτης email
-- [apps/systray/README.md](apps/systray/README.md) - Εφαρμογή system tray
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Native BigInteger βιβλιοθήκη (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Native βιβλιοθήκη ανίχνευσης CPU
+- [apps/susidns/README.md](apps/susidns/README.md) - DNS διακομιστής
+- [apps/susimail/README.md](apps/susimail/README.md) - Πελάτης email I2P
+- [apps/systray/README.md](apps/systray/README.md) - Εφαρμογή συστημικής θήκης
 - [core/README.md](core/README.md) - Τεκμηρίωση βιβλιοθήκης core
-- [docker/README.md](docker/README.md) - Εκτέλεση I2P+ σε Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Άδειες τρίτων μερών
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI βιβλιοθήκη για κρυπτογράφηση (GMP)
+
+### Διάφορα
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Διαχείριση απαγορεύσεων συνεδρίας I2P με nftables
 - [installer/resources/README.md](installer/resources/README.md) - Πόροι εγκατάστασης
-- [scripts/README.md](scripts/README.md) - Βοηθητικά scripts για ανάπτυξη και διαχείριση
-- [scripts/tests/README.md](scripts/tests/README.md) - Scripts επικύρωσης και δοκιμής
+- [tools/scripts/README.md](tools/scripts/README.md) - Βοηθητικά scripts για ανάπτυξη και διαχείριση
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Scripts επικύρωσης και δοκιμής
+
+### Docker
+
+- [docker/README.md](docker/README.md) - Εκτέλεση I2P+ σε Docker

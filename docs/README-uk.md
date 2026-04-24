@@ -105,8 +105,9 @@ I2P+ ліцензується за AGPL v.3.
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Керування блокуванням сесій I2P за допомогою nftables
 - [docs/history.txt](docs/history.txt) - Повний журнал змін
 
-### READMEs підпроектів
+### Sub-projects
 
+- [apps/README.md](apps/README.md) - Огляд додатків
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Додаток адресної книги
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Десктопний GUI-додаток
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - API керування I2P
@@ -118,19 +119,22 @@ I2P+ ліцензується за AGPL v.3.
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Мінімальна бібліотека стрімінгу
 - [apps/pack200/README.md](apps/pack200/README.md) - Стиснення Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Проксі-скрипти
-- [apps/README.md](apps/README.md) - Огляд додатків
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Консоль маршрутизатора
 - [apps/sam/README.md](apps/sam/README.md) - Простий анонімний обмін повідомленнями
 - [apps/streaming/README.md](apps/streaming/README.md) - Бібліотека стрімінгу
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS-сервер
 - [apps/susimail/README.md](apps/susimail/README.md) - Поштовий клієнт I2P
 - [apps/systray/README.md](apps/systray/README.md) - Додаток системного лотка
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Нативна бібліотека BigInteger (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Нативна бібліотека визначення CPU
 - [core/README.md](core/README.md) - Документація основної бібліотеки
-- [docker/README.md](docker/README.md) - Запуск I2P+ в Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Ліцензії третіх сторін
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Нативна JNI-бібліотека для криптографії (GMP)
+
+### MISC
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Керування блокуванням сесій I2P за допомогою nftables
 - [installer/resources/README.md](installer/resources/README.md) - Ресурси інсталятора
-- [scripts/README.md](scripts/README.md) - Утилітні скрипти для розробки та адміністрування
-- [scripts/tests/README.md](scripts/tests/README.md) - Скрипти валідації та тестування
+- [tools/scripts/README.md](tools/scripts/README.md) - Утилітні скрипти для розробки та адміністрування
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Скрипти валідації та тестування
+
+### Docker
+
+- [docker/README.md](docker/README.md) - Запуск I2P+ в Docker

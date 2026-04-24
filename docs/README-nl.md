@@ -103,10 +103,12 @@ Voor de verschillende sub-component licenties, zie: [README.md](docs/LICENSE.md)
 - [docs/HACKING.md](docs/HACKING.md) - Ontwikkelaarsgids en build-systemen
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Bronboom-layout en waar dingen te vinden
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - I2P-sessieverboden beheren met nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - Licenties van derden
 - [docs/history.txt](docs/history.txt) - Volledige wijzigingslog
 
-### Sub-project README's
+### Sub-projects
 
+- [apps/README.md](apps/README.md) - Applicatie-overzicht
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Adresboek-applicatie
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Desktop GUI-applicatie
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
@@ -118,19 +120,22 @@ Voor de verschillende sub-component licenties, zie: [README.md](docs/LICENSE.md)
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Minimale streaming-bibliotheek
 - [apps/pack200/README.md](apps/pack200/README.md) - Pack200-compressie
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy-scripts
-- [apps/README.md](apps/README.md) - Applicatie-overzicht
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router-console
 - [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
 - [apps/streaming/README.md](apps/streaming/README.md) - Streaming-bibliotheek
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS-server
 - [apps/susimail/README.md](apps/susimail/README.md) - I2P e-mailclient
 - [apps/systray/README.md](apps/systray/README.md) - Systeemvak-toepassing
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Native BigInteger-bibliotheek (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU-detectie native bibliotheek
 - [core/README.md](core/README.md) - Core-bibliotheek-documentatie
-- [docker/README.md](docker/README.md) - I2P+ uitvoeren in Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Licenties van derden
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI-bibliotheek voor cryptografie (GMP)
+
+### MISC
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - I2P-sessieverboden beheren met nftables
 - [installer/resources/README.md](installer/resources/README.md) - Gebundelde installer-resources
-- [scripts/README.md](scripts/README.md) - Nutsscripts voor ontwikkeling en beheer
-- [scripts/tests/README.md](scripts/tests/README.md) - Validatie- en test-scripts
+- [tools/scripts/README.md](tools/scripts/README.md) - Nutsscripts voor ontwikkeling en beheer
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validatie- en test-scripts
+
+### Docker
+
+- [docker/README.md](docker/README.md) - I2P+ uitvoeren in Docker

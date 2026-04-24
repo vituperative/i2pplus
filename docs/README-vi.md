@@ -102,10 +102,12 @@ I2P+ được cấp phép theo AGPL v.3.
 - [docs/HACKING.md](docs/HACKING.md) - Hướng dẫn phát triển và hệ thống build
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Bố trí cây mã nguồn và nơi tìm thứ
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Quản lý lệnh cấm session I2P với nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - Giấy phép third-party
 - [docs/history.txt](docs/history.txt) - Lịch sử thay đổi đầy đủ
 
-### README của các sub-project
+### Sub-projects
 
+- [apps/README.md](apps/README.md) - Tổng quan ứng dụng
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Ứng dụng addressbook
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Ứng dụng Desktop GUI
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
@@ -117,19 +119,22 @@ I2P+ được cấp phép theo AGPL v.3.
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Thư viện streaming tối thiểu
 - [apps/pack200/README.md](apps/pack200/README.md) - Nén Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy scripts
-- [apps/README.md](apps/README.md) - Tổng quan ứng dụng
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router console
 - [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
 - [apps/streaming/README.md](apps/streaming/README.md) - Thư viện streaming
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS server
 - [apps/susimail/README.md](apps/susimail/README.md) - I2P email client
 - [apps/systray/README.md](apps/systray/README.md) - Ứng dụng system tray
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Thư viện BigInteger native (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Thư viện native phát hiện CPU
 - [core/README.md](core/README.md) - Tài liệu thư viện core
-- [docker/README.md](docker/README.md) - Chạy I2P+ trong Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Giấy phép third-party
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Thư viện JNI native cho mật mã học (GMP)
+
+### MISC
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Quản lý lệnh cấm session I2P với nftables
 - [installer/resources/README.md](installer/resources/README.md) - Tài nguyên installer bundled
-- [scripts/README.md](scripts/README.md) - Script tiện ích cho phát triển và quản trị
-- [scripts/tests/README.md](scripts/tests/README.md) - Script xác thực và kiểm tra
+- [tools/scripts/README.md](tools/scripts/README.md) - Script tiện ích cho phát triển và quản trị
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Script xác thực và kiểm tra
+
+### Docker
+
+- [docker/README.md](docker/README.md) - Chạy I2P+ trong Docker

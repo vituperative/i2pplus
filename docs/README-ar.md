@@ -104,10 +104,12 @@ https://geti2p.net/how
 - [docs/HACKING.md](docs/HACKING.md) - دليل المطور وأنظمة البناء
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - تخطيط شجرة المصدر وأين تجد الأشياء
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - إدارة حظر جلسات I2P باستخدام nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - تراخيص الأطراف الثالثة
 - [docs/history.txt](docs/history.txt) - سجل التغييرات الكامل
 
-### READMEs للمشاريع الفرعية
+### Sub-projects
 
+- [apps/README.md](apps/README.md) - نظرة عامة على التطبيقات
 - [apps/addressbook/README.md](apps/addressbook/README.md) - تطبيق دفتر العناوين
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - تطبيق واجهة المستخدم الرسومية للسطح المكتب
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - واجهة برمجة تطبيقات تحكم I2P
@@ -119,19 +121,22 @@ https://geti2p.net/how
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - مكتبة البث المصغرة
 - [apps/pack200/README.md](apps/pack200/README.md) - ضغط Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - نصوص الوكيل
-- [apps/README.md](apps/README.md) - نظرة عامة على التطبيقات
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - وحدة تحكم الموجه
 - [apps/sam/README.md](apps/sam/README.md) - المراسلة المجهولة البسيطة
 - [apps/streaming/README.md](apps/streaming/README.md) - مكتبة البث
 - [apps/susidns/README.md](apps/susidns/README.md) - خادم DNS
 - [apps/susimail/README.md](apps/susimail/README.md) - عميل البريد الإلكتروني I2P
 - [apps/systray/README.md](apps/systray/README.md) - تطبيق علبة النظام
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - مكتبة BigInteger الأصلية (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - مكتبة اكتشاف CPU الأصلية
 - [core/README.md](core/README.md) - توثيق المكتبة الأساسية
-- [docker/README.md](docker/README.md) - تشغيل I2P+ في Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - تراخيص الأطراف الثالثة
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - مكتبة JNI الأصلية للتشفير (GMP)
+
+### MISC
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - إدارة حظر جلسات I2P باستخدام nftables
 - [installer/resources/README.md](installer/resources/README.md) - موارد المثبت المجمعة
-- [scripts/README.md](scripts/README.md) - نصوص مساعدة للتطوير والإدارة
-- [scripts/tests/README.md](scripts/tests/README.md) - نصوص التحقق والاختبار
+- [tools/scripts/README.md](tools/scripts/README.md) - نصوص مساعدة للتطوير والإدارة
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - نصوص التحقق والاختبار
+
+### Docker
+
+- [docker/README.md](docker/README.md) - تشغيل I2P+ في Docker

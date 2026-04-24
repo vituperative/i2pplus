@@ -102,34 +102,39 @@ I2P+ ได้รับสิทธิ์อนุญาตภายใต้ AG
 - [docs/HACKING.md](docs/HACKING.md) - คู่มือนักพัฒนาและระบบ build
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - โครงสร้างต้นไม้ซอร์สโค้ดและที่ที่จะหาสิ่งต่างๆ
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - การจัดการ I2P session bans ด้วย nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - สิทธิ์อนุญาตของบุคคลที่สาม
 - [docs/history.txt](docs/history.txt) - บันทึกการเปลี่ยนแปลงฉบับเต็ม
 
-### README ของ sub-project
+### โปรเจกต์ย่อย
 
-- [apps/addressbook/README.md](apps/addressbook/README.md) - แอปพลิเคชัน addressbook
+- [apps/README.md](apps/README.md) - ภาพรวมแอปพลิเคชัน
+- [apps/addressbook/README.md](apps/addressbook/README.md) - แอปพลิเคชันสมุดที่อยู่
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - แอปพลิเคชัน Desktop GUI
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
-- [apps/i2psnark/README.md](apps/i2psnark/README.md) - I2PSnark BitTorrent client
-- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - แอปพลิเคชัน I2P Tunnel
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - คลient BitTorrent I2PSnark
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - แอปพลิเคชันอุโมงค์ I2P
 - [apps/imagegen/README.md](apps/imagegen/README.md) - เครื่องมือสร้างภาพ
 - [apps/jetty/README.md](apps/jetty/README.md) - Jetty HTTP server
 - [apps/jrobin/README.md](apps/jrobin/README.md) - คลังการตรวจสอบ JRobin
-- [apps/ministreaming/README.md](apps/ministreaming/README.md) - คลัง streaming แบบ minimal
+- [apps/ministreaming/README.md](apps/ministreaming/README.md) - คลัง streaming ขั้นต่ำ
 - [apps/pack200/README.md](apps/pack200/README.md) - การบีบอัด Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy scripts
-- [apps/README.md](apps/README.md) - ภาพรวมแอปพลิเคชัน
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router console
 - [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
 - [apps/streaming/README.md](apps/streaming/README.md) - คลัง streaming
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS server
-- [apps/susimail/README.md](apps/susimail/README.md) - I2P email client
+- [apps/susimail/README.md](apps/susimail/README.md) - คลient email I2P
 - [apps/systray/README.md](apps/systray/README.md) - แอปพลิเคชัน system tray
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - คลัง BigInteger native (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - คลัง native ตรวจจับ CPU
 - [core/README.md](core/README.md) - เอกสารคลัง core
-- [docker/README.md](docker/README.md) - รัน I2P+ ใน Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - สิทธิ์อนุญาต third-party
-- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - คลัง JNI native สำหรับ cryptography (GMP)
-- [installer/resources/README.md](installer/resources/README.md) - ทรัพยากร installer ที่รวมอยู่
-- [scripts/README.md](scripts/README.md) - scripts ยูทิลิตี้สำหรับการพัฒนาและการดูแลระบบ
-- [scripts/tests/README.md](scripts/tests/README.md) - scripts การตรวจสอบและการทดสอบ
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - คลัง JNI เนทีฟสำหรับการเข้ารหัส (GMP)
+
+### เบ็ดเตล็ด
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - การจัดการห้ามเซสชัน I2P ด้วย nftables
+- [installer/resources/README.md](installer/resources/README.md) - ทรัพยากร installer
+- [tools/scripts/README.md](tools/scripts/README.md) - สคริปต์ยูทิลิตี้สำหรับการพัฒนาและการจัดการ
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - สคริปต์ตรวจสอบและทดสอบ
+
+### Docker
+
+- [docker/README.md](docker/README.md) - รั��� I2P+ ใน Docker

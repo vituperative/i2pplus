@@ -103,34 +103,39 @@ Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/LICE
 - [docs/HACKING.md](docs/HACKING.md) - Ghid pentru dezvoltatori și sisteme de build
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Structura arborelui sursă și unde să găsiți lucrurile
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Gestionarea interdicțiilor de sesiune I2P cu nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - Licențe terțe părți
 - [docs/history.txt](docs/history.txt) - Jurnal complet de modificări
 
-### README-uri sub-proiecte
+### Sub-proiecte
 
+- [apps/README.md](apps/README.md) - Prezentare generală aplicații
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Aplicație agendă
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Aplicație GUI desktop
-- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
-- [apps/i2psnark/README.md](apps/i2psnark/README.md) - Client I2PSnark BitTorrent
-- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Aplicație I2P Tunnel
-- [apps/imagegen/README.md](apps/imagegen/README.md) - Instrumente de generare imagini
+- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - API control I2P
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - Client BitTorrent I2PSnark
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Aplicație tunnel I2P
+- [apps/imagegen/README.md](apps/imagegen/README.md) - Instrumente generare imagini
 - [apps/jetty/README.md](apps/jetty/README.md) - Server HTTP Jetty
-- [apps/jrobin/README.md](apps/jrobin/README.md) - Biblioteca de monitorizare JRobin
-- [apps/ministreaming/README.md](apps/ministreaming/README.md) - Biblioteca minimală de streaming
+- [apps/jrobin/README.md](apps/jrobin/README.md) - Librărie monitorizare JRobin
+- [apps/ministreaming/README.md](apps/ministreaming/README.md) - Librărie streaming minimă
 - [apps/pack200/README.md](apps/pack200/README.md) - Compresie Pack200
-- [apps/proxyscript/README.md](apps/proxyscript/README.md) - Script-uri proxy
-- [apps/README.md](apps/README.md) - Prezentare generală aplicații
+- [apps/proxyscript/README.md](apps/proxyscript/README.md) - Scripturi proxy
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Consolă router
-- [apps/sam/README.md](apps/sam/README.md) - Mesagerie anonimă simplă
-- [apps/streaming/README.md](apps/streaming/README.md) - Biblioteca de streaming
+- [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
+- [apps/streaming/README.md](apps/streaming/README.md) - Librărie streaming
 - [apps/susidns/README.md](apps/susidns/README.md) - Server DNS
 - [apps/susimail/README.md](apps/susimail/README.md) - Client email I2P
-- [apps/systray/README.md](apps/systray/README.md) - Aplicație system tray
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Biblioteca nativă BigInteger (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Biblioteca nativă detectare CPU
-- [core/README.md](core/README.md) - Documentație bibliotecă core
+- [apps/systray/README.md](apps/systray/README.md) - Aplicație bară de sistem
+- [core/README.md](core/README.md) - Documentație librărie core
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Librărie JNI nativă pentru criptografie (GMP)
+
+### Diverse
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Gestionare interdicții sesiuni I2P cu nftables
+- [installer/resources/README.md](installer/resources/README.md) - Resurse installer
+- [tools/scripts/README.md](tools/scripts/README.md) - Scripturi utilitare pentru dezvoltare și administrare
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Scripturi de validare și testare
+
+### Docker
+
 - [docker/README.md](docker/README.md) - Rulare I2P+ în Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Licențe terțe
-- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Biblioteca JNI nativă pentru criptografie (GMP)
-- [installer/resources/README.md](installer/resources/README.md) - Resurse installer incluse
-- [scripts/README.md](scripts/README.md) - Script-uri utilitare pentru dezvoltare și administrare
-- [scripts/tests/README.md](scripts/tests/README.md) - Script-uri de validare și testare

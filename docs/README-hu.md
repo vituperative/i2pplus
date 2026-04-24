@@ -102,10 +102,12 @@ A különböző alkomponensek licenciájáért lásd: [README.md](docs/LICENSE.m
 - [docs/HACKING.md](docs/HACKING.md) - Fejlesztői útmutató és build rendszerek
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Forrásfa elrendezés és hol mi található
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - I2P session tiltások kezelése nftables-szel
+- [docs/LICENSE.md](docs/LICENSE.md) - Harmadik fél licenciák
 - [docs/history.txt](docs/history.txt) - Teljes változtatási napló
 
-### Alprojekt README-k
+### Alprojektek
 
+- [apps/README.md](apps/README.md) - Alkalmazás áttekintés
 - [apps/addressbook/README.md](apps/addressbook/README.md) - Címjegyzék alkalmazás
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Desktop GUI alkalmazás
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
@@ -117,19 +119,22 @@ A különböző alkomponensek licenciájáért lásd: [README.md](docs/LICENSE.m
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Minimális streaming könyvtár
 - [apps/pack200/README.md](apps/pack200/README.md) - Pack200 tömörítés
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy szkriptek
-- [apps/README.md](apps/README.md) - Alkalmazás áttekintés
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router konzol
 - [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
 - [apps/streaming/README.md](apps/streaming/README.md) - Streaming könyvtár
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS szerver
 - [apps/susimail/README.md](apps/susimail/README.md) - I2P levelező kliens
 - [apps/systray/README.md](apps/systray/README.md) - Rendszer tálca alkalmazás
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Natív BigInteger könyvtár (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU detektáló natív könyvtár
 - [core/README.md](core/README.md) - Core könyvtár dokumentáció
-- [docker/README.md](docker/README.md) - I2P+ futtatása Docker-ben
-- [docs/LICENSE.md](docs/LICENSE.md) - Harmadik fél licenciák
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Natív JNI könyvtár kriptográfiához (GMP)
+
+### Egyéb
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - I2P session tiltások kezelése nftables-szel
 - [installer/resources/README.md](installer/resources/README.md) - Telepítő erőforrások
-- [scripts/README.md](scripts/README.md) - Fejlesztési és adminisztrációs segédszkriptek
-- [scripts/tests/README.md](scripts/tests/README.md) - Validációs és tesztelési szkriptek
+- [tools/scripts/README.md](tools/scripts/README.md) - Fejlesztési és adminisztrációs segédszkriptek
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validációs és tesztelési szkriptek
+
+### Docker
+
+- [docker/README.md](docker/README.md) - I2P+ futtatása Docker-ben

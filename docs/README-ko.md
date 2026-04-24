@@ -95,17 +95,17 @@ various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.
 ## 참고하세요
 
 ### 문서
-
 - [docs/README.md](docs/README.md) - 전체 문서 색인
 - [docs/INSTALL.md](docs/INSTALL.md) - 설치 가이드
 - [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - 헤드리스(콘솔 모드) 설치
 - [docs/HACKING.md](docs/HACKING.md) - 개발자 가이드 및 빌드 시스템
-- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - 소스 트리 레이아웃 및 찾을 위치
-- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - nftables로 I2P 세션 차단 관리
+- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - 소스 트리 레이아웃
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - nftables로 I2P 세션 금지 관리
+- [docs/LICENSE.md](docs/LICENSE.md) - 서드파티 라이선스
 - [docs/history.txt](docs/history.txt) - 전체 변경 로그
 
-### 하위 프로젝트 README
-
+### 하위 프로젝트
+- [apps/README.md](apps/README.md) - 애플리케이션 개요
 - [apps/addressbook/README.md](apps/addressbook/README.md) - 주소록 애플리케이션
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - 데스크톱 GUI 애플리케이션
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P 제어 API
@@ -117,19 +117,20 @@ various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - 최소 스트리밍 라이브러리
 - [apps/pack200/README.md](apps/pack200/README.md) - Pack200 압축
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - 프록시 스크립트
-- [apps/README.md](apps/README.md) - 애플리케이션 개요
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - 라우터 콘솔
-- [apps/sam/README.md](apps/sam/README.md) - 간단한 익명 메시징
+- [apps/sam/README.md](apps/sam/README.md) - 단순 익명 메시징
 - [apps/streaming/README.md](apps/streaming/README.md) - 스트리밍 라이브러리
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS 서버
 - [apps/susimail/README.md](apps/susimail/README.md) - I2P 이메일 클라이언트
 - [apps/systray/README.md](apps/systray/README.md) - 시스템 트레이 애플리케이션
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - 네이티브 BigInteger 라이브러리(GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU 감지 네이티브 라이브러리
 - [core/README.md](core/README.md) - 코어 라이브러리 문서
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - 암호화용 네이티브 JNI 라이브러리(GMP)
+
+### Misc
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - nftables로 I2P 세션 금지 관리
+- [installer/resources/README.md](installer/resources/README.md) - 번들된 인스톨러 리소스
+- [tools/scripts/README.md](tools/scripts/README.md) - 개발 및 관리용 유틸리티 스크립트
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - 검증 및 테스트 스크립트
+
+### Docker
 - [docker/README.md](docker/README.md) - Docker에서 I2P+ 실행
-- [docs/LICENSE.md](docs/LICENSE.md) - 서드파티 라이선스
-- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - 암호화를 위한 네이티브 JNI 라이브러리(GMP)
-- [installer/resources/README.md](installer/resources/README.md) - 번들 설치 프로그램 리소스
-- [scripts/README.md](scripts/README.md) - 개발 및 관리를 위한 유틸리티 스크립트
-- [scripts/tests/README.md](scripts/tests/README.md) - 검증 및 테스트 스크립트

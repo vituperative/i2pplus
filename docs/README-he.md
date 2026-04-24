@@ -103,34 +103,39 @@ I2P+ מורשית תחת AGPL v.3.
 - [docs/HACKING.md](docs/HACKING.md) - מדריך מפתחים ומערכות בנייה
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - פריסת עץ המקור והיכן למצוא דברים
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - ניהול איסורי הפעלות I2P עם nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - רישיונות צד שלישי
 - [docs/history.txt](docs/history.txt) - יומן שינויים מלא
 
-### README של פרויקטים משנה
+### פרויקטים משנה
 
-- [apps/addressbook/README.md](apps/addressbook/README.md) - יישום פנקס כתובות
-- [apps/desktopgui/README.md](apps/desktopgui/README.md) - יישום ממשק שולחן עבודה
-- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
-- [apps/i2psnark/README.md](apps/i2psnark/README.md) - לקוח I2PSnark BitTorrent
-- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - יישום I2P Tunnel
+- [apps/README.md](apps/README.md) - סקירת יישומים
+- [apps/addressbook/README.md](apps/addressbook/README.md) - יישום ספר כתובות
+- [apps/desktopgui/README.md](apps/desktopgui/README.md) - יישום ממשק משתמש
+- [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - API בקרה I2P
+- [apps/i2psnark/README.md](apps/i2psnark/README.md) - לקוח BitTorrent I2PSnark
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - יישום מנהרת I2P
 - [apps/imagegen/README.md](apps/imagegen/README.md) - כלי יצירת תמונות
 - [apps/jetty/README.md](apps/jetty/README.md) - שרת HTTP Jetty
 - [apps/jrobin/README.md](apps/jrobin/README.md) - ספריית ניטור JRobin
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - ספריית streaming מינימלית
 - [apps/pack200/README.md](apps/pack200/README.md) - דחיסת Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - סקריפטים פרוקסי
-- [apps/README.md](apps/README.md) - סקירת יישומים
-- [apps/routerconsole/README.md](apps/routerconsole/README.md) - קונסולת נתב
+- [apps/routerconsole/README.md](apps/routerconsole/README.md) - מסוף נתב
 - [apps/sam/README.md](apps/sam/README.md) - הודעות אנונימיות פשוטות
 - [apps/streaming/README.md](apps/streaming/README.md) - ספריית streaming
 - [apps/susidns/README.md](apps/susidns/README.md) - שרת DNS
 - [apps/susimail/README.md](apps/susimail/README.md) - לקוח דואר I2P
 - [apps/systray/README.md](apps/systray/README.md) - יישום מגש מערכת
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - ספריית BigInteger מקורית (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - ספריית זיהוי CPU מקורית
 - [core/README.md](core/README.md) - תיעוד ספריית הליבה
+- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - ספריית JNI מקורית להצפנה (GMP)
+
+### שונות
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - ניהול איסורי הפעלות I2P עם nftables
+- [installer/resources/README.md](installer/resources/README.md) - משאבי התקנה
+- [tools/scripts/README.md](tools/scripts/README.md) - סקריפטים לפיתוח וניהול
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - סקריפטים לאימות ובדיקה
+
+### Docker
+
 - [docker/README.md](docker/README.md) - הפעלת I2P+ ב-Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - רישיונות צד שלישי
-- [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - ספריית JNI מקורית לקריפטוגרפיה (GMP)
-- [installer/resources/README.md](installer/resources/README.md) - משאבי התקנה כוללים
-- [scripts/README.md](scripts/README.md) - סקריפטים שירותים לפיתוח וניהול
-- [scripts/tests/README.md](scripts/tests/README.md) - סקריפטים לאימות ובדיקה

@@ -100,37 +100,42 @@ Pour les licences des sous-composants, voir : [README.md](docs/LICENSE.md)
 - [docs/README.md](docs/README.md) - Index complet de la documentation
 - [docs/INSTALL.md](docs/INSTALL.md) - Guide d'installation
 - [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - Installation sans GUI (mode console)
-- [docs/HACKING.md](docs/HACKING.md) - Guide développeur et systèmes de construction
-- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Structure de l'arbre source et où trouver les choses
-- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Gestion des interdictions de sessions I2P avec nftables
+- [docs/HACKING.md](docs/HACKING.md) - Guide du développeur et systèmes de build
+- [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - Structure de l'arborescence source et où trouver les choses
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Gestion des interdictions de session I2P avec nftables
+- [docs/LICENSE.md](docs/LICENSE.md) - Licences tierces
 - [docs/history.txt](docs/history.txt) - Journal des modifications complet
 
-### READMEs des sous-projets
+### Sub-projects
 
-- [apps/addressbook/README.md](apps/addressbook/README.md) - Application Carnet d'adresses
+- [apps/README.md](apps/README.md) - Aperçu des applications
+- [apps/addressbook/README.md](apps/addressbook/README.md) - Application carnet d'adresses
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - Application GUI de bureau
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - API de contrôle I2P
 - [apps/i2psnark/README.md](apps/i2psnark/README.md) - Client BitTorrent I2PSnark
-- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Application Tunnel I2P
+- [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - Application tunnel I2P
 - [apps/imagegen/README.md](apps/imagegen/README.md) - Outils de génération d'images
 - [apps/jetty/README.md](apps/jetty/README.md) - Serveur HTTP Jetty
-- [apps/jrobin/README.md](apps/jrobin/README.md) - Bibliothèque de surveillance JRobin
+- [apps/jrobin/README.md](apps/jrobin/README.md) - Bibliothèque de supervision JRobin
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - Bibliothèque de streaming minimale
 - [apps/pack200/README.md](apps/pack200/README.md) - Compression Pack200
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Scripts proxy
-- [apps/README.md](apps/README.md) - Aperçu des applications
-- [apps/routerconsole/README.md](apps/routerconsole/README.md) - Console du routeur
-- [apps/sam/README.md](apps/sam/README.md) - Messagerie anonyme simple
+- [apps/routerconsole/README.md](apps/routerconsole/README.md) - Console routeur
+- [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
 - [apps/streaming/README.md](apps/streaming/README.md) - Bibliothèque de streaming
 - [apps/susidns/README.md](apps/susidns/README.md) - Serveur DNS
-- [apps/susimail/README.md](apps/susimail/README.md) - Client de messagerie I2P
-- [apps/systray/README.md](apps/systray/README.md) - Application de barre système
-- [core/c/jbigi/docs/README.md](core/c/jbigi/docs/README.md) - Bibliothèque BigInteger native (GMP)
-- [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Bibliothèque native de détection CPU
-- [core/README.md](core/README.md) - Documentation de la bibliothèque principale
-- [docker/README.md](docker/README.md) - Exécution d'I2P+ dans Docker
-- [docs/LICENSE.md](docs/LICENSE.md) - Licences tierces
+- [apps/susimail/README.md](apps/susimail/README.md) - Client courriel I2P
+- [apps/systray/README.md](apps/systray/README.md) - Application barre système
+- [core/README.md](core/README.md) - Documentation de la bibliothèque core
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Bibliothèque JNI native pour la cryptographie (GMP)
-- [installer/resources/README.md](installer/resources/README.md) - Ressources de l'installateur incluses
-- [scripts/README.md](scripts/README.md) - Scripts utilitaires pour le développement et l'administration
-- [scripts/tests/README.md](scripts/tests/README.md) - Scripts de validation et de test
+
+### MISC
+
+- [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - Gestion des interdictions de session I2P avec nftables
+- [installer/resources/README.md](installer/resources/README.md) - Ressources du programme d'installation groupées
+- [tools/scripts/README.md](tools/scripts/README.md) - Scripts utilitaires pour le développement et l'administration
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Scripts de validation et de test
+
+### Docker
+
+- [docker/README.md](docker/README.md) - Exécuter I2P+ dans Docker

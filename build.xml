@@ -2740,10 +2740,10 @@
   </target>
 
   <target name="izpack-patches">
-    <taskdef name="izpack" classpath="${basedir}/installer/lib/izpack/4/patches.jar:${basedir}/installer/lib/izpack/4/standalone-compiler.jar"
-      classname="com.izforge.izpack.ant.IzPackTask"/>
     <jar destfile="${basedir}/installer/lib/izpack/patches.jar"
       basedir="${basedir}/installer/lib/izpack/4/patches"/>
+    <taskdef name="izpack" classpath="${basedir}/installer/lib/izpack/4/standalone-compiler.jar:${basedir}/installer/lib/izpack/patches.jar"
+      classname="com.izforge.izpack.ant.IzPackTask"/>
   </target>
 
   <target name="buildUtilityJar" depends="buildCore">

@@ -43,6 +43,7 @@ public class RepublishLeaseSetJob extends JobImpl {
     private final Log _log;
     public final static long REPUBLISH_LEASESET_TIMEOUT = 30 * 1000;
     private final static int RETRY_DELAY = 2000;
+    private final static int RETRY_MAX_DELAY = 30 * 1000;
     private final static long REPUBLISH_INTERVAL = 8 * 60 * 1000; // 8 minutes
     private final static long REPUBLISH_INTERVAL_LOW_SUCCESS = 7 * 60 * 1000; // 7 minutes (build success < 40%)
     private final static long REPUBLISH_INTERVAL_VERY_LOW_SUCCESS = 6 * 60 * 1000; // 6 minutes (build success < 30%)
@@ -240,12 +241,9 @@ public class RepublishLeaseSetJob extends JobImpl {
         }
         getContext().statManager().addRateData("netDb.republishLeaseSetFail", 1);
 
-        long retryDelay = RETRY_DELAY;
-        boolean isHighPriority = false;
-        if (count % 4 == 0) {
-            retryDelay = Math.max(100, RETRY_DELAY / 4);
-            isHighPriority = true;
-        }
+        long retryDelay = Math.min(RETRY_DELAY * (1 << Math.min(count - 1, 4)), RETRY_MAX_DELAY);
+        // Boost to high priority on periodic attempts, but never faster than base delay
+        boolean isHighPriority = count % 4 == 0;
         RepublishLeaseSetJob retryJob = new RepublishLeaseSetJob(getContext(), _facade, _dest);
         // Try to register the job - if it fails, another job is already active
         if (!retryJob.registerSelf()) {

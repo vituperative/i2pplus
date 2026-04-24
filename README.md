@@ -131,5 +131,5 @@ For the various sub-component licenses, see: [README.md](docs/licenses/README.md
 - [docs/licenses/README.md](docs/licenses/README.md) - Third-party licenses
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
-- [scripts/README.md](scripts/README.md) - Utility scripts for development and administration
-- [scripts/tests/README.md](scripts/tests/README.md) - Validation and testing scripts
+- [tools/scripts/README.md](tools/scripts/README.md) - Utility scripts for development and administration
+- [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validation and testing scripts

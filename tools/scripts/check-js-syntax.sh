@@ -7,7 +7,7 @@
 #   check-js-syntax.sh -q                          Quiet: suppress per-file output
 #   check-js-syntax.sh -h                          Show this help
 #
-# Examples (run from scripts/ directory):
+# Examples (run from tools/scripts/ directory):
 #   ./check-js-syntax.sh -p ../apps/
 #   ./check-js-syntax.sh -p ../apps/routerconsole/jsp/js/jobs.js
 #   ./check-js-syntax.sh -q -p ../apps/

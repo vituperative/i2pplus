@@ -4,7 +4,7 @@
   <!-- Define the ant-contrib tasks -->
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
     <classpath>
-      <pathelement location="${basedir}/ant-contrib.jar"/>
+      <pathelement location="${basedir}/tools/ant-contrib.jar"/>
     </classpath>
   </taskdef>
 
@@ -181,7 +181,7 @@
     <echo message=""/>
     <echo message=" === Testing ==="/>
     <echo message="  bench                                        Build benchmarks"/>
-    <echo message="  test                                         Run JUnit tests (Core, MiniStreaming, Streaming) via scripts/run-tests.sh"/>
+    <echo message="  test                                         Run JUnit tests (Core, MiniStreaming, Streaming) via tools/scripts/run-tests.sh"/>
     <echo message="  testJbigi                                    Benchmark jbigi: native vs pure Java modPow/modPowCT/modInverse"/>
     <echo message="  testscripts                                  Run various scripts to check certificate validity, file integrity etc"/>
 
@@ -597,7 +597,7 @@
     <property name="manifest.classpath.name" value="Class-Path"/>
     <property name="full.version" value="${release.number}-${i2p.build.number}${build.extra}"/>
     <echo message="Ant: ${ant.version}"/>
-    <echo message="Ant-Contrib: ${basedir}/ant-contrib.jar"/>
+    <echo message="Ant-Contrib: ${basedir}/tools/ant-contrib.jar"/>
     <echo message="JDK: ${java.vendor} ${java.version} (${java.runtime.name} ${java.runtime.version})"/>
     <echo message="Build: I2P+ version ${full.version} (revision ${workspace.version})"/>
   </target>
@@ -3043,18 +3043,18 @@
 
   <target name="testscripts">
     <parallel>
-      <exec executable="tests/scripts/checkcerts.sh" failonerror="false"/>
-      <exec executable="tests/scripts/checkpo.sh" failonerror="false"/>
-      <exec executable="tests/scripts/checkutf8.sh" failonerror="false"/>
-      <exec executable="tests/scripts/checkxml.sh" failonerror="false"/>
-      <exec executable="tests/scripts/checkscripts.sh" failonerror="false"/>
+      <exec executable="tools/scripts/tests/checkcerts.sh" failonerror="false"/>
+      <exec executable="tools/scripts/tests/checkpo.sh" failonerror="false"/>
+      <exec executable="tools/scripts/tests/checkutf8.sh" failonerror="false"/>
+      <exec executable="tools/scripts/tests/checkxml.sh" failonerror="false"/>
+      <exec executable="tools/scripts/tests/checkscripts.sh" failonerror="false"/>
     </parallel>
     <echo message="--------------------------------------------------------------------------------"/>
     <echo message="Test scripts execution completed, review the output above for possible issues..."/>
   </target>
 
   <target name="testscripts-net">
-    <exec executable="tests/scripts/checkremotecerts.sh" failonerror="true"/>
+    <exec executable="tools/scripts/tests/checkremotecerts.sh" failonerror="true"/>
   </target>
 
   <target name="testscripts-all" depends="testscripts,testscripts-net"/>
@@ -4830,31 +4830,31 @@
   </target>
 
 <target name="testCore">
-    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+    <exec executable="tools/scripts/run-tests.sh" failonerror="true" dir="${basedir}">
       <arg value="core"/>
     </exec>
   </target>
 
   <target name="testRouter">
-    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+    <exec executable="tools/scripts/run-tests.sh" failonerror="true" dir="${basedir}">
       <arg value="router"/>
     </exec>
   </target>
 
   <target name="testMinistreaming">
-    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+    <exec executable="tools/scripts/run-tests.sh" failonerror="true" dir="${basedir}">
       <arg value="ministreaming"/>
     </exec>
   </target>
 
   <target name="testStreaming">
-    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+    <exec executable="tools/scripts/run-tests.sh" failonerror="true" dir="${basedir}">
       <arg value="streaming"/>
     </exec>
   </target>
 
   <target name="testI2PTunnel">
-    <exec executable="scripts/run-tests.sh" failonerror="true" dir="${basedir}">
+    <exec executable="tools/scripts/run-tests.sh" failonerror="true" dir="${basedir}">
       <arg value="i2ptunnel"/>
     </exec>
   </target>

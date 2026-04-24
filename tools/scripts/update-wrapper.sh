@@ -2,8 +2,8 @@
 # Update Tanuki Java Service Wrapper binaries
 # Downloads the community edition delta pack and copies files to installer/lib/wrapper/
 #
-# Usage: scripts/update-wrapper.sh --version VERSION [--dry-run]
-#        scripts/update-wrapper.sh --version VERSION --file /path/to/delta-pack.zip
+# Usage: tools/scripts/update-wrapper.sh --version VERSION [--dry-run]
+#        tools/scripts/update-wrapper.sh --version VERSION --file /path/to/delta-pack.zip
 #
 # Windows binaries (win32/, win64/, win-all/) are NOT updated by this script
 # as they require manual compilation. See installer/lib/wrapper/README.txt.

@@ -4,9 +4,9 @@
 # then runs ant with the correct classpath properties.
 #
 # Usage:
-#   scripts/run-tests.sh             Run all tests
-#   scripts/run-tests.sh core        Run core tests only
-#   scripts/run-tests.sh router      Run router tests only
+#   tools/scripts/run-tests.sh             Run all tests
+#   tools/scripts/run-tests.sh core        Run core tests only
+#   tools/scripts/run-tests.sh router      Run router tests only
 
 set -euo pipefail
 

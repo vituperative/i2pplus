@@ -1,4 +1,4 @@
-# scripts/
+# tools/scripts/
 
 Utility scripts for I2P+ development and administration.
 
@@ -23,7 +23,7 @@ Utility scripts for I2P+ development and administration.
 
   ```
   check-js-syntax.sh                  # check all .js files below CWD
-  check-js-syntax.sh -p ../apps/      # check apps/ from scripts/
+  check-js-syntax.sh -p ../apps/      # check apps/ from tools/scripts/
   check-js-syntax.sh -p ../apps/foo.js # single file
   check-js-syntax.sh -q -p ../apps/   # quiet: summary only
   ```

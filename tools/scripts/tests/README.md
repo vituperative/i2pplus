@@ -1,4 +1,4 @@
-# scripts/tests/
+# tools/scripts/tests/
 
 Validation and testing scripts for I2P+ builds.
 
@@ -8,10 +8,10 @@ Validation and testing scripts for I2P+ builds.
 | --------------------------- | -------------------------------------------------------------- |
 | `ant test`                  | Run all unit tests (Core, MiniStreaming, Streaming)            |
 | `ant testJbigi`             | Benchmark native vs pure Java BigInteger performance           |
-| `scripts/run-tests.sh`      | Wrapper for `ant test` — handles dep downloads and build order |
-| `scripts/run-tests.sh core` | Run core tests only                                            |
+| `tools/scripts/run-tests.sh`      | Wrapper for `ant test` — handles dep downloads and build order |
+| `tools/scripts/run-tests.sh core` | Run core tests only                                            |
 
-`ant test` auto-downloads test dependencies (JUnit, Hamcrest, Mockito, Scala) to `tools/test/` on first run via `scripts/ensure-testdeps.sh`. Requires JDK 17+.
+`ant test` auto-downloads test dependencies (JUnit, Hamcrest, Mockito, Scala) to `tools/test/` on first run via `tools/scripts/ensure-testdeps.sh`. Requires JDK 17+.
 
 An HTML report is generated at `dist/test-report.html` after each run. Report includes per-module pass/fail counts, timing, and failure traces.
 

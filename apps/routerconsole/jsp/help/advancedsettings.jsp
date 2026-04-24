@@ -256,9 +256,9 @@
 <tr><td><%=intl._t("The minimum number of tunnels to keep in each pool when removing slow tunnels (minimum 2), overriding the configured tunnel quantity. Set to 0 to use the configured quantity per pool. [Default is 0]")%></td></tr>
 
 <tr class=config><th>router.tunnel.slowTunnelInterval={n} <span class=plus>I2P+</span></th></tr>
-<tr><td><%=intl._t("The interval in milliseconds between runs of the Remove Slow Tunnels job. Higher values reduce tunnel churn but may keep slow tunnels longer. [Default is 180000, or 300000 if under load]")%></td></tr>
+<tr><td><%=intl._t("The interval in milliseconds between runs of the Remove Slow Tunnels job. Higher values reduce tunnel churn but may keep slow tunnels longer. [Default is 90000 (90s), or 120000 (120s) if under load]")%></td></tr>
 
-<tr class=config><th>router.pruneEarlyExpiryDelay={n} <span class=plus>I2P+</span></th></tr>
+<tr class=config><th>router.tunnel.pruneEarlyExpiryDelay={n} <span class=plus>I2P+</span></th></tr>
 <tr><td><%=intl._t("The time in milliseconds before expiration to mark tunnels for early expiry when pruning slow or excess tunnels. Higher values allow more time for new tunnels to build. [Default is 30000]")%></td></tr>
 
 <tr class=config><th>router.idleTunnelDetectionPeriod={n} <span class=plus>I2P+</span></th></tr>

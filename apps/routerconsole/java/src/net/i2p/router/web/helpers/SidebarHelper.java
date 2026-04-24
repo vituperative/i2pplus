@@ -367,21 +367,39 @@ public class SidebarHelper extends HelperBase {
     /** @since 0.9.32 */
     public String getMemoryBar() {
         long tot = SystemVersion.getMaxMemory();
-        // This reads much higher than the graph, possibly because it's right in
-        // the middle of a console refresh... so get it from the Rate instead.
-        long used = (long) _context.statManager().getRate("router.memoryUsed").getRate(RateConstants.ONE_MINUTE).getAvgOrLifetimeAvg();
+        // Give 30s for stats to warm up - show 0% initially
+        long uptime = _context.router().getUptime();
         long usedPc;
-        if (used <= 0) {
-            long free = Runtime.getRuntime().freeMemory();
-            usedPc = 100 - ((free * 100) / tot);
-            used = (tot - free) / (1024*1024);
-        } else {
-            usedPc = used * 100 / tot;
-            used /= 1024*1024;
+        long used;
+        long totalMem = Runtime.getRuntime().totalMemory();
+        long freeMem = Runtime.getRuntime().freeMemory();
+        long realtime = totalMem - freeMem;
+        RateStat rs = _context.statManager().getRate("router.memoryUsed");
+        long avg = 0;
+
+        if (rs != null) {
+            Rate r = rs.getRate(RateConstants.ONE_MINUTE);
+            if (r != null) {avg = (long) r.getAvgOrLifetimeAvg();}
         }
+
+        // Weighted: 70% realtime + 30% average
+        long blended = (realtime * 70 + avg * 30) / 100;
+        if (uptime > 15*1000) {
+            if (blended <= 0) {
+                usedPc = (realtime * 100) / tot;
+                used = realtime / (1024*1024);
+            } else {
+                usedPc = (blended * 100) / tot;
+                used = blended / (1024*1024);
+            }
+        } else {
+            usedPc = 0;
+            used = 0;
+        }
+
+        if (usedPc > 100) {usedPc = 100;}
         long total = tot / (1024*1024);
         if (used > total) {used = total;}
-        if (usedPc > 100) {usedPc = 100;}
         String bar = "<div class=\"percentBarOuter volatile\" id=sb_memoryBar><div class=percentBarText>RAM: " +
                       INTEGER_FORMAT.format(used) + " / " + total + " M</div><div class=percentBarInner style=width:" +
                       INTEGER_FORMAT.format(usedPc) + "%></div></div>";

@@ -349,14 +349,7 @@ class BanlistRenderer {
                 buf.append(" class=\"banFF\"");
             }
             buf.append(">");
-            String reason = _t(entry.cause, entry.causeCode)
-                .trim()
-                .replace("<b>➜</b> ", "")
-                .replace("<b> -> </b>", "")
-                .replace(" -> ", "")
-                .replace(" ➜ ", " ")
-                .replace("➜", "")
-                .replaceAll("^\\s*[<-]?\\s*", "");
+            String reason = _t(entry.cause, entry.causeCode).trim();
             // Get IP from hash if not in reason
             String ip = null;
             String port = null;

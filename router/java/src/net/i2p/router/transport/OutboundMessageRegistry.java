@@ -176,8 +176,8 @@ public class OutboundMessageRegistry {
         msg.setReplySelector(replySelector);
         registerPending(msg, true);
         if (_log.shouldDebug())
-            _log.debug("Registered: " + replySelector + " with reply job " + onReply +
-                       " and timeout job " + onTimeout);
+            _log.debug("Registered: " + replySelector + "\n* Reply: " + onReply +
+                       ", timeout " + onTimeout);
         return msg;
     }
 

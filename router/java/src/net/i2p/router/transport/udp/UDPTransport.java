@@ -1973,11 +1973,11 @@ public class UDPTransport extends TransportImpl {
                         if (id == -1) {
                             String ipPort = peer != null ? Addresses.toString(peer.getRemoteIP(), peer.getRemotePort()) : "UNKNOWN";
                             _banLogger.logBan(peerHash, ipPort, "No network specified", Banlist.BANLIST_DURATION_NO_NETWORK);
-                            _context.banlist().banlistRouter(peerHash, " <b>➜</b> No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
+                            _context.banlist().banlistRouter(peerHash, "No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
                         } else {
                             String ipPort = peer != null ? Addresses.toString(peer.getRemoteIP(), peer.getRemotePort()) : "UNKNOWN";
                             _banLogger.logBanForever(peerHash, ipPort, "Not in our network: " + id);
-                            _context.banlist().banlistRouterForever(peerHash, " <b>➜</b> Not in our network: " + id);
+                            _context.banlist().banlistRouterForever(peerHash, "Not in our network: " + id);
                         }
                         if (peer != null)
                             sendDestroy(peer, SSU2Util.REASON_NETID);
@@ -2312,10 +2312,10 @@ public class UDPTransport extends TransportImpl {
             if (nid != _networkID) {
                 if (nid == -1) {
                     _banLogger.logBan(to, _context, "No network specified", Banlist.BANLIST_DURATION_NO_NETWORK);
-                    _context.banlist().banlistRouter(to, " <b>➜</b> No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
+                    _context.banlist().banlistRouter(to, "No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
                 } else {
                     _banLogger.logBanForever(to, _context, "Not in our network: " + nid);
-                    _context.banlist().banlistRouterForever(to, " <b>➜</b> Not in our network: " + nid);
+                    _context.banlist().banlistRouterForever(to, "Not in our network: " + nid);
                 }
                 markUnreachable(to);
                 return null;

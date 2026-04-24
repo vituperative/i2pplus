@@ -332,11 +332,11 @@ class EstablishmentManager {
         if (id != _networkID) {
             if (id == -1) {
                 _banLogger.logBan(toHash, ipPort, "No network specified", Banlist.BANLIST_DURATION_NO_NETWORK);
-                _context.banlist().banlistRouter(toHash, " <b>➜</b> No network specified", null, null,
+                _context.banlist().banlistRouter(toHash, "No network specified", null, null,
                                                  _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
             } else {
                 _banLogger.logBanForever(toHash, ipPort, "Not in our network: " + id);
-                _context.banlist().banlistRouterForever(toHash, " <b>➜</b> Not in our network: " + id);
+                _context.banlist().banlistRouterForever(toHash, "Not in our network: " + id);
             }
             if (_log.shouldWarn()) {_log.warn("Not in our network: " + toRouterInfo, new Exception());}
             _transport.markUnreachable(toHash);
@@ -358,11 +358,11 @@ class EstablishmentManager {
                  _transport.failed(msg, "Peer's IP address isn't valid");
                 _transport.markUnreachable(toHash);
                 _context.statManager().addRateData("udp.establishBadIP", 1);
-                //_context.banlist().banlistRouter(toHash, " <b>➜</b> Invalid SSU address", UDPTransport.STYLE);
+                //_context.banlist().banlistRouter(toHash, "Invalid SSU address", UDPTransport.STYLE);
                  if (toHash != null) {
                       if (!isBanned) {
                         _banLogger.logBan(toHash, ipAddress + ":" + port, "Invalid SSU address", 4*60*60*1000);
-                        _context.banlist().banlistRouter(toHash, " <b>➜</b> Invalid SSU address", null, null, now + 4*60*60*1000);
+                        _context.banlist().banlistRouter(toHash, "Invalid SSU address", null, null, now + 4*60*60*1000);
                         if (_log.shouldWarn()) {
                           _log.warn("[SSU] Banning [" + truncHash + "] for 4h -> Invalid SSU address");
                        }
@@ -484,7 +484,7 @@ class EstablishmentManager {
                         if (toHash != null) {
                             if (!isBanned) {
                                 _banLogger.logBan(toHash, ipAddress + ":" + maybePort, "Invalid MTU", 4*60*60*1000);
-                                _context.banlist().banlistRouter(toHash, " <b>➜</b> Invalid MTU", null, null, now + 4*60*60*1000);
+                                _context.banlist().banlistRouter(toHash, "Invalid MTU", null, null, now + 4*60*60*1000);
                                 if (_log.shouldWarn()) {
                                     _log.warn("[SSU] Banning [" + truncHash + "] for 4h -> Invalid MTU");
                                 }
@@ -509,7 +509,7 @@ class EstablishmentManager {
                     if (toHash != null) {
                         if (!isBanned) {
                             _banLogger.logBan(toHash, ipAddress + ":" + maybePort, "No Introduction key", 60*60*1000);
-                            _context.banlist().banlistRouter(toHash, " <b>➜</b> No Introduction key", null, null, now + 60*60*1000);
+                            _context.banlist().banlistRouter(toHash, "No Introduction key", null, null, now + 60*60*1000);
                             if (_log.shouldWarn()) {
                                 _log.warn("[SSU] Banning [" + truncHash + "] for 1h -> No Introduction key");
                             }
@@ -530,7 +530,7 @@ class EstablishmentManager {
                     if (toHash != null) {
                         if (!isBanned) {
                             _banLogger.logBan(toHash, ipAddress + ":" + maybePort, "Bad Introduction key", 4*60*60*1000);
-                            _context.banlist().banlistRouter(toHash, " <b>➜</b> Bad Introduction key", null, null, now + 4*60*60*1000);
+                            _context.banlist().banlistRouter(toHash, "Bad Introduction key", null, null, now + 4*60*60*1000);
                             if (_log.shouldWarn()) {
                                 _log.warn("[SSU] Banning [" + truncHash + "] for 4h -> Bad Introduction key");
                             }
@@ -703,7 +703,7 @@ class EstablishmentManager {
             if (fromHash != null) {
                 if (!isBanned) {
                    _banLogger.logBan(fromHash, from.toString(), "Invalid address/port in Session Request", 15*60*1000);
-                   _context.banlist().banlistRouter(fromHash, " <b>➜</b> Invalid address/port in Session Request", null, null, now + 15*60*1000);
+                   _context.banlist().banlistRouter(fromHash, "Invalid address/port in Session Request", null, null, now + 15*60*1000);
                    if (_log.shouldWarn()) {
                       _log.warn("[SSU] Banning [" + truncHash + "] for 15m -> Invalid address/port in Session Request" + " (" + from + ")");
                    }
@@ -1684,7 +1684,7 @@ class EstablishmentManager {
                 charlie2.setIntroState(bobHash, istate);
                 _context.statManager().addRateData("udp.relayBadIP", 1);
                 _banLogger.logBan(charlieHash, Addresses.toString(ip, port), "Bad Introduction data", 60*60*1000);
-                _context.banlist().banlistRouter(charlieHash, " <b>➜</b> Bad Introduction data", null, null, _context.clock().now() + 60*60*1000);
+                _context.banlist().banlistRouter(charlieHash, "Bad Introduction data", null, null, _context.clock().now() + 60*60*1000);
                 charlie.fail();
                 return;
             }
@@ -1730,7 +1730,7 @@ class EstablishmentManager {
             charlie2.setIntroState(bobHash, istate);
             if (code == RELAY_REJECT_CHARLIE_BANNED) {
                 _banLogger.logBan(charlieHash, _context, "They banned us", 60*60*1000);
-                _context.banlist().banlistRouter(charlieHash, " <b>➜</b> They banned us", null, null, _context.clock().now() + 60*60*1000);
+                _context.banlist().banlistRouter(charlieHash, "They banned us", null, null, _context.clock().now() + 60*60*1000);
             }
             charlie.fail();
             _liveIntroductions.remove(lnonce);
@@ -1889,7 +1889,7 @@ class EstablishmentManager {
                 _context.statManager().addRateData("udp.relayBadIP", 1);
                 _banLogger.logBan(state.getRemoteIdentity().getHash(), _context, "Bad Introduction data", 4*60*60*1000);
                 _context.banlist().banlistRouter(state.getRemoteIdentity().getHash(),
-                                                 " <b>➜</b> Bad Introduction data", null, null,
+                                                 "Bad Introduction data", null, null,
                                                  _context.clock().now() + 4*60*60*1000);
                 state.fail();
                 return;
@@ -1907,7 +1907,7 @@ class EstablishmentManager {
                 _context.statManager().addRateData("udp.relayBadIP", 1);
                 _banLogger.logBan(state.getRemoteIdentity().getHash(), _context, "Bad Introduction data", 4*60*60*1000);
                 _context.banlist().banlistRouter(state.getRemoteIdentity().getHash(),
-                                                 " <b>➜</b> Bad Introduction data", null, null,
+                                                 "Bad Introduction data", null, null,
                                                  _context.clock().now() + 4*60*60*1000);
                 state.fail();
                 return;
@@ -1922,7 +1922,7 @@ class EstablishmentManager {
                 if (!TransportUtil.isValidPort(fromPort)) {
                     _context.statManager().addRateData("udp.relayBadIP", 1);
                     _banLogger.logBan(state.getRemoteIdentity().getHash(), _context, "Bad Introduction data", 6*60*60*1000);
-                    _context.banlist().banlistRouter(state.getRemoteIdentity().getHash(), " <b>➜</b> Bad Introduction data", null, null,
+                    _context.banlist().banlistRouter(state.getRemoteIdentity().getHash(), "Bad Introduction data", null, null,
                                                      _context.clock().now() + 6*60*60*1000);
                     state.fail();
                     return;

@@ -412,7 +412,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
             }
             // These really hammer the floodfills, so reduce the time on floodfills
             long banDuration = _context.netDb().floodfillEnabled() ? 36*60*60*1000 : 4*24*60*60*1000;
-            _context.banlist().banlistRouter(h, " <b>➜</b> Invalid publication date",
+            _context.banlist().banlistRouter(h, "Invalid publication date",
                                              null, null, _context.clock().now() + banDuration);
             _banLogger.logBan(h, ipPort, "Invalid publication date", banDuration);
             if (_log.shouldWarn() && !isBanned) {
@@ -423,7 +423,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
         }
 
         if (mismatchMessage != null) {
-            _context.banlist().banlistRouter(h, " <b>➜</b> Invalid SSU address",
+            _context.banlist().banlistRouter(h, "Invalid SSU address",
                                              null, null, _context.clock().now() + 4 * 60 * 60 * 1000);
             _banLogger.logBan(h, ipPort, "Invalid SSU address", 4 * 60 * 60 * 1000);
             _context.commSystem().forceDisconnect(h, "Invalid SSU address");
@@ -450,7 +450,7 @@ class InboundEstablishState2 extends InboundEstablishState implements SSU2Payloa
         boolean isOld = VersionComparator.comp(version, "0.9.66") < 0;
 
         if (!reachable && isSlow && isOld) {
-            _context.banlist().banlistRouter(h, " <b>➜</b> Old and slow (" + version + " / " + bw + "U)",
+            _context.banlist().banlistRouter(h, "Old and slow (" + version + " / " + bw + "U)",
                                              null, null, _context.clock().now() + 60 * 60 * 1000);
             _banLogger.logBan(h, ipPort, "Old and slow (" + version + " / " + bw + "U)", 60 * 60 * 1000);
             if (ri.verifySignature()) {

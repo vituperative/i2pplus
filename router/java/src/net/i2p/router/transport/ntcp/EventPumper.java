@@ -116,6 +116,8 @@ class EventPumper implements Runnable {
     private static final long FAILSAFE_ITERATION_FREQ = 2 * 1000L;
     private static final int FAILSAFE_LOOP_COUNT = isSlow ? 512 : 2048;
     private static final long SELECTOR_LOOP_DELAY = isSlow ? 100 : 5;
+    private static final long SELECTOR_MAX_DELAY = 200;  // Max delay when under load
+    private long _currentDelay = SELECTOR_LOOP_DELAY;
     private static final long BLOCKED_IP_FREQ = 43 * 60 * 1000;
     /** tunnel test now disabled, but this should be long enough to allow an active tunnel to get started */
     private static final long MIN_EXPIRE_IDLE_TIME = 120 * 1000L;
@@ -249,7 +251,7 @@ class EventPumper implements Runnable {
                 loopCountSinceLastRate++;
                 int selectedCount;
                 try {
-                    selectedCount = _selector.select(SELECTOR_LOOP_DELAY);
+                    selectedCount = _selector.select(_currentDelay);
                 } catch (ClosedSelectorException cse) {
                     continue;
                 } catch (IOException | CancelledKeyException e) {
@@ -277,6 +279,12 @@ class EventPumper implements Runnable {
                     if (elapsedSeconds <= 0) elapsedSeconds = 1;
                     int loopsPerSecond = loopCountSinceLastRate / elapsedSeconds;
                     _context.statManager().addRateData("ntcp.pumperLoopsPerSecond", loopsPerSecond);
+                    // Scale delay based on loop rate - increase delay if >1K/s to reduce CPU
+                    if (loopsPerSecond > 1000 && _currentDelay < SELECTOR_MAX_DELAY) {
+                        _currentDelay = Math.min(_currentDelay + 5, SELECTOR_MAX_DELAY);
+                    } else if (loopsPerSecond < 500 && _currentDelay > SELECTOR_LOOP_DELAY) {
+                        _currentDelay = Math.max(_currentDelay - 5, SELECTOR_LOOP_DELAY);
+                    }
                     loopCountSinceLastRate = 0;
                     lastLoopRateUpdate = now;
                 }
@@ -1043,6 +1051,24 @@ class EventPumper implements Runnable {
             BanLogger bl = BanLogger.getInstance();
             if (bl != null) {
                 bl.logBan(hash, ba, "Handshake timeout", 60 * 60 * 1000);
+            }
+        }
+    }
+
+    /**
+     * Track failed inbound handshake with "Invalid encryption" and ban if too many failures.
+     * Ban reason: "Invalid encryption"
+     * @param ip byte array IP address
+     * @param hash optional router hash if available
+     */
+    public void trackInvalidEncryption(byte[] ip, Hash hash) {
+        if (ip == null) return;
+        String ba = Addresses.toString(ip);
+        int count = _failedInboundHandshake.increment(ba);
+        if (count == 4) {
+            BanLogger bl = BanLogger.getInstance();
+            if (bl != null) {
+                bl.logBan(hash, ba, "Invalid encryption", 60 * 60 * 1000);
             }
         }
     }

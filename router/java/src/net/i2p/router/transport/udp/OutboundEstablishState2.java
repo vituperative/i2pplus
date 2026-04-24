@@ -386,7 +386,7 @@ class OutboundEstablishState2 extends OutboundEstablishState implements SSU2Payl
                 // no datetime block
             } else if (sendOn < BuildTime.getEarliestTime() || sendOn > BuildTime.getLatestTime()) {
                 // his problem
-                _context.banlist().banlistRouter(skewString, bob, " <b>➜</b> " + _x("Excessive clock skew ({0})"));
+                _context.banlist().banlistRouter(skewString, bob, "" + _x("Excessive clock skew ({0})"));
                 _banLogger.logBan(bob, ipPort, "Excessive clock skew: " + skewString, 0);
             } else {
                 if (!_context.clock().getUpdatedSuccessfully()) {
@@ -404,7 +404,7 @@ class OutboundEstablishState2 extends OutboundEstablishState implements SSU2Payl
                         _banLogger.logBan(bob, ipPort, "Excessive clock skew: " + skewString, 5*60*1000);
                     }
                 } else {
-                    _context.banlist().banlistRouter(skewString, bob, " <b>➜</b> " + _x("Excessive clock skew ({0})"));
+                    _context.banlist().banlistRouter(skewString, bob, "" + _x("Excessive clock skew ({0})"));
                     _banLogger.logBan(bob, ipPort, "Excessive clock skew: " + skewString, 0);
                 }
             }

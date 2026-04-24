@@ -178,7 +178,7 @@ class MessageReceiver {
                     _transport.dropPeer(ps, true, "Corrupt DSM");
                     _banLogger.logBanForever(state.getFrom(), _context, "Sent corrupt message");
                     _context.banlist().banlistRouterForever(state.getFrom(),
-                        " <b>➜</b> " + "Sent corrupt message");  // don't bother translate
+                        "" + "Sent corrupt message");  // don't bother translate
                 }
             }
             _context.messageHistory().droppedInboundMessage(state.getMessageId(), state.getFrom(),

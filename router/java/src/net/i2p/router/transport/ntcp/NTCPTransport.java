@@ -473,7 +473,7 @@ public class NTCPTransport extends TransportImpl {
             _log.warn("[NTCP] Router [" + shortId + "] has no valid NTCP address, banning for 8h");
         }
         _banLogger.logBan(ih, ipPort, "Invalid NTCP address", 8*60*60*1000);
-        _context.banlist().banlistRouter(ih, " <b>➜</b> Invalid NTCP address", null, null, now + 8*60*60*1000);
+        _context.banlist().banlistRouter(ih, "Invalid NTCP address", null, null, now + 8*60*60*1000);
     }
 
     /**
@@ -615,10 +615,10 @@ public class NTCPTransport extends TransportImpl {
             String ipPort = getIPPortFromRouterInfo(toAddress);
             if (nid == -1) {
                 _banLogger.logBan(peer, ipPort, "No network specified", Banlist.BANLIST_DURATION_NO_NETWORK);
-                _context.banlist().banlistRouter(peer, " <b>➜</b> No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
+                _context.banlist().banlistRouter(peer, "No network specified", null, null, _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
             } else {
                 _banLogger.logBanForever(peer, ipPort, "Invalid NetworkId (" + nid + ")");
-                _context.banlist().banlistRouterForever(peer, " <b>➜</b> Invalid NetworkId (" + nid + ")");
+                _context.banlist().banlistRouterForever(peer, "Invalid NetworkId (" + nid + ")");
             }
             if (_log.shouldWarn())
                 _log.warn("[NTCP] Not in our network: " + toAddress, new Exception());
@@ -692,7 +692,7 @@ public class NTCPTransport extends TransportImpl {
             byte[] ip = addr.getIP();
             if (!TransportUtil.isValidPort(addr.getPort()) || ip == null) {
                 //_context.statManager().addRateData("ntcp.connectFailedInvalidPort", 1);
-                //_context.banlist().banlistRouter(toAddress.getIdentity().calculateHash(), " <b>➜</b> Invalid NTCP address", STYLE);
+                //_context.banlist().banlistRouter(toAddress.getIdentity().calculateHash(), "Invalid NTCP address", STYLE);
                 //if (_log.shouldDebug())
                 //    _log.debug("no bid when trying to send to " + peer + " as they don't have a valid ntcp address");
                 continue;

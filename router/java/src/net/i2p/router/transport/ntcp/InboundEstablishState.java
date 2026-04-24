@@ -422,7 +422,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             String ipPort = ip != null ? formatIPPort(ip, port) : "UNKNOWN";
             _banLogger.logBan(aliceHash, ipPort, "Excessive clock skew: " + DataHelper.formatDuration(diff), 0);
             _context.banlist().banlistRouter(DataHelper.formatDuration(diff), aliceHash,
-                                             " <b>➜</b> " + _x("Excessive clock skew ({0})"));
+                                             "" + _x("Excessive clock skew ({0})"));
             _transport.setLastBadSkew(_peerSkew);
             if (_log.shouldWarn()) {
                 _log.warn("Excessive clock skew (" + diff + "ms) from [" + aliceHash.toBase64().substring(0,6) + "]");
@@ -557,6 +557,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
                            ip = "unknown";
                        }
                        _log.warn("[NTCP] BAD NTCP2 handshake #1 from " + ip + ", all bytes received but handshake failed -> Invalid encryption");
+                       _transport.getPumper().trackInvalidEncryption(_con.getRemoteIP(), null);
                       fail("\n* BAD Establishment handshake message #1: X = " + Base64.encode(_X, 0, KEY_SIZE) + " remaining = " + src.remaining(), gse);
                   }
                 _transport.getPumper().blockIP(_con.getRemoteIP());
@@ -973,7 +974,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             int port = _con.getRemotePort();
             String ipPort = ip != null ? formatIPPort(ip, port) : "UNKNOWN";
             _banLogger.logBan(h, ipPort, "Invalid NTCP address", 4*60*60*1000);
-            _context.banlist().banlistRouter(h, " <b>➜</b> Invalid NTCP address",
+            _context.banlist().banlistRouter(h, "Invalid NTCP address",
                                              null, null, _context.clock().now() + 4*60*60*1000);
             _context.commSystem().forceDisconnect(h, "Invalid NTCP address");
             if (_log.shouldWarn() && !isBanned) {
@@ -998,7 +999,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         String reason = "";
 
         if (isInvalidVersion) {
-            reason = " <b>➜</b> Invalid Router version (" + version + " / " + bw +
+            reason = "Invalid Router version (" + version + " / " + bw +
                       (unreachable ? "U" : reachable ? "R" : "") + ")";
             _banLogger.logBan(h, ipPort, reason, now + 24*60*60*1000);
             _context.banlist().banlistRouter(h, reason, null, null, now + 24*60*60*1000);
@@ -1011,7 +1012,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         }
 
         if (!reachable && isSlow && isOld) {
-            reason = " <b>➜</b> Old and slow (" + version + " / " + bw + "U)";
+            reason = "Old and slow (" + version + " / " + bw + "U)";
             _banLogger.logBan(h, ipPort, reason, now + 60*60*1000);
             _context.banlist().banlistRouter(h, reason, null, null, now + 60*60*1000);
             _msg3p2FailReason = NTCPConnection.REASON_BANNED;
@@ -1023,7 +1024,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
         }
 
         if (reachable && unreachable) {
-            reason = " <b>➜</b> Invalid published capabilities (RU)";
+            reason = "Invalid published capabilities (RU)";
             _banLogger.logBan(h, ipPort, reason, now + 24*60*60*1000);
             _context.banlist().banlistRouter(h, reason, null, null, now + 24*60*60*1000);
             _msg3p2FailReason = NTCPConnection.REASON_BANNED;

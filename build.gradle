@@ -4,7 +4,7 @@ apply plugin: 'java-library'
 String getReleaseVersion() {
     def releaseVersion
     file("core/java/src/net/i2p/CoreVersion.java").readLines().findAll({ line ->
-        line.contains("public final static String VERSION")
+        line.contains("static final String VERSION") || line.contains("final static String VERSION")
     }).first().eachMatch('.*"([^"]+)";', {
         releaseVersion = it[1]
     })
@@ -97,4 +97,4 @@ task codeCoverageReport(type: JacocoReport) {
     }
 }
 
-apply from: file('gradle/update.gradle')
+apply from: file('tools/gradle/update.gradle')

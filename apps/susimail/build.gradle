@@ -25,7 +25,7 @@ task bundle {
             println "apps/susimail/bundle-messages.sh".execute().text
     }
 }
-war.dependsOn bundle
+war.dependsOn bundle, ':apps:i2ptunnel:i2ptunnelJar'
 
 war {
     from 'src'

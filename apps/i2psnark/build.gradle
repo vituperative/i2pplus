@@ -46,7 +46,7 @@ task bundle {
             println "apps/i2psnark/java/bundle-messages.sh".execute().text
     }
 }
-war.dependsOn bundle
+war.dependsOn bundle, ':apps:i2ptunnel:i2ptunnelJar'
 
 war {
     rootSpec.exclude('/org/klomp/snark/*.class')

@@ -1605,7 +1605,7 @@
       <delete file="mavencentral-servlet-i2p.jar" quiet="true"/>
       <!-- Gradle cleanup -->
       <delete dir=".gradle" quiet="true"/>
-      <delete dir="gradle/wrapper/.gradle" quiet="true"/>
+      <delete dir="tools/gradle/wrapper/.gradle" quiet="true"/>
       <!-- Clean Gradle build directories from subprojects -->
       <delete includeEmptyDirs="true" quiet="true">
         <fileset dir="." includes="**/build" excludes="build/README.md"/>
@@ -1768,7 +1768,7 @@
       <delete dir="com" quiet="true"/>
       <!-- Comprehensive Gradle cleanup for distclean -->
       <delete dir=".gradle" quiet="true"/>
-      <delete dir="gradle/wrapper/.gradle" quiet="true"/>
+      <delete dir="tools/gradle/wrapper/.gradle" quiet="true"/>
       <delete includeEmptyDirs="true" quiet="true">
         <fileset dir="." includes="**/build" excludes="build/README.md"/>
         <fileset dir="apps" includes="**/build"/>

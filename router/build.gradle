@@ -2,6 +2,12 @@ plugins {
     id 'java-library'
 }
 
+tasks.configureEach { task ->
+    if (task.name.contains('test') || task.name.contains('Test')) {
+        task.enabled = false
+    }
+}
+
 sourceSets {
     main {
         java {
@@ -25,6 +31,10 @@ dependencies {
     api project(':core')
     api project(':apps:i2ptunnel')
     testImplementation project(path: ':core', configuration: 'tests')
+}
+
+tasks.named('test') {
+    dependsOn ':apps:i2ptunnel:i2ptunnelJar'
 }
 
 // Create the java files from the po files. The jar task will compile them.

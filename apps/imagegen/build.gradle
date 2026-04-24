@@ -2,6 +2,8 @@ plugins {
     id 'war'
 }
 
+war.dependsOn ':apps:i2ptunnel:i2ptunnelJar'
+
 sourceSets {
     main {
         java {

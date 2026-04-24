@@ -206,3 +206,9 @@ tools/jsdoc/docdash-template/node_modules/
 
 # JVM crash logs
 hs_err_*.log
+
+# Log files
+*.log
+
+# Session bans
+router/sessionbans/

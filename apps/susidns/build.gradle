@@ -57,7 +57,7 @@ task precompileJsp(type: JavaExec) {
         file("$buildDir/tmp_jsp").mkdirs()
     }
 
-    dependsOn copyJsps
+    dependsOn copyJsps, ':apps:i2ptunnel:i2ptunnelJar'
 
     classpath = java.sourceSets.main.runtimeClasspath + fileTree("src/lib")
     mainClass.set('net.i2p.servlet.util.JspC')

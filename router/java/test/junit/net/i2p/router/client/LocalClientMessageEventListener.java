@@ -103,7 +103,7 @@ class LocalClientMessageEventListener extends ClientMessageEventListener {
         Destination d = null;
         if (h != null) d = ((LocalClientConnectionRunner) _runner).localLookup(h);
         HostReplyMessage msg;
-        if (d != null) msg = new HostReplyMessage(sessID, d, reqID);
+        if (d != null) msg = new HostReplyMessage(sessID, d, reqID, null);
         else msg = new HostReplyMessage(sessID, HostReplyMessage.RESULT_FAILURE, reqID);
         try {
             _runner.doSend(msg);

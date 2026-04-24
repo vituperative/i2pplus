@@ -90,7 +90,7 @@ Bug reports: https://github.com/I2PPlus/i2pplus/issues
 
 I2P+ is licensed under the AGPL v.3.
 
-For the various sub-component licenses, see: [README.md](docs/licenses/README.md)
+For the various sub-component licenses, see: [README.md](docs/LICENSE.md)
 
 ## See also
 
@@ -128,7 +128,7 @@ For the various sub-component licenses, see: [README.md](docs/licenses/README.md
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU detection native library
 - [core/README.md](core/README.md) - Core library documentation
 - [docker/README.md](docker/README.md) - Running I2P+ in Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Third-party licenses
+- [docs/LICENSE.md](docs/LICENSE.md) - Third-party licenses
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
 - [tools/scripts/README.md](tools/scripts/README.md) - Utility scripts for development and administration

@@ -91,7 +91,7 @@ Bug-rapporten: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues of https://github
 
 I2P+ is gelicentieerd onder AGPL v.3.
 
-Voor de verschillende sub-component licenties, zie: [README.md](docs/licenses/README.md)
+Voor de verschillende sub-component licenties, zie: [README.md](docs/LICENSE.md)
 
 ## Zie ook
 
@@ -129,7 +129,7 @@ Voor de verschillende sub-component licenties, zie: [README.md](docs/licenses/RE
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU-detectie native bibliotheek
 - [core/README.md](core/README.md) - Core-bibliotheek-documentatie
 - [docker/README.md](docker/README.md) - I2P+ uitvoeren in Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Licenties van derden
+- [docs/LICENSE.md](docs/LICENSE.md) - Licenties van derden
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI-bibliotheek voor cryptografie (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Gebundelde installer-resources
 - [scripts/README.md](scripts/README.md) - Nutsscripts voor ontwikkeling en beheer

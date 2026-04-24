@@ -91,7 +91,7 @@ Rapoarte de erori: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues sau https://g
 
 I2P+ este licențiat sub AGPL v.3.
 
-Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/licenses/README.md)
+Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/LICENSE.md)
 
 ## Vezi și
 
@@ -129,7 +129,7 @@ Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/lice
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Biblioteca nativă detectare CPU
 - [core/README.md](core/README.md) - Documentație bibliotecă core
 - [docker/README.md](docker/README.md) - Rulare I2P+ în Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Licențe terțe
+- [docs/LICENSE.md](docs/LICENSE.md) - Licențe terțe
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Biblioteca JNI nativă pentru criptografie (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Resurse installer incluse
 - [scripts/README.md](scripts/README.md) - Script-uri utilitare pentru dezvoltare și administrare

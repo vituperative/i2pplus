@@ -91,7 +91,7 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ ліцензується за AGPL v.3.
 
-Для ліцензій різних підкомпонентів див.: [README.md](docs/licenses/README.md)
+Для ліцензій різних підкомпонентів див.: [README.md](docs/LICENSE.md)
 
 ## Див. також
 
@@ -129,7 +129,7 @@ I2P+ ліцензується за AGPL v.3.
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Нативна бібліотека визначення CPU
 - [core/README.md](core/README.md) - Документація основної бібліотеки
 - [docker/README.md](docker/README.md) - Запуск I2P+ в Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Ліцензії третіх сторін
+- [docs/LICENSE.md](docs/LICENSE.md) - Ліцензії третіх сторін
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Нативна JNI-бібліотека для криптографії (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Ресурси інсталятора
 - [scripts/README.md](scripts/README.md) - Утилітні скрипти для розробки та адміністрування

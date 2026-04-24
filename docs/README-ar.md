@@ -92,7 +92,7 @@ https://geti2p.net/how
 
 مرخص I2P+ تحت AGPL v.3.
 
-للتراخيص الفرعية للمكونات المختلفة، انظر: [README.md](docs/licenses/README.md)
+للتراخيص الفرعية للمكونات المختلفة، انظر: [README.md](docs/LICENSE.md)
 
 ## انظر أيضًا
 
@@ -130,7 +130,7 @@ https://geti2p.net/how
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - مكتبة اكتشاف CPU الأصلية
 - [core/README.md](core/README.md) - توثيق المكتبة الأساسية
 - [docker/README.md](docker/README.md) - تشغيل I2P+ في Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - تراخيص الأطراف الثالثة
+- [docs/LICENSE.md](docs/LICENSE.md) - تراخيص الأطراف الثالثة
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - مكتبة JNI الأصلية للتشفير (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - موارد المثبت المجمعة
 - [scripts/README.md](scripts/README.md) - نصوص مساعدة للتطوير والإدارة

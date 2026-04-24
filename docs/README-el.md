@@ -91,7 +91,7 @@ API: https://i2pplus.github.io/javadoc/
 
 Το I2P+ έχει άδεια χρήσης υπό την AGPL v.3.
 
-Για τις άδειες των διάφορων υποσυστατικών, δείτε: [README.md](docs/licenses/README.md)
+Για τις άδειες των διάφορων υποσυστατικών, δείτε: [README.md](docs/LICENSE.md)
 
 ## Δείτε επίσης
 
@@ -129,7 +129,7 @@ API: https://i2pplus.github.io/javadoc/
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Native βιβλιοθήκη ανίχνευσης CPU
 - [core/README.md](core/README.md) - Τεκμηρίωση βιβλιοθήκης core
 - [docker/README.md](docker/README.md) - Εκτέλεση I2P+ σε Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Άδειες τρίτων μερών
+- [docs/LICENSE.md](docs/LICENSE.md) - Άδειες τρίτων μερών
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI βιβλιοθήκη για κρυπτογράφηση (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Πόροι εγκατάστασης
 - [scripts/README.md](scripts/README.md) - Βοηθητικά scripts για ανάπτυξη και διαχείριση

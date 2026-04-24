@@ -91,7 +91,7 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ מורשית תחת AGPL v.3.
 
-עבור רישיונות תת-רכיבים שונים, עיין ב: [README.md](docs/licenses/README.md)
+עבור רישיונות תת-רכיבים שונים, עיין ב: [README.md](docs/LICENSE.md)
 
 ## ראה גם
 
@@ -129,7 +129,7 @@ I2P+ מורשית תחת AGPL v.3.
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - ספריית זיהוי CPU מקורית
 - [core/README.md](core/README.md) - תיעוד ספריית הליבה
 - [docker/README.md](docker/README.md) - הפעלת I2P+ ב-Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - רישיונות צד שלישי
+- [docs/LICENSE.md](docs/LICENSE.md) - רישיונות צד שלישי
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - ספריית JNI מקורית לקריפטוגרפיה (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - משאבי התקנה כוללים
 - [scripts/README.md](scripts/README.md) - סקריפטים שירותים לפיתוח וניהול

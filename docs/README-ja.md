@@ -80,4 +80,4 @@ I2PをDockerで実行する方法の詳細については、[Docker.md](../docke
 
 I2P+はAGPL v.3の下でライセンスされています。
 
-さまざまなサブコンポーネントのライセンスについては、[README.md](licenses/README.md)を参照してください。
+さまざまなサブコンポーネントのライセンスについては、[README.md](docs/LICENSE.md)を参照してください。

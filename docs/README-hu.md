@@ -90,7 +90,7 @@ Hibajelentések: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues vagy https://gi
 
 Az I2P+ az AGPL v.3 licenciával rendelkezik.
 
-A különböző alkomponensek licenciájáért lásd: [README.md](docs/licenses/README.md)
+A különböző alkomponensek licenciájáért lásd: [README.md](docs/LICENSE.md)
 
 ## Lásd még
 
@@ -128,7 +128,7 @@ A különböző alkomponensek licenciájáért lásd: [README.md](docs/licenses/
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU detektáló natív könyvtár
 - [core/README.md](core/README.md) - Core könyvtár dokumentáció
 - [docker/README.md](docker/README.md) - I2P+ futtatása Docker-ben
-- [docs/licenses/README.md](docs/licenses/README.md) - Harmadik fél licenciák
+- [docs/LICENSE.md](docs/LICENSE.md) - Harmadik fél licenciák
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Natív JNI könyvtár kriptográfiához (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Telepítő erőforrások
 - [scripts/README.md](scripts/README.md) - Fejlesztési és adminisztrációs segédszkriptek

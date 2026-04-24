@@ -91,7 +91,7 @@ Laporan bug: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues atau https://github
 
 I2P+ dilisensikan di bawah AGPL v.3.
 
-Untuk lisensi sub-komponen lainnya, lihat: [README.md](docs/licenses/README.md)
+Untuk lisensi sub-komponen lainnya, lihat: [README.md](docs/LICENSE.md)
 
 ## Lihat Juga
 
@@ -129,7 +129,7 @@ Untuk lisensi sub-komponen lainnya, lihat: [README.md](docs/licenses/README.md)
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Pustaka native deteksi CPU
 - [core/README.md](core/README.md) - Dokumentasi pustaka inti
 - [docker/README.md](docker/README.md) - Menjalankan I2P+ di Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Lisensi pihak ketiga
+- [docs/LICENSE.md](docs/LICENSE.md) - Lisensi pihak ketiga
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Pustaka JNI native untuk kriptografi (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Resource installer yang dibundel
 - [scripts/README.md](scripts/README.md) - Script utilitas untuk pengembangan dan administrasi

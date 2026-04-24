@@ -89,4 +89,4 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ تحت AGPL v.3 مجوز دارد.
 
-برای مجوزهای اجزای فرعی مختلف، به: [README.md](licenses/README.md) مراجعه کنید
+برای مجوزهای اجزای فرعی مختلف، به: [README.md](docs/LICENSE.md) مراجعه کنید

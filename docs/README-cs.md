@@ -91,7 +91,7 @@ Nahlašování chyb: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues nebo https:
 
 I2P+ je licencováno pod AGPL v.3.
 
-Pro licence různých subkomponent viz: [README.md](docs/licenses/README.md)
+Pro licence různých subkomponent viz: [README.md](docs/LICENSE.md)
 
 ## Viz také
 
@@ -129,7 +129,7 @@ Pro licence různých subkomponent viz: [README.md](docs/licenses/README.md)
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Nativní CPU detekční knihovna
 - [core/README.md](core/README.md) - Dokumentace core knihovny
 - [docker/README.md](docker/README.md) - Spouštění I2P+ v Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Licence třetích stran
+- [docs/LICENSE.md](docs/LICENSE.md) - Licence třetích stran
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Nativní JNI knihovna pro kryptografii (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Zahrnuté installer prostředky
 - [scripts/README.md](scripts/README.md) - Utilitní skripty pro vývoj a správu

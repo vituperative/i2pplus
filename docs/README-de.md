@@ -91,7 +91,7 @@ Fehlerberichte: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues oder https://git
 
 I2P+ ist unter AGPL v.3 lizenziert.
 
-Für die verschiedenen Unterkomponentenlizenzen siehe: [README.md](docs/licenses/README.md)
+Für die verschiedenen Unterkomponentenlizenzen siehe: [README.md](docs/LICENSE.md)
 
 ## Siehe auch
 
@@ -129,7 +129,7 @@ Für die verschiedenen Unterkomponentenlizenzen siehe: [README.md](docs/licenses
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU-Erkennungs-native Bibliothek
 - [core/README.md](core/README.md) - Core-Bibliotheksdokumentation
 - [docker/README.md](docker/README.md) - I2P+ in Docker ausführen
-- [docs/licenses/README.md](docs/licenses/README.md) - Drittanbieterlizenzen
+- [docs/LICENSE.md](docs/LICENSE.md) - Drittanbieterlizenzen
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Native JNI-Bibliothek für Kryptographie (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Gebündelte Installer-Ressourcen
 - [scripts/README.md](scripts/README.md) - Dienstprogrammskripte für Entwicklung und Administration

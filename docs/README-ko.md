@@ -90,7 +90,7 @@ Docker에서 I2P를 실행하는 방법에 대한 자세한 내용은 [docker/RE
 
 I2P+는 AGPL v.3으로 라이선스됩니다.
 
-various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.md](docs/licenses/README.md)
+various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.md](docs/LICENSE.md)
 
 ## 참고하세요
 
@@ -128,7 +128,7 @@ various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU 감지 네이티브 라이브러리
 - [core/README.md](core/README.md) - 코어 라이브러리 문서
 - [docker/README.md](docker/README.md) - Docker에서 I2P+ 실행
-- [docs/licenses/README.md](docs/licenses/README.md) - 서드파티 라이선스
+- [docs/LICENSE.md](docs/LICENSE.md) - 서드파티 라이선스
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - 암호화를 위한 네이티브 JNI 라이브러리(GMP)
 - [installer/resources/README.md](installer/resources/README.md) - 번들 설치 프로그램 리소스
 - [scripts/README.md](scripts/README.md) - 개발 및 관리를 위한 유틸리티 스크립트

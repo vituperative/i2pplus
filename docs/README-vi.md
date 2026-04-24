@@ -90,7 +90,7 @@ Báo lỗi: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues hoặc https://githu
 
 I2P+ được cấp phép theo AGPL v.3.
 
-Để xem giấy phép của các thành phần phụ, xem: [README.md](docs/licenses/README.md)
+Để xem giấy phép của các thành phần phụ, xem: [README.md](docs/LICENSE.md)
 
 ## Xem thêm
 
@@ -128,7 +128,7 @@ I2P+ được cấp phép theo AGPL v.3.
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - Thư viện native phát hiện CPU
 - [core/README.md](core/README.md) - Tài liệu thư viện core
 - [docker/README.md](docker/README.md) - Chạy I2P+ trong Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - Giấy phép third-party
+- [docs/LICENSE.md](docs/LICENSE.md) - Giấy phép third-party
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Thư viện JNI native cho mật mã học (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Tài nguyên installer bundled
 - [scripts/README.md](scripts/README.md) - Script tiện ích cho phát triển và quản trị

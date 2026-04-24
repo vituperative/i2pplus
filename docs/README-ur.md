@@ -89,7 +89,7 @@ I2P کو ڈاکر میں چلانے کے بارے میں مزید معلومات
 
 I2P+ کو AGPL v.3 کے تحت لائسنس دیا گیا ہے۔
 
-variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [README.md](docs/licenses/README.md)
+variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [README.md](docs/LICENSE.md)
 
 ## یہ بھی دیکھیں
 
@@ -127,7 +127,7 @@ variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [README
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - سی پی یو ڈیٹیکشن نیٹیو لائبریری
 - [core/README.md](core/README.md) - کور لائبریری دستاویزات
 - [docker/README.md](docker/README.md) - ڈاکر میں I2P+ چلانا
-- [docs/licenses/README.md](docs/licenses/README.md) - تھرڈ پارٹ�� لائسنسز
+- [docs/LICENSE.md](docs/LICENSE.md) - تھرڈ پارٹ�� لائسنسز
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - کرپٹوگرافی (GMP) کے لیے نیٹیو جے این آئی لائبریری
 - [installer/resources/README.md](installer/resources/README.md) - بنڈلڈ انسٹالر ریسورسز
 - [scripts/README.md](scripts/README.md) - ڈویلپمنٹ اور ایڈمنسٹریشن کے لیے یوٹیلیٹی اسکرپٹس

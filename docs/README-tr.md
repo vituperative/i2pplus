@@ -90,7 +90,7 @@ Hata raporları: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues veya https://gi
 
 I2P+, AGPL v.3 altında lisanslanmıştır.
 
-Çeşitli alt bileşen lisansları için bkz: [README.md](docs/licenses/README.md)
+Çeşitli alt bileşen lisansları için bkz: [README.md](docs/LICENSE.md)
 
 ## Ayrıca Bkz
 
@@ -128,7 +128,7 @@ I2P+, AGPL v.3 altında lisanslanmıştır.
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - CPU algılama yerli kütüphanesi
 - [core/README.md](core/README.md) - Çekirdek kütüphane belgeleri
 - [docker/README.md](docker/README.md) - I2P+'ı Docker'da çalıştırma
-- [docs/licenses/README.md](docs/licenses/README.md) - Üçüncü taraf lisansları
+- [docs/LICENSE.md](docs/LICENSE.md) - Üçüncü taraf lisansları
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - Şifreleme için yerli JNI kütüphanesi (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - Paketlenmiş yükleyici kaynakları
 - [scripts/README.md](scripts/README.md) - Geliştirme ve yönetim için yardımcı betikler

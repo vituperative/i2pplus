@@ -90,7 +90,7 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ ได้รับสิทธิ์อนุญาตภายใต้ AGPL v.3
 
-สำหรับสิทธิ์อนุญาตของ sub-component ต่างๆ ดู: [README.md](docs/licenses/README.md)
+สำหรับสิทธิ์อนุญาตของ sub-component ต่างๆ ดู: [README.md](docs/LICENSE.md)
 
 ## ดูเพิ่มเติม
 
@@ -128,7 +128,7 @@ I2P+ ได้รับสิทธิ์อนุญาตภายใต้ AG
 - [core/c/jcpuid/README.md](core/c/jcpuid/README.md) - คลัง native ตรวจจับ CPU
 - [core/README.md](core/README.md) - เอกสารคลัง core
 - [docker/README.md](docker/README.md) - รัน I2P+ ใน Docker
-- [docs/licenses/README.md](docs/licenses/README.md) - สิทธิ์อนุญาต third-party
+- [docs/LICENSE.md](docs/LICENSE.md) - สิทธิ์อนุญาต third-party
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - คลัง JNI native สำหรับ cryptography (GMP)
 - [installer/resources/README.md](installer/resources/README.md) - ทรัพยากร installer ที่รวมอยู่
 - [scripts/README.md](scripts/README.md) - scripts ยูทิลิตี้สำหรับการพัฒนาและการดูแลระบบ

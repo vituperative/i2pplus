@@ -203,3 +203,6 @@ core/java/logger.config
 
 # JSDoc template dependencies
 tools/jsdoc/docdash-template/node_modules/
+
+# JVM crash logs
+hs_err_*.log

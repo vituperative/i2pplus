@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 ou execute 'ant javadoc' e depois inicie em build/javadoc/index.html
 
 ## Como contribuir / Programar no I2P
@@ -31,14 +31,13 @@ Por favor, verifique [HACKING.md](docs/HACKING.md) e outros documentos no diret�
 
 ## Compilando pacotes a partir do código fonte
 
-Para obter o branch de desenvolvimento do controle de código fonte: https://gitlab.com/i2p.plus/I2P.Plus/
+Para obter o branch de desenvolvimento do controle de código fonte: https://github.com/I2PPlus/i2pplus/
 
 ### Pré-requisitos
 
 - Java SDK (preferencialmente Oracle/Sun ou OpenJDK) 1.8.0 ou superior
-  - Sistemas operacionais não-linux e JVMs: Veja https://trac.i2p2.de/wiki/java
+  - Sistemas operacionais não-linux e JVMs: Veja 
   - Certos subsistemas para embarcado (core, router, mstreaming, streaming, i2ptunnel)
-    requerem apenas Java 1.6
 - Apache Ant 1.9.8 ou superior
 - As ferramentas xgettext, msgfmt e msgmerge instaladas do pacote GNU gettext
   http://www.gnu.org/software/gettext/

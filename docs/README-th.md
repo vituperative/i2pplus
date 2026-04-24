@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 หรือรัน 'ant javadoc' แล้วเริ่มต้นที่ build/javadoc/index.html
 
 ## วิธีมีส่วนร่วม / Hack บน I2P
@@ -31,14 +31,12 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## การสร้างแพ็กเกจจากซอร์สโค้ด
 
-เพื่อรับ development branch จาก source control: https://gitlab.com/i2p.plus/I2P.Plus/
+เพื่อรับ development branch จาก source control: https://github.com/I2PPlus/i2pplus/
 
 ### ข้อกำหนดเบื้องต้น
 
 - Java SDK (preferably Oracle/Sun or OpenJDK) 1.8.0 หรือสูงกว่า
-  - ระบบปฏิบัติการที่ไม่ใช่ Linux และ JVM: ดู https://trac.i2p2.de/wiki/java
   - บาง subsystem สำหรับ embedded (core, router, mstreaming, streaming, i2ptunnel)
-    ต้องการเฉพาะ Java 1.6
 - Apache Ant 1.9.8 หรือสูงกว่า
 - ติดตั้งเครื่องมือ xgettext, msgfmt, และ msgmerge จาก GNU gettext package
   http://www.gnu.org/software/gettext/

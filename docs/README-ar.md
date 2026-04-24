@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 الأسئلة الشائعة: https://geti2p.net/faq
 
-واجهة برمجة التطبيقات: http://docs.i2p-projekt.de/javadoc/
+واجهة برمجة التطبيقات: https://i2pplus.github.io/javadoc/
 أو قم بتشغيل 'ant javadoc' ثم ابدأ بـ build/javadoc/index.html
 
 ## كيفية المساهمة / البرمجة على I2P
@@ -31,14 +31,13 @@ https://geti2p.net/how
 
 ## بناء الحزم من المصدر
 
-للحصول على فرع التطوير من نظام التحكم في الكود المصدري: https://gitlab.com/i2p.plus/I2P.Plus/
+للحصول على فرع التطوير من نظام التحكم في الكود المصدري: https://github.com/I2PPlus/i2pplus/
 
 ### المتطلبات الأساسية
 
 - مجموعة تطوير Java (يفضل Oracle/Sun أو OpenJDK) 1.8.0 أو أعلى
-  - أنظمة التشغيل غير Linux وآلات Java الافتراضية: انظر https://trac.i2p2.de/wiki/java
+  - أنظمة التشغيل غير Linux وآلات Java الافتراضية
   - بعض الأنظمة الفرعية المدمجة (core, router, mstreaming, streaming, i2ptunnel)
-    تتطلب فقط Java 1.6
 - Apache Ant 1.9.8 أو أعلى
 - يجب تثبيت أدوات xgettext و msgfmt و msgmerge من حزمة GNU gettext
   http://www.gnu.org/software/gettext/

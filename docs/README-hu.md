@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 GYIK: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 vagy futtasd az 'ant javadoc' parancsot, majd nyisd meg a build/javadoc/index.html fájlt
 
 ## Hogyan contribute- / Hackeld az I2P-t
@@ -31,14 +31,11 @@ Kérlek nézd meg a [HACKING.md](docs/HACKING.md) fájlt és a docs könyvtár e
 
 ## Csomagok fordítása forrásból
 
-Ha a fejlesztői ágat szeretnéd megszerezni: https://gitlab.com/i2p.plus/I2P.Plus/
+Ha a fejlesztői ágat szeretnéd megszerezni: https://github.com/I2PPlus/i2pplus/
 
 ### Előfeltételek
 
 - Java SDK (lehetőleg Oracle/Sun vagy OpenJDK) 1.8.0 vagy újabb
-  - Nem Linux operációs rendszerek és JVM-ek: lásd https://trac.i2p2.de/wiki/java
-  - Egyes beágyazott alrendszerek (core, router, mstreaming, streaming, i2ptunnel)
-    csak Java 1.6-ot igényelnek
 - Apache Ant 1.9.8 vagy újabb
 - GNU gettext csomagból telepített xgettext, msgfmt és msgmerge eszközök
   http://www.gnu.org/software/gettext/

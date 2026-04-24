@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 nebo spusťte 'ant javadoc' a poté začněte v build/javadoc/index.html
 
 ## Jak přispět / Hackovat na I2P
@@ -31,14 +31,12 @@ Prohlédněte si prosím [HACKING.md](docs/HACKING.md) a další dokumenty v adr
 
 ## Sestavování balíčků ze zdrojového kódu
 
-Chcete-li získat vývojovou větev ze správy zdrojového kódu: https://gitlab.com/i2p.plus/I2P.Plus/
+Chcete-li získat vývojovou větev ze správy zdrojového kódu: https://github.com/I2PPlus/i2pplus/
 
 ### Požadavky
 
 - Java SDK (nejlépe Oracle/Sun nebo OpenJDK) 1.8.0 nebo vyšší
-  - Non-linuxové operační systémy a JVM: Viz https://trac.i2p2.de/wiki/java
   - Některé subsystémy pro vestavěné systémy (core, router, mstreaming, streaming, i2ptunnel)
-    vyžadují pouze Java 1.6
 - Apache Ant 1.9.8 nebo vyšší
 - Nástroje xgettext, msgfmt a msgmerge nainstalované z balíčku GNU gettext
   http://www.gnu.org/software/gettext/

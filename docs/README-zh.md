@@ -16,7 +16,7 @@ https://geti2p.net/how
 
 常见问题解答：https://geti2p.net/faq
 
-API：http://docs.i2p-projekt.de/javadoc/
+API：https://i2pplus.github.io/javadoc/
 或运行“ ant javadoc”，然后从build/javadoc/index.html开始浏览
 
 ## 如何在I2P上做贡献/破解
@@ -25,14 +25,12 @@ API：http://docs.i2p-projekt.de/javadoc/
 
 ## 从源代码构建软件包
 
-要从源代码管理中获取开发分支，请访问：https://gitlab.com/i2p.plus/I2P.Plus/
+要从源代码管理中获取开发分支，请访问：https://github.com/I2PPlus/i2pplus/
 
 ### 准备
 
 -Java SDK（最好是Oracle / Sun或OpenJDK）1.7.0或更高版本
-  -非Linux操作系统和JVM：请参阅https://trac.i2p2.de/wiki/java
   -某些嵌入式子系统（核心，路由器，mstreaming，流传输，i2ptunnel）
-    只需要Java 1.6
 -Apache Ant 1.7.0或更高版本
 -从GNU gettext包安装的xgettext，msgfmt和msgmerge工具
   http://www.gnu.org/software/gettext/

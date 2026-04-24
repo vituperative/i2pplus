@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ：https://geti2p.net/faq
 
-API：http://docs.i2p-projekt.de/javadoc/
+API：https://i2pplus.github.io/javadoc/
 または 'ant javadoc' を実行し、build/javadoc/index.htmlから開始してください。
 
 ## 貢献方法 / I2Pの改造
@@ -31,13 +31,11 @@ API：http://docs.i2p-projekt.de/javadoc/
 
 ## ソースコードからパッケージをビルドする方法
 
-ソースコントロールから開発ブランチを取得するには：https://gitlab.com/i2p.plus/I2P.Plus/
+ソースコントロールから開発ブランチを取得するには：https://github.com/I2PPlus/i2pplus/
 
 ### 必要条件
 
 - Java SDK（可能な限りOracle/SunまたはOpenJDK）1.8.0以上
-  - Linux以外のオペレーティングシステムとJVM：https://trac.i2p2.de/wiki/javaを参照してください
-  - 埋め込み用の特定のサブシステム（core、router、mstreaming、streaming、i2ptunnel）にはJava 1.6のみが必要です。
 - Apache Ant 1.9.8以上
 - GNU gettextパッケージからインストールされたxgettext、msgfmt、およびmsgmergeツール
   http://www.gnu.org/software/gettext/

@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 שאלות נפוצות: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 או הרץ 'ant javadoc' ואז התחל ב-build/javadoc/index.html
 
 ## כיצד לתרום / לפרוץ ב-I2P
@@ -31,14 +31,12 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## בניית חבילות מקוד המקור
 
-כדי לקבל את ענף הפיתוח מבקרת המקור: https://gitlab.com/i2p.plus/I2P.Plus/
+כדי לקבל את ענף הפיתוח מבקרת המקור: https://github.com/I2PPlus/i2pplus/
 
 ### דרישות מוקדמות
 
 - Java SDK (רצוי Oracle/Sun או OpenJDK) 1.8.0 ומעלה
-  - מערכות הפעלה שאינן Linux ו-JVM: עיין ב-https://trac.i2p2.de/wiki/java
   - תת-מערכות מסוימות למשובצים (core, router, mstreaming, streaming, i2ptunnel)
-    דורשות רק Java 1.6
 - Apache Ant 1.9.8 ומעלה
 - התקן את הכלים xgettext, msgfmt, ו-msgmerge מחבילת GNU gettext
   http://www.gnu.org/software/gettext/

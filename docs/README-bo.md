@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 དོགས་གནས་དྲི་བའི་དྲ་ངོས། https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 ཡང་ན་'ant javadoc'ལག་བསྟར་བྱས་རྗེས་build/javadoc/index.htmlནས་འགོ་བརྩམ་རོགས།
 
 ## ཇུས་འགོད་འམ་I2Pལ་བཟོ་བཅོས་བྱེད་ཐབས།
@@ -31,14 +31,11 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## འབྱུང་ཁུངས་ནས་ཐུམ་སྒྲིལ་བཟོ་བ།
 
-འཕེལ་རྒྱས་ཡན་ལག་འབྱུང་ཁུངས་ཚོད་འཛིན་ནས་ལེན་ཐབས། https://gitlab.com/i2p.plus/I2P.Plus/
+འཕེལ་རྒྱས་ཡན་ལག་འབྱུང་ཁུངས་ཚོད་འཛིན་ནས་ལེན་ཐབས། https://github.com/I2PPlus/i2pplus/
 
 ### མདུན་ལྗིད་ཆ་རྐྱེན།
 
 - Java SDK (སྟེར་ཐོན་Oracle/Sunཡང་ན་OpenJDK) 1.8.0ཡང་ན་དེ་ལས་མཐོ་བ།
-  - Linuxམ་ཡིན་པའི་བཀོལ་སྤྱོད་མ་ལག་དང་JVMs: https://trac.i2p2.de/wiki/java ལ་གཟིགས་རོགས།
-  - བཅུད་འདུས་མ་ལག་གི་ལྟེ་བའི་ཆ་ལག (core, router, mstreaming, streaming, i2ptunnel)
-    ལ་Java 1.6ཙམ་དགོས།
 - Apache Ant 1.9.8ཡང་ན་དེ་ལས་མཐོ་བ།
 - GNU gettextཐུམ་སྒྲིལ་ནས་གཞི་བཙུགས་བྱས་པའི་xgettext, msgfmt, དང་msgmergeལག་ཆ།
   http://www.gnu.org/software/gettext/

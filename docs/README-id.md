@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 atau jalankan 'ant javadoc' kemudian mulai di build/javadoc/index.html
 
 ## Cara Berkontribusi / Mengembangkan I2P
@@ -31,14 +31,12 @@ Silakan periksa [HACKING.md](docs/HACKING.md) dan dokumen lain di direktori docs
 
 ## Membangun Paket dari Sumber
 
-Untuk mendapatkan cabang pengembangan dari kontrol sumber: https://gitlab.com/i2p.plus/I2P.Plus/
+Untuk mendapatkan cabang pengembangan dari kontrol sumber: https://github.com/I2PPlus/i2pplus/
 
 ### Prasyarat
 
 - Java SDK (lebih disukai Oracle/Sun atau OpenJDK) 1.8.0 atau lebih tinggi
-  - Sistem operasi non-linux dan JVM: Lihat https://trac.i2p2.de/wiki/java
   - Subsistem tertentu untuk embedded (core, router, mstreaming, streaming, i2ptunnel)
-    hanya memerlukan Java 1.6
 - Apache Ant 1.9.8 atau lebih tinggi
 - Alat xgettext, msgfmt, dan msgmerge terinstal dari paket GNU gettext
   http://www.gnu.org/software/gettext/

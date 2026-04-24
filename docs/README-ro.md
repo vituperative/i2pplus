@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 Întrebări frecvente: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 sau rulați 'ant javadoc' și apoi începeți de la build/javadoc/index.html
 
 ## Cum să contribuiți / Hacker pe I2P
@@ -31,14 +31,12 @@ Vă rugăm să consultați [HACKING.md](docs/HACKING.md) și alte documente din 
 
 ## Construirea pachetelor din codul sursă
 
-Pentru a obține branch-ul de dezvoltare din controlul sursă: https://gitlab.com/i2p.plus/I2P.Plus/
+Pentru a obține branch-ul de dezvoltare din controlul sursă: https://github.com/I2PPlus/i2pplus/
 
 ### Cerințe prealabile
 
 - Java SDK (de preferință Oracle/Sun sau OpenJDK) 1.8.0 sau mai mare
-  - Sisteme de operare non-Linux și JVM: Consultați https://trac.i2p2.de/wiki/java
   - Anumite sub sisteme pentru embedded (core, router, mstreaming, streaming, i2ptunnel)
-    necesită doar Java 1.6
 - Apache Ant 1.9.8 sau mai mare
 - Instrumente xgettext, msgfmt, și msgmerge instalate din pachetul GNU gettext
   http://www.gnu.org/software/gettext/

@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 سوالات متداول: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 یا دستور 'ant javadoc' را اجرا کنید سپس از build/javadoc/index.html شروع کنید
 
 ## چگونه مشارکت کنیم / کار کردن روی I2P
@@ -31,14 +31,11 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## ساخت بسته‌ها از منبع
 
-برای گرفتن شاخه توسعه از کنترل منبع: https://gitlab.com/i2p.plus/I2P.Plus/
+برای گرفتن شاخه توسعه از کنترل منبع: https://github.com/I2PPlus/i2pplus/
 
 ### پیش‌نیازها
 
 - Java SDK (ترجیحاً Oracle/Sun یا OpenJDK) 1.8.0 یا بالاتر
-  - سیستم‌عامل‌های غیر لینوکس و JVMها: به https://trac.i2p2.de/wiki/java مراجعه کنید
-  - زیرسیستم‌های خاص برای سیستم‌های توکار (core, router, mstreaming, streaming, i2ptunnel)
-    فقط به Java 1.6 نیاز دارند
 - Apache Ant 1.9.8 یا بالاتر
 - ابزارهای xgettext, msgfmt, و msgmerge نصب شده از بسته GNU gettext
   http://www.gnu.org/software/gettext/

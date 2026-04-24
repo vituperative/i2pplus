@@ -22,7 +22,7 @@
 
 अक्सर पूछे जाने वाले प्रश्न: [https://geti2p.net/faq](https://geti2p.net/faq)
 
-API: [http://docs.i2p-projekt.de/javadoc/](http://docs.i2p-projekt.de/javadoc/) या 'ant javadoc' चलाएँ फिर build/javadoc/index.html पर शुरू करें।
+API: [https://i2pplus.github.io/javadoc/](https://i2pplus.github.io/javadoc/) या 'ant javadoc' चलाएँ फिर build/javadoc/index.html पर शुरू करें।
 
 ## योगदान कैसे करें / I2P पर हैक करें
 
@@ -30,13 +30,11 @@ API: [http://docs.i2p-projekt.de/javadoc/](http://docs.i2p-projekt.de/javadoc/) 
 
 ## स्रोत से पैकेज बनाना
 
-स्रोत नियंत्रण से विकास शाखा प्राप्त करने के लिए: [https://gitlab.com/i2p.plus/I2P.Plus/](https://gitlab.com/i2p.plus/I2P.Plus/)
+स्रोत नियंत्रण से विकास शाखा प्राप्त करने के लिए: [https://github.com/I2PPlus/i2pplus/](https://github.com/I2PPlus/i2pplus/)
 
 ### पूर्वापेक्षाएँ
 
 *   Java SDK (प्राथमिकता Oracle/Sun या OpenJDK) 1.8.0 या उच्चतर
-    *   गैर-लिनक्स ऑपरेटिंग सिस्टम और JVM: देखें [https://trac.i2p2.de/wiki/java](https://trac.i2p2.de/wiki/java)
-    *   एम्बेडेड (कोर, राउटर, mstreaming, स्ट्रीमिंग, i2ptunnel) के लिए कुछ सबसिस्टम केवल Java 1.6 की आवश्यकता है।
 *   Apache Ant 1.9.8 या उच्चतर
 *   GNU gettext पैकेज से स्थापित xgettext, msgfmt, और msgmerge उपकरण [http://www.gnu.org/software/gettext/](http://www.gnu.org/software/gettext/)
 *   निर्माण वातावरण को UTF-8 स्थानीय सेटिंग का उपयोग करना चाहिए।

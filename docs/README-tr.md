@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 SSS: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 veya 'ant javadoc' komutunu çalıştırın ve ardından build/javadoc/index.html adresinden başlayın
 
 ## Nasıl Katkıda Bulunulur / I2P Üzerinde Çalışılır
@@ -31,14 +31,11 @@ Lütfen [HACKING.md](docs/HACKING.md) dosyasını ve docs dizinindeki diğer bel
 
 ## Kaynak Koddan Paket Oluşturma
 
-Geliştirme dalını kaynak kontrolünden almak için: https://gitlab.com/i2p.plus/I2P.Plus/
+Geliştirme dalını kaynak kontrolünden almak için: https://github.com/I2PPlus/i2pplus/
 
 ### Ön Koşullar
 
 - Java SDK (tercihen Oracle/Sun veya OpenJDK) 1.8.0 veya üstü
-  - Linux dışı işletim sistemleri ve JVM'ler: https://trac.i2p2.de/wiki/java adresine bakın
-  - Gömülü sistemler için belirli alt sistemler (core, router, mstreaming, streaming, i2ptunnel)
-    yalnızca Java 1.6 gerektirir
 - Apache Ant 1.9.8 veya üstü
 - GNU gettext paketinden yüklenen xgettext, msgfmt ve msgmerge araçları
   http://www.gnu.org/software/gettext/

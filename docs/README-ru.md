@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 Часто задаваемые вопросы: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 или запустите «ant javadoc», затем откройте файл index.html в папке build/javadoc.
 
 ## Как внести вклад / Взломать I2P
@@ -31,14 +31,12 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## Сборка пакетов из исходного кода
 
-Чтобы скачать I2P+ через Git: https://gitlab.com/i2p.plus/I2P.Plus/
+Чтобы скачать I2P+ через Git: https://github.com/I2PPlus/i2pplus/
 
 ### Предварительные требования
 
 - Java SDK (желательно Oracle/Sun или OpenJDK) 1.8.0 или выше
-  - Операционные системы, отличные от Linux, и JVM: см. https://trac.i2p2.de/wiki/java
   - Некоторые подсистемы для встроенных (core, router, mstreaming, streaming, i2ptunnel)
-    требуют только Java 1.6
 - Apache Ant 1.9.8 или выше
 - Установлены инструменты xgettext, msgfmt и msgmerge из пакета GNU gettext
   http://www.gnu.org/software/gettext/

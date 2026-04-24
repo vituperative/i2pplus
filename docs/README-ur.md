@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 /faq
 
-اے پی آئی: http://docs.i2p-projekt.de/javadoc/
+اے پی آئی: https://i2pplus.github.io/javadoc/
 یا 'ant javadoc' چلایں پھر build/javadoc/index.html سے شروع کریں۔
 
 ## حصہ لینے کا طریقہ / I2P پر ہیک کرنا
@@ -31,14 +31,11 @@ https://geti2p.net/how
 
 ## سورس کوڈ سے پیکجز بنانا
 
-سورس کنٹرول سے ڈویلپمنٹ برانچ حاصل کرنے کے لیے: https://gitlab.com/i2p.plus/I2P.Plus/
+سورس کنٹرول سے ڈویلپمنٹ برانچ حاصل کرنے کے لیے: https://github.com/I2PPlus/i2pplus/
 
 ### تقاضے
 
 - جاوا ایس ڈی کے (بہترینOracle/Sun یا OpenJDK) 1.8.0 یا اس سے زیادہ
-  - غیر لینکس آپریٹنگ سسٹم اور JVM: https://trac.i2p2.de/wiki/java دیکھیں
-  - ایمبیڈڈ کیلے کچھ سبسیسٹمز (core, router, mstreaming, streaming, i2ptunnel)
-    کو صرف جاوا 1.6 کی ضرورت ہے
 - اپاچی اینٹ 1.9.8 یا اس سے زیادہ
 - GNU gettext پیکج سے نصب xgettext, msgfmt, اور msgmerge ٹولز
   http://www.gnu.org/software/gettext/

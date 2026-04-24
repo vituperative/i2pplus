@@ -22,7 +22,7 @@ https://geti2p.net/how
 
 FAQ: https://geti2p.net/faq
 
-API: http://docs.i2p-projekt.de/javadoc/
+API: https://i2pplus.github.io/javadoc/
 또는 'ant javadoc'을 실행한 후 build/javadoc/index.html에서 시작하세요
 
 ## 기여 방법 / I2P에서 개발
@@ -31,14 +31,11 @@ API: http://docs.i2p-projekt.de/javadoc/
 
 ## 소스에서 패키지 빌드
 
-소스 제어에서 개발 브랜치를 가져오려면: https://gitlab.com/i2p.plus/I2P.Plus/
+소스 제어에서 개발 브랜치를 가져오려면: https://github.com/I2PPlus/i2pplus/
 
 ### 전제 조건
 
 - Java SDK(가능하면 Oracle/Sun 또는 OpenJDK) 1.8.0 이상
-  - 비 리눅스 운영 체제 및 JVM: https://trac.i2p2.de/wiki/java 참조
-  - 임베디드용 특정 하위 시스템(core, router, mstreaming, streaming, i2ptunnel)은
-    Java 1.6만 필요합니다
 - Apache Ant 1.9.8 이상
 - GNU gettext 패키지에서 설치된 xgettext, msgfmt, msgmerge 도구
   http://www.gnu.org/software/gettext/

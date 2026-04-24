@@ -87,7 +87,20 @@ class SearchUpdateReplyFoundJob extends JobImpl implements ReplyJob {
             try {
                 if (entry.isLeaseSet()) {
                     LeaseSet ls = (LeaseSet) entry;
-                    _facade.store(ls.getHash(), ls);
+                    if (_state.shouldStoreInitial()) {
+                        LeaseSet best = _state.getBestInitialLeaseSet();
+                        if (best != null) {
+                            _state.setStoredLeaseDate(best.getLatestLeaseDate());
+                            _facade.store(ls.getHash(), best);
+                            if (_log.shouldInfo()) {
+                                _log.info("Stored best initial LeaseSet from [" + _peer.toBase64().substring(0,6)
+                                          + "] latest lease: " + best.getLatestLeaseDate());
+                            }
+                        }
+                        _state.clearInitialTracking();
+                    } else {
+                        _state.addInitialLeaseSetResponse(_peer, ls);
+                    }
                 } else {
                     RouterInfo ri = (RouterInfo) entry;
                     _facade.store(ri.getHash(), ri);

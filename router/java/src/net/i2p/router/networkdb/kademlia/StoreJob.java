@@ -71,7 +71,7 @@ abstract class StoreJob extends JobImpl {
     /** Bitmask for connection types we can use (IPv4, IPv6, etc.) */
     private final int _connectMask;
     private final static int PARALLELIZATION = 8; // how many sent at a time
-    private final static int REDUNDANCY = 4; // we want the data sent to 4 peers
+    private final static int REDUNDANCY = 8; // we want the data sent to 8 peers
     private final static int STORE_PRIORITY = OutNetMessage.PRIORITY_MY_NETDB_STORE;
 
     /**

@@ -114,7 +114,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
      */
     private final ConcurrentHashMap<Hash, Long> _remoteLeaseSetAccessTime = new ConcurrentHashMap<>(32);
 
-    private static final long REMOTE_LEASESET_REFRESH_INTERVAL = 60 * 1000;  // 60 seconds
+    private static final long REMOTE_LEASESET_REFRESH_INTERVAL = 90 * 1000;  // 90 seconds
 
     /**
      * Hash of the key currently being searched for, pointing the SearchJob that
@@ -1407,11 +1407,11 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
             if (id == -1) {
                 // old i2pd bug, possibly at startup, don't ban forever
                 _banLogger.logBan(key, ipPort, "No Network specified", Banlist.BANLIST_DURATION_NO_NETWORK);
-                _context.banlist().banlistRouter(key, " <b>➜</b> No Network specified", null, null,
+                _context.banlist().banlistRouter(key, "No Network specified", null, null,
                                                  _context.clock().now() + Banlist.BANLIST_DURATION_NO_NETWORK);
             } else {
                 _banLogger.logBanForever(key, ipPort, "Not in our Network: " + id);
-                _context.banlist().banlistRouterForever(key, " <b>➜</b> " + "Not in our Network: " + id);
+                _context.banlist().banlistRouterForever(key, "" + "Not in our Network: " + id);
             }
             if (_log.shouldWarn()) {
                 _log.warn("BAD Network detected for [" + routerInfo.getIdentity().getHash().toBase64().substring(0,6) + "]");
@@ -1536,7 +1536,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
                 Hash h = routerInfo.getIdentity().calculateHash();
                 String ipPort = getRouterIPPort(routerInfo);
                 _banLogger.logBan(h, ipPort, "Invalid NTCP address", 24*60*60*1000L);
-                _context.banlist().banlistRouter(h, " <b>➜</b> Invalid NTCP address", null, null, now + 24*60*60*1000L);
+                _context.banlist().banlistRouter(h, "Invalid NTCP address", null, null, now + 24*60*60*1000L);
                 if (_log.shouldWarn()) {
                     _log.warn("Banning " + (caps.isEmpty() ? "" : caps + " ") + "Router [" + routerId + "] for 24h -> Invalid NTCP address");
                 }
@@ -1635,13 +1635,13 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
             }
             if (blockMyCountry) {
                 _banLogger.logBanForever(h, ipPort, "In our country (banned via config)");
-                _context.banlist().banlistRouterForever(h, " <b>➜</b> In our country (banned via config)");
+                _context.banlist().banlistRouterForever(h, "In our country (banned via config)");
             } else if (isHidden) {
                 _banLogger.logBanForever(h, ipPort, "In our country (we are in Hidden mode)");
-                _context.banlist().banlistRouterForever(h, " <b>➜</b> In our country (we are in Hidden mode)");
+                _context.banlist().banlistRouterForever(h, "In our country (we are in Hidden mode)");
             } else if (isStrict) {
                 _banLogger.logBanForever(h, ipPort, "In our country (we are in a strict country)");
-                _context.banlist().banlistRouterForever(h, " <b>➜</b> In our country (we are in a strict country)");
+                _context.banlist().banlistRouterForever(h, "In our country (we are in a strict country)");
             }
             return true;
         }
@@ -1651,7 +1651,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
                 _log.warn("Banning [" + routerId + "] -> Blocked country: " + country);
             }
             _banLogger.logBan(h, ipPort, "Blocked country: " + country, 8*60*60*1000L);
-            _context.banlist().banlistRouter(h, " <b>➜</b> Blocked country: " + country, null, null, _context.clock().now() + 8*60*60*1000);
+            _context.banlist().banlistRouter(h, "Blocked country: " + country, null, null, _context.clock().now() + 8*60*60*1000);
 _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
             return true;
         }
@@ -1667,7 +1667,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                     _log.info("Banning Router [" + routerId + "] -> X tier and G Cap (probable botnet participant)");
                 }
                 _banLogger.logBan(h, ipPort, "XG " + (isFF ? "Floodfill" : "Router") + " (probable botnet participant)", 60*60*1000L);
-                _context.banlist().banlistRouter(h, " <b>➜</b> XG " + (isFF ? "Floodfill" : "Router"), null, null, _context.clock().now() + 60*60*1000);
+                _context.banlist().banlistRouter(h, "XG " + (isFF ? "Floodfill" : "Router"), null, null, _context.clock().now() + 60*60*1000);
             }
             return true;
 }
@@ -1689,7 +1689,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                 String ipPort = getRouterIPPort(routerInfo);
                 _log.warn("Banning Router [" + routerId + "] -> LU Router");
                 _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
-                _context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, _context.clock().now() + 60*60*1000);
+                _context.banlist().banlistRouter(h, "LU Router", null, null, _context.clock().now() + 60*60*1000);
             }
             return true;
         }
@@ -1721,7 +1721,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                     _log.warn("Removing existing LU Router from netDb: " + routerId);
                 }
                 _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
-                _context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, _context.clock().now() + 60*60*1000);
+                _context.banlist().banlistRouter(h, "LU Router", null, null, _context.clock().now() + 60*60*1000);
                 _ds.remove(h);
                 _kb.remove(h);
                 removed++;
@@ -1771,7 +1771,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                 _log.warn("Banning [" + routerId + "] for 4h -> RouterInfo from the future!\n* Published: " + new Date(routerInfo.getPublished()));
                 String ipPort = getRouterIPPort(routerInfo);
                 _banLogger.logBan(h, ipPort, "RouterInfo from the future (" + new Date(routerInfo.getPublished()) + ")", 4*60*60*1000L);
-                _context.banlist().banlistRouter(h, " <b>➜</b> RouterInfo from the future (" + new Date(routerInfo.getPublished()) + ")", null, null, 4*60*60*1000);
+                _context.banlist().banlistRouter(h, "RouterInfo from the future (" + new Date(routerInfo.getPublished()) + ")", null, null, 4*60*60*1000);
             }
             return caps + " Router [" + routerId + "] -> Published " + DataHelper.formatDuration(age) + " in the future";
         }
@@ -1798,13 +1798,13 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
         if (minVersionAllowed != null) {
             if (VersionComparator.comp(v, minVersionAllowed) < 0) {
                 _banLogger.logBanForever(h, ipPort, "Router too old (" + v + ")");
-                _context.banlist().banlistRouterForever(h, " <b>➜</b> Router too old (" + v + ")");
+                _context.banlist().banlistRouterForever(h, "Router too old (" + v + ")");
                 return caps + " Router [" + routerId + "] -> Too old (" + v + ") - banned until restart";
             }
         } else {
             if (VersionComparator.comp(v, minRouterVersion) < 0) {
                 _banLogger.logBanForever(h, ipPort, "Router too old (" + v + ")");
-                _context.banlist().banlistRouterForever(h, " <b>➜</b> Router too old (" + v + ")");
+                _context.banlist().banlistRouterForever(h, "Router too old (" + v + ")");
                 return caps + " Router [" + routerId + "] -> Too old (" + v + ") - banned until restart";
             }
         }
@@ -2066,7 +2066,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                             String stype = (type != null) ? type.toString() : Integer.toString(kc.getSigTypeCode());
                             String ipPort = getRouterIPPort(ri);
                             _banLogger.logBanForever(h, ipPort, "Unsupported Signature type " + stype);
-                            _context.banlist().banlistRouterForever(h, " <b>➜</b> " + "Unsupported Signature type " + stype);
+                            _context.banlist().banlistRouterForever(h, "" + "Unsupported Signature type " + stype);
                             if (_log.shouldWarn()) {
                                 _log.warn("Unsupported Signature type " + stype + " for [" +
                                           h.toBase64().substring(0,6) + "] - banned until restart");
@@ -2477,14 +2477,13 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
 
     /**
      * Refresh remote LeaseSets we're actively using and remove stale ones.
-     * Runs every 60s to:
-     * 1. Re-fetch LeaseSets accessed in the last 60s
+     * 1. Re-fetch LeaseSets accessed between 60s-90s ago
      * 2. Remove LeaseSets not accessed in 60s
      */
     private void refreshRemoteLeaseSets() {
         long now = _context.clock().now();
-        long inactiveThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL;
-        long refreshThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL;
+        long inactiveThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL;          // 90s
+        long refreshThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
 
         // Iterate over remote LeaseSet access times
         for (Hash key : _remoteLeaseSetAccessTime.keySet()) {
@@ -2492,16 +2491,16 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
             if (lastAccess == null) continue;
 
             if (lastAccess < inactiveThreshold) {
-                // Not accessed in 60s - fail so it gets refetched on next access
+                // Not accessed in 180s (3 min) - fail so it gets refetched on next access
                 _remoteLeaseSetAccessTime.remove(key);
                 fail(key);
                 if (_log.shouldDebug()) {
                     _log.debug("Removed stale remote LeaseSet: " + key.toBase32().substring(0, 8));
                 }
             } else if (lastAccess < refreshThreshold) {
-                // Accessed between 60s-120s ago - refresh it
+                // Accessed between 180s-270s ago - refresh it
                 _remoteLeaseSetAccessTime.remove(key);
-                lookupLeaseSet(key, null, null, 10*1000, null);
+                lookupLeaseSetRemotely(key, null);
                 if (_log.shouldDebug()) {
                     _log.debug("Refreshing remote LeaseSet: " + key.toBase32().substring(0, 8));
                 }
@@ -2518,7 +2517,7 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
 
     /**
      * Job to refresh remote LeaseSets periodically.
-     * Re-requests LeaseSets accessed in last 60s, removes stale ones.
+     * Refreshes LeaseSets accessed 180s-270s ago, removes ones not accessed in 180s+.
      */
     private static class RefreshLeaseSetsJob extends JobImpl {
         private final KademliaNetworkDatabaseFacade _facade;

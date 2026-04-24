@@ -60,7 +60,7 @@ class SearchJob extends JobImpl {
     private int _floodfillSearchesOutstanding;
     private final long _msgIDBloomXor;
     private static int SEARCH_BREDTH = 3;
-    private static int SEARCH_BREDTH_LEASE = 5;
+    private static int SEARCH_BREDTH_LEASE = 8;
     static final int MAX_CLOSEST = 10; // Only send the 10 closest "don't tell me about" refs
 
     /**
@@ -546,6 +546,22 @@ class SearchJob extends JobImpl {
             getContext().statManager().addRateData("netDb.successTime", time);
             getContext().statManager().addRateData("netDb.successPeers", _state.getAttempted().size(), time);
         }
+
+        if (_isLease) {
+            LeaseSet newest = _state.getNewestLeaseSet();
+            if (newest != null) {
+                Hash key = newest.getHash();
+                if (_state.shouldUpdateStored(newest)) {
+                    _state.setStoredLeaseDate(newest.getLatestLeaseDate());
+                    _facade.store(key, newest);
+                    if (_log.shouldInfo()) {
+                        _log.info("Updated LeaseSet for [" + key.toBase64().substring(0,6)
+                                  + "] latest lease: " + newest.getLatestLeaseDate());
+                    }
+                }
+            }
+        }
+
         if (_onSuccess != null) {getContext().jobQueue().addJob(_onSuccess);}
 
         _facade.searchComplete(_state.getTarget());

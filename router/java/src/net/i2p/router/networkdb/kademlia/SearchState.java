@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import net.i2p.data.Hash;
+import net.i2p.data.LeaseSet;
 import net.i2p.kademlia.XORComparator;
 import net.i2p.router.RouterContext;
 import net.i2p.util.Log;
@@ -38,6 +39,14 @@ class SearchState {
     private volatile long _started;
     private volatile boolean _aborted;
     private final Log _log;
+    private final Map<Hash, LeaseSet> _leaseSetResponses;
+    private long _firstLeaseSetTime;
+
+    private volatile int _initialResponseCount;
+    private volatile long _initialResponseStart;
+    private static final int INITIAL_RESPONSE_TARGET = 3;
+    private static final long INITIAL_RESPONSE_TIMEOUT = 3 * 1000;
+    private volatile long _storedLeaseDate;
 
     public SearchState(RouterContext context, Hash key) {
         _log = context.logManager().getLog(SearchState.class);
@@ -49,6 +58,8 @@ class SearchState {
         _successfulPeers = new HashSet<Hash>(16);
         _pendingPeerTimes = new HashMap<Hash, Long>(16);
         _repliedPeers = new HashSet<Hash>(16);
+        _leaseSetResponses = new HashMap<Hash, LeaseSet>(8);
+        _firstLeaseSetTime = 0;
         _completed = -1;
         _started = _context.clock().now();
     }
@@ -100,7 +111,13 @@ class SearchState {
 
     public boolean completed() {return _completed != -1;}
 
-    public void complete() {_completed = _context.clock().now();}
+    public void complete() {
+        _completed = _context.clock().now();
+        synchronized (_leaseSetResponses) {
+            _leaseSetResponses.clear();
+            _firstLeaseSetTime = 0;
+        }
+    }
 
     /** @since 0.9.16 */
     public boolean isAborted() {return _aborted;}
@@ -169,6 +186,110 @@ class SearchState {
             _pendingPeerTimes.remove(peer);
         }
         synchronized (_failedPeers) {_failedPeers.add(peer);}
+    }
+
+    public void addLeaseSetResponse(Hash peer, LeaseSet ls) {
+        long leaseDate = ls.getLatestLeaseDate();
+        synchronized (_leaseSetResponses) {
+            if (_firstLeaseSetTime == 0) {
+                _firstLeaseSetTime = leaseDate;
+                if (_log.shouldInfo()) {
+                    _log.info("First LeaseSet response from [" + peer.toBase64().substring(0,6)
+                              + "] with latest lease date: " + leaseDate);
+                }
+            }
+            _leaseSetResponses.put(peer, ls);
+        }
+    }
+
+    public LeaseSet getNewestLeaseSet() {
+        synchronized (_leaseSetResponses) {
+            if (_leaseSetResponses.isEmpty()) {
+                return null;
+            }
+            LeaseSet newest = null;
+            long newestDate = 0;
+            for (Map.Entry<Hash, LeaseSet> entry : _leaseSetResponses.entrySet()) {
+                LeaseSet ls = entry.getValue();
+                long date = ls.getLatestLeaseDate();
+                if (date > newestDate) {
+                    newestDate = date;
+                    newest = ls;
+                }
+            }
+            if (newest != null && newestDate > _firstLeaseSetTime) {
+                if (_log.shouldInfo()) {
+                    _log.info("Found newer LeaseSet, updating from " + _firstLeaseSetTime + " to " + newestDate);
+                }
+            }
+            return newest;
+        }
+    }
+
+    public void addInitialLeaseSetResponse(Hash peer, LeaseSet ls) {
+        long now = _context.clock().now();
+        synchronized (_leaseSetResponses) {
+            if (_initialResponseStart <= 0) {
+                _initialResponseStart = now;
+            }
+            _initialResponseCount++;
+            if (_log.shouldInfo()) {
+                _log.info("Initial LeaseSet response " + _initialResponseCount + " from [" + peer.toBase64().substring(0,6)
+                          + "] with latest lease date: " + ls.getLatestLeaseDate());
+            }
+            _leaseSetResponses.put(peer, ls);
+            _firstLeaseSetTime = ls.getLatestLeaseDate();
+        }
+    }
+
+    public boolean shouldStoreInitial() {
+        if (_initialResponseStart <= 0) {
+            return false;
+        }
+        long now = _context.clock().now();
+        return _initialResponseCount >= INITIAL_RESPONSE_TARGET
+               || (now - _initialResponseStart) >= INITIAL_RESPONSE_TIMEOUT;
+    }
+
+    public LeaseSet getBestInitialLeaseSet() {
+        synchronized (_leaseSetResponses) {
+            if (_leaseSetResponses.isEmpty()) {
+                return null;
+            }
+            LeaseSet best = null;
+            long bestDate = 0;
+            for (Map.Entry<Hash, LeaseSet> entry : _leaseSetResponses.entrySet()) {
+                LeaseSet ls = entry.getValue();
+                long date = ls.getLatestLeaseDate();
+                if (date > bestDate) {
+                    bestDate = date;
+                    best = ls;
+                }
+            }
+            if (_log.shouldInfo() && best != null) {
+                _log.info("Best initial LeaseSet with latest lease date: " + bestDate);
+            }
+            return best;
+        }
+    }
+
+    public void clearInitialTracking() {
+        synchronized (_leaseSetResponses) {
+            _initialResponseStart = -1;
+            _initialResponseCount = -1;
+        }
+    }
+
+    public long getStoredLeaseDate() {
+        return _storedLeaseDate;
+    }
+
+    public void setStoredLeaseDate(long date) {
+        _storedLeaseDate = date;
+    }
+
+    public boolean shouldUpdateStored(LeaseSet ls) {
+        return ls.getLatestLeaseDate() > _storedLeaseDate;
     }
 
     @Override

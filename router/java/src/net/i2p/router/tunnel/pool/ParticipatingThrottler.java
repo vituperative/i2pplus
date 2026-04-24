@@ -218,7 +218,7 @@ class ParticipatingThrottler {
         String ipPort = getRouterIPPort(ri);
         String banReason = "No version in RouterInfo";
         _banLogger.logBan(h, ipPort, banReason, bantime);
-        context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
+        context.banlist().banlistRouter(h, "" + banReason, null, null, context.clock().now() + bantime);
     }
 
     /**
@@ -241,7 +241,7 @@ class ParticipatingThrottler {
             String ipPort = getRouterIPPort(ri);
             String banReason = "Compressible RouterInfo & older than 0.9.57";
             _banLogger.logBan(h, ipPort, banReason, 24*60*60*1000L);
-            context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + 24*60*60*1000);
+            context.banlist().banlistRouter(h, "" + banReason, null, null, context.clock().now() + 24*60*60*1000);
             return true;
         }
         return false;
@@ -273,7 +273,7 @@ class ParticipatingThrottler {
             String ipPort = getRouterIPPort(ri);
             String banReason = "Old and slow (" + version + ")";
             _banLogger.logBan(h, ipPort, banReason, bantime);
-            context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
+            context.banlist().banlistRouter(h, "" + banReason, null, null, context.clock().now() + bantime);
             return true;
         }
         return false;
@@ -357,7 +357,7 @@ class ParticipatingThrottler {
         String ipPort = getRouterIPPort(ri);
         String banReason = "Excessive tunnel requests";
         _banLogger.logBan(h, ipPort, banReason, bantime);
-        context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
+        context.banlist().banlistRouter(h, "" + banReason, null, null, context.clock().now() + bantime);
         context.simpleTimer2().addEvent(new Disconnector(h, banReason), 11 * 60 * 1000);
         if (_log.shouldWarn()) {
             _log.warn("Banning Router [" + h.toBase64().substring(0,6) + "] for " + (bantime / 60000) +

@@ -120,7 +120,7 @@ class RequestThrottler {
                     }
                     String ipPort = getRouterIPPort(ri);
                     _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
-                    context.banlist().banlistRouter(h, " <b>➜</b> LU Router", null, null, context.clock().now() + 60*60*1000);
+                    context.banlist().banlistRouter(h, "LU Router", null, null, context.clock().now() + 60*60*1000);
                 }
                 return true;
             }
@@ -170,7 +170,7 @@ class RequestThrottler {
                 }
                 String ipPort = getRouterIPPort(ri);
                 _banLogger.logBan(h, ipPort, "Transit request burst (10 in 1s)", 4*60*60*1000L);
-                context.banlist().banlistRouter(h, " <b>➜</b> Transit request burst", null, null, context.clock().now() + 4*60*60*1000);
+                context.banlist().banlistRouter(h, "Transit request burst", null, null, context.clock().now() + 4*60*60*1000);
                 if (cachedShouldDisconnect) {
                     context.commSystem().forceDisconnect(h, "Transit request burst");
                 }
@@ -200,7 +200,7 @@ class RequestThrottler {
                 }
                 String ipPort = getRouterIPPort(ri);
                 _banLogger.logBan(h, ipPort, reason, banTime);
-                context.banlist().banlistRouter(h, " <b>➜</b> " + reason, null, null,
+                context.banlist().banlistRouter(h, "" + reason, null, null,
                     context.clock().now() + banTime);
                 if (cachedShouldDisconnect) {
                     context.commSystem().forceDisconnect(h, reason);
@@ -247,7 +247,7 @@ class RequestThrottler {
                 String ipPort = getRouterIPPort(ri);
                 String banReason = "Excessive tunnel requests";
                 _banLogger.logBan(h, ipPort, banReason, bantime);
-                context.banlist().banlistRouter(h, " <b>➜</b> " + banReason, null, null, context.clock().now() + bantime);
+                context.banlist().banlistRouter(h, "" + banReason, null, null, context.clock().now() + bantime);
                 context.simpleTimer2().addEvent(new Disconnector(h, v), 11*60*1000);
                 if (_log.shouldWarn()) {
                     _log.warn("Banning " + (isLowShare || isUnreachable ? "slow or unreachable" : "") +

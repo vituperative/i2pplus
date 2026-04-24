@@ -1590,8 +1590,8 @@
         <fileset dir="./build" includes="**/*" excludes="README.md"/>
       </delete>
       <delete dir="./reports" quiet="true"/>
-      <delete file="installer/lib/izpack/patches.jar" failonerror="false" quiet="true"/>
-      <delete dir="installer/lib/izpack5/patches/java/build" quiet="true"/>
+      <delete file="installer/lib/izpack/4/patches.jar" failonerror="false" quiet="true"/>
+      <delete dir="installer/lib/izpack/5/patches/java/build" quiet="true"/>
       <delete file="syndie-standalone.zip" failonerror="false" quiet="true"/>
       <delete file="dist/i2psnark-standalone.zip" failonerror="false" quiet="true"/>
       <delete file="core/java/cobertura.ser" quiet="true"/>
@@ -1762,7 +1762,7 @@
       <delete dir="core/c/jbigi/bin" quiet="true"/>
       <delete dir="core/c/jbigi/lib" quiet="true"/>
       <delete dir="core/c/jcpuid/lib" quiet="true"/>
-      <delete dir="installer/lib/izpack5/patches/java/build" quiet="true"/>
+      <delete dir="installer/lib/izpack/5/patches/java/build" quiet="true"/>
       <delete dir="reproducible/build" quiet="true"/>
       <!-- custom langpacks -->
       <delete dir="com" quiet="true"/>
@@ -2740,10 +2740,10 @@
   </target>
 
   <target name="izpack-patches">
-    <taskdef name="izpack" classpath="${basedir}/installer/lib/izpack/patches.jar:${basedir}/installer/lib/izpack/standalone-compiler.jar"
+    <taskdef name="izpack" classpath="${basedir}/installer/lib/izpack/4/patches.jar:${basedir}/installer/lib/izpack/4/standalone-compiler.jar"
       classname="com.izforge.izpack.ant.IzPackTask"/>
     <jar destfile="${basedir}/installer/lib/izpack/patches.jar"
-      basedir="${basedir}/installer/lib/izpack/patches"/>
+      basedir="${basedir}/installer/lib/izpack/4/patches"/>
   </target>
 
   <target name="buildUtilityJar" depends="buildCore">
@@ -2779,7 +2779,7 @@
   </target>
 
   <target name="izpack5-patches" depends="ensureIzpack5, buildProperties">
-    <ant dir="installer/lib/izpack5/patches/java/" target="jar"/>
+    <ant dir="installer/lib/izpack/5/patches/java/" target="jar"/>
     <!-- custom langpacks
          Izpack tries to load the resource both from the classpath and the file system;
          we do it this way because jaring them up and adding a pathelement to izpack5.lib.path doesn't work.
@@ -2787,7 +2787,7 @@
      -->
     <mkdir dir="com/izforge/izpack/bin/langpacks/"/>
     <copy quiet="true" toDir="com/izforge/izpack/bin/langpacks/">
-      <fileset dir="installer/lib/izpack5/patches/resources"/>
+      <fileset dir="installer/lib/izpack/5/patches/resources"/>
     </copy>
   </target>
 

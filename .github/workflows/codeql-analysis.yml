@@ -3,23 +3,12 @@ name: "CodeQL"
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'core/**'
-      - 'router/**'
-      - 'apps/**'
-      - 'build.gradle'
-      - 'settings.gradle'
-      - 'gradle.properties'
+    paths-ignore:
+      - 'tools/**'
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ master ]
-    paths:
-      - 'core/**'
-      - 'router/**'
-      - 'apps/**'
-      - 'build.gradle'
-      - 'settings.gradle'
-      - 'gradle.properties'
+    paths-ignore:
+      - 'tools/**'
   schedule:
     - cron: '15 5 * * 2'
 

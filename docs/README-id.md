@@ -91,7 +91,7 @@ Laporan bug: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues atau https://github
 
 I2P+ dilisensikan di bawah AGPL v.3.
 
-Untuk lisensi sub-komponen lainnya, lihat: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Untuk lisensi sub-komponen lainnya, lihat: [README.md](docs/licenses/README.md)
 
 ## Lihat Juga
 

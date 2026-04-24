@@ -90,7 +90,7 @@ Bug reports: https://github.com/I2PPlus/i2pplus/issues
 
 I2P+ is licensed under the AGPL v.3.
 
-For the various sub-component licenses, see: [LICENSE.txt](docs/licenses/LICENSE.txt)
+For the various sub-component licenses, see: [README.md](docs/licenses/README.md)
 
 ## See also
 

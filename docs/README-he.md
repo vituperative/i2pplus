@@ -91,7 +91,7 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ מורשית תחת AGPL v.3.
 
-עבור רישיונות תת-רכיבים שונים, עיין ב: [LICENSE.txt](docs/licenses/LICENSE.txt)
+עבור רישיונות תת-רכיבים שונים, עיין ב: [README.md](docs/licenses/README.md)
 
 ## ראה גם
 

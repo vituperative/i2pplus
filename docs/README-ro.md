@@ -91,7 +91,7 @@ Rapoarte de erori: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues sau https://g
 
 I2P+ este licențiat sub AGPL v.3.
 
-Pentru licențele diferitelor sub-componente, consultați: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/licenses/README.md)
 
 ## Vezi și
 

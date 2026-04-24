@@ -89,7 +89,7 @@ I2P کو ڈاکر میں چلانے کے بارے میں مزید معلومات
 
 I2P+ کو AGPL v.3 کے تحت لائسنس دیا گیا ہے۔
 
-variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [LICENSE.txt](docs/licenses/LICENSE.txt)
+variousسابقہ اجزا کے لائسنسز کے لیے دیکھیں: [README.md](docs/licenses/README.md)
 
 ## یہ بھی دیکھیں
 

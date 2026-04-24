@@ -90,7 +90,7 @@ Hata raporları: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues veya https://gi
 
 I2P+, AGPL v.3 altında lisanslanmıştır.
 
-Çeşitli alt bileşen lisansları için bkz: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Çeşitli alt bileşen lisansları için bkz: [README.md](docs/licenses/README.md)
 
 ## Ayrıca Bkz
 

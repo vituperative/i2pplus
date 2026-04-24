@@ -91,7 +91,7 @@ Bug-rapporten: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues of https://github
 
 I2P+ is gelicentieerd onder AGPL v.3.
 
-Voor de verschillende sub-component licenties, zie: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Voor de verschillende sub-component licenties, zie: [README.md](docs/licenses/README.md)
 
 ## Zie ook
 

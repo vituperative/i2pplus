@@ -91,7 +91,7 @@ Raporty o błędach: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues lub https:/
 
 I2P+ jest licencjonowany na podstawie AGPL w wersji 3.
 
-W przypadku różnych subkomponentów zobacz: [LICENSE.txt](docs/licenses/LICENSE.txt)
+W przypadku różnych subkomponentów zobacz: [README.md](docs/licenses/README.md)
 
 ## Zobacz również
 

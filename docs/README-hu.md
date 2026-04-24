@@ -90,7 +90,7 @@ Hibajelentések: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues vagy https://gi
 
 Az I2P+ az AGPL v.3 licenciával rendelkezik.
 
-A különböző alkomponensek licenciájáért lásd: [LICENSE.txt](docs/licenses/LICENSE.txt)
+A különböző alkomponensek licenciájáért lásd: [README.md](docs/licenses/README.md)
 
 ## Lásd még
 

@@ -90,7 +90,7 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ ได้รับสิทธิ์อนุญาตภายใต้ AGPL v.3
 
-สำหรับสิทธิ์อนุญาตของ sub-component ต่างๆ ดู: [LICENSE.txt](docs/licenses/LICENSE.txt)
+สำหรับสิทธิ์อนุญาตของ sub-component ต่างๆ ดู: [README.md](docs/licenses/README.md)
 
 ## ดูเพิ่มเติม
 

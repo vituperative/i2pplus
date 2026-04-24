@@ -81,4 +81,4 @@ API: https://i2pplus.github.io/javadoc/
 
 I2P+ лицензирована по AGPL v.3.
 
-Для различных подкомпонентов лицензии см.: [LICENSE.txt](licenses/LICENSE.txt)
+Для различных подкомпонентов лицензии см.: [README.md](licenses/README.md)

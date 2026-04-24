@@ -2306,10 +2306,7 @@
 
   <!-- does NOT include launch4j licenses for Windows builds -->
   <target name="preplicenses" depends="preplicenses-unlesspkg">
-    <copy quiet="true" file="docs/licenses/LICENSE.txt" todir="pkg-temp/"/>
-    <copy quiet="true" todir="pkg-temp/licenses/">
-      <fileset dir="docs/licenses/"/>
-    </copy>
+    <copy quiet="true" file="docs/licenses/README.md" tofile="pkg-temp/licenses/LICENSE.txt"/>
     <copy quiet="true" file="apps/imagegen/identicon/README.md" tofile="pkg-temp/licenses/LICENSE-Identicon.txt"/>
     <copy quiet="true" file="apps/desktopgui/LICENSE" tofile="pkg-temp/licenses/LICENSE-DesktopGUI.txt"/>
   </target>

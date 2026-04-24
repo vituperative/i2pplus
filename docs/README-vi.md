@@ -90,7 +90,7 @@ Báo lỗi: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues hoặc https://githu
 
 I2P+ được cấp phép theo AGPL v.3.
 
-Để xem giấy phép của các thành phần phụ, xem: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Để xem giấy phép của các thành phần phụ, xem: [README.md](docs/licenses/README.md)
 
 ## Xem thêm
 

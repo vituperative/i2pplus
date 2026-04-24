@@ -91,7 +91,7 @@ API: https://i2pplus.github.io/javadoc/
 
 Το I2P+ έχει άδεια χρήσης υπό την AGPL v.3.
 
-Για τις άδειες των διάφορων υποσυστατικών, δείτε: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Για τις άδειες των διάφορων υποσυστατικών, δείτε: [README.md](docs/licenses/README.md)
 
 ## Δείτε επίσης
 

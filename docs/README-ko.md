@@ -90,7 +90,7 @@ Docker에서 I2P를 실행하는 방법에 대한 자세한 내용은 [docker/RE
 
 I2P+는 AGPL v.3으로 라이선스됩니다.
 
-various 하위 구성 요소 라이선스는 다음을 참조하세요: [LICENSE.txt](docs/licenses/LICENSE.txt)
+various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.md](docs/licenses/README.md)
 
 ## 참고하세요
 

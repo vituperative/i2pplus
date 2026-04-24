@@ -92,7 +92,7 @@ https://geti2p.net/how
 
 مرخص I2P+ تحت AGPL v.3.
 
-للتراخيص الفرعية للمكونات المختلفة، انظر: [LICENSE.txt](docs/licenses/LICENSE.txt)
+للتراخيص الفرعية للمكونات المختلفة، انظر: [README.md](docs/licenses/README.md)
 
 ## انظر أيضًا
 

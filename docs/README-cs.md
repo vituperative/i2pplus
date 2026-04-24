@@ -91,7 +91,7 @@ Nahlašování chyb: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues nebo https:
 
 I2P+ je licencováno pod AGPL v.3.
 
-Pro licence různých subkomponent viz: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Pro licence různých subkomponent viz: [README.md](docs/licenses/README.md)
 
 ## Viz také
 

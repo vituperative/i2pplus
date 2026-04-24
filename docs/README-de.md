@@ -91,7 +91,7 @@ Fehlerberichte: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues oder https://git
 
 I2P+ ist unter AGPL v.3 lizenziert.
 
-Für die verschiedenen Unterkomponentenlizenzen siehe: [LICENSE.txt](docs/licenses/LICENSE.txt)
+Für die verschiedenen Unterkomponentenlizenzen siehe: [README.md](docs/licenses/README.md)
 
 ## Siehe auch
 

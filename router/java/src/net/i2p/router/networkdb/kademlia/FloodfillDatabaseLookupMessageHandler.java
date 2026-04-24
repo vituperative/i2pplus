@@ -123,7 +123,7 @@ public class FloodfillDatabaseLookupMessageHandler implements HandlerJobBuilder 
         if (shouldBan && uptime > 5*60*1000) {
             if (dlm.getFrom() != null) {
                 String ipPort = getIPFromHash(dlm.getFrom());
-                _context.banlist().banlistRouter(dlm.getFrom(), " <b>➜</b> Excessive lookups" + (isFF ? " (Floodfill)" : ""),
+                _context.banlist().banlistRouter(dlm.getFrom(), "Excessive lookups" + (isFF ? " (Floodfill)" : ""),
                                                  null, null, bantime);
                 _banLogger.logBan(dlm.getFrom(), ipPort != null ? ipPort : "UNKNOWN", "Excessive lookups" + (isFF ? " (Floodfill)" : ""), bantime);
                 _context.commSystem().mayDisconnect(dlm.getFrom());

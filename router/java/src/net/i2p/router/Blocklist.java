@@ -373,8 +373,8 @@ public class Blocklist {
                 String reason;
                 String comment = _peerBlocklist.get(peer);
                 String peerhash = peer.toBase64().substring(0,6);
-                if (comment != null) {reason = " <b>➜</b> " + _x("Hash") + ": " + peerhash;}
-                else {reason = " <b>➜</b> " + _x("Banned by Router Hash");}
+                if (comment != null) {reason = "" + _x("Hash") + ": " + peerhash;}
+                else {reason = "" + _x("Banned by Router Hash");}
                 banlistRouter(peer, reason, comment);
             }
             _peerBlocklist.clear();
@@ -1176,7 +1176,7 @@ public class Blocklist {
     private void banlist(Hash peer, byte[] ip) {
         if (!_haveIPv6 && ip.length == 16) {return;} // Don't bother unless we have IPv6
         String sip = Addresses.toString(ip); // Temporary reason, until the job finishes
-        String reason = " <b>➜</b> " + _x("Blocklist") + ": " + sip;
+        String reason = "" + _x("Blocklist") + ": " + sip;
         if (sip != null && sip.startsWith("127.") || "0:0:0:0:0:0:0:1".equals(sip) ||
             sip.startsWith("192.168.") || sip.startsWith("10.") ||
             (ip != null && ip.length == 4 && (ip[0] * 0xff) == 172 && ip[1] >= 16 && ip[1] <= 31)) {
@@ -1250,7 +1250,7 @@ public class Blocklist {
             if (_log.shouldWarn()) {
                 _log.warn("Banning [" + peer.toBase64().substring(0,6) + "] for duration of session -> Blocklist entry");
             }
-            banlistRouter(peer, " <b>➜</b> Banned", "Banned", expireInterval());
+            banlistRouter(peer, "Banned", "Banned", expireInterval());
             return;
         }
 
@@ -1269,7 +1269,7 @@ public class Blocklist {
                     if (e == null || e.peer != null) {continue;}
                     if (match(ipint, toEntry(e.ip1, e.ip2))) {
                         try {br.close();} catch (IOException ioe) {}
-                        String reason = " <b>➜</b> " + _x("Blocklist") + ": " + sip;
+                        String reason = "" + _x("Blocklist") + ": " + sip;
                         if (_log.shouldWarn()) {
                             _log.warn("Banning [" + peer.toBase64().substring(0,6) + "] for duration of session -> Blocklist entry");
                         }

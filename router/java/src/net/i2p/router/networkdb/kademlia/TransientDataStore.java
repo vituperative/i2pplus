@@ -160,7 +160,7 @@ class TransientDataStore implements DataStore {
                         _log.warn("Banning " + (!caps.isEmpty() ? caps : "") + ' ' + (isFF ? "Floodfill" : "Router") +
                                   " [" + routerId + "] for 1h -> LU");
                     }
-                    _context.banlist().banlistRouter(key, "➜ LU Router", null, null,
+                    _context.banlist().banlistRouter(key, "LU Router", null, null,
                                                      _context.clock().now() + 60 * 60 * 1000);
                     String ipPort = getRouterIPPort(ri);
                     _banLogger.logBan(key, ipPort, "LU Router", 60 * 60 * 1000L);
@@ -174,7 +174,7 @@ class TransientDataStore implements DataStore {
                         _log.warn("Banning " + (!caps.isEmpty() ? caps : "") + ' ' + (isFF ? "Floodfill" : "Router") +
                                   " [" + routerId + "] for 1h -> XG");
                     }
-                    _context.banlist().banlistRouter(key, "➜ XG Router", null, null,
+                    _context.banlist().banlistRouter(key, "XG Router", null, null,
                                                      _context.clock().now() + 60 * 60 * 1000);
                     String ipPort = getRouterIPPort(ri);
                     _banLogger.logBan(key, ipPort, "XG Router", 60 * 60 * 1000L);

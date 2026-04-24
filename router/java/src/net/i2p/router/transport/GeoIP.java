@@ -793,10 +793,10 @@ public class GeoIP {
             if (country.equals(hisCountry)) {
                 if (blockMyCountry) {
                     _banLogger.logBanForever(h, ctx, "In our country (banned via config)");
-                    ctx.banlist().banlistRouterForever(h, " <b>➜</b> In our country (banned via config)");
+                    ctx.banlist().banlistRouterForever(h, "In our country (banned via config)");
                 } else {
                     _banLogger.logBanForever(h, ctx, "In our country (we are in Hidden mode)");
-                    ctx.banlist().banlistRouterForever(h, " <b>➜</b> In our country (we are in Hidden mode)");
+                    ctx.banlist().banlistRouterForever(h, "In our country (we are in Hidden mode)");
                 }
             }
         }

@@ -91,7 +91,7 @@ class GetBidsJob extends JobImpl {
                 // This used to be "no common transports" but it is almost always no transports at all
                 String ipPort = getRouterIPPort(msg.getTarget());
                 String banReason = _x("No transports");
-                context.banlist().banlistRouter(to, " <b>➜</b> " + banReason);
+                context.banlist().banlistRouter(to, "" + banReason);
                 // Log to sessionbans.txt with IP address (use default duration)
                 _banLogger.logBan(to, ipPort, banReason, Banlist.BANLIST_DURATION_MS);
             } else if (failedCount >= tmgr.getTransportCount()) {

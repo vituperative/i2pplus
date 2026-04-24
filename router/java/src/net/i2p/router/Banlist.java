@@ -130,8 +130,8 @@ public class Banlist {
         _corruptConnectionIPs = new ConcurrentHashMap<String, long[]>(64);
         _portHoppingIPs = new ConcurrentHashMap<String, long[]>(64);
         _context.jobQueue().addJob(new Cleanup(_context));
-        banlistRouterForever(Hash.FAKE_HASH, " <b>➜</b> " + "Invalid Hash"); // i2pd bug?
-        banlistRouterForever(HASH_ZERORI, " <b>➜</b> " + "Invalid Hash (All zeros)");
+        banlistRouterForever(Hash.FAKE_HASH, "" + "Invalid Hash"); // i2pd bug?
+        banlistRouterForever(HASH_ZERORI, "" + "Invalid Hash (All zeros)");
     }
 
     private class Cleanup extends JobImpl {
@@ -203,7 +203,7 @@ public class Banlist {
 
         if (data[1] >= MAX_OFFENSES) {
             // Ban the IP
-            String reason = " <b>➜</b> Sending bad packets";
+            String reason = "Sending bad packets";
             if (version != null) {
                 reason += " [" + version + "]";
             }
@@ -249,7 +249,7 @@ public class Banlist {
         }
 
         if (data[1] >= MAX_OFFENSES) {
-            String reason = " <b>➜</b> Corrupt connection (no data)";
+            String reason = "Corrupt connection (no data)";
             if (version != null) {
                 reason += " [" + version + "]";
             }
@@ -293,7 +293,7 @@ public class Banlist {
         }
 
         if (data[1] >= MAX_OFFENSES) {
-            String reason = " <b>➜</b> Port hopping";
+            String reason = "Port hopping";
 
             if (_log.shouldWarn()) {
                 _log.warn("Port hopping limit exceeded for " + ip + ": banning for " + BANLIST_DURATION_BAD_PACKETS/60000 + " min");

@@ -262,7 +262,7 @@ class HandleFloodfillDatabaseStoreMessageJob extends JobImpl {
                             logged = true;
                             _log.warn("Dropping unsolicited NetDbStore of " + cap + (isFF ? " Floodfill" : " Router") +
                                       " [" + key.toBase64().substring(0,6) + "] and banning for 24h -> Invalid Router version: " + v);
-                            getContext().banlist().banlistRouter(key, " <b>➜</b> Invalid Router version (" + v + ")", null, null, now + 24*60*60*1000);
+                            getContext().banlist().banlistRouter(key, "Invalid Router version (" + v + ")", null, null, now + 24*60*60*1000);
                             _banLogger.logBan(key, getContext(), "Invalid Router version (" + v + ")", 24*60*60*1000);
                         }
                     } else if (isFast && !isOld && prevNetDb == null) {
@@ -407,7 +407,7 @@ class HandleFloodfillDatabaseStoreMessageJob extends JobImpl {
                                 _log.warn("Dropping unsolicited NetDbStore of " + cap + (isFF ? " Floodfill" : " Router") +
                                           " [" + key.toBase64().substring(0,6) + "] and banning for 8h -> Inconsistent public keys");
                             }
-                            getContext().banlist().banlistRouter(key, " <b>➜</b> Inconsistent public keys", null, null, now + 8*60*60*1000);
+                            getContext().banlist().banlistRouter(key, "Inconsistent public keys", null, null, now + 8*60*60*1000);
                             _banLogger.logBan(key, getContext(), "Inconsistent public keys", 8*60*60*1000);
                             shouldStore = false;
                         } else if (!ri.getIdentity().getSigningPublicKey().equals(prevNetDb.getIdentity().getSigningPublicKey())) {
@@ -415,7 +415,7 @@ class HandleFloodfillDatabaseStoreMessageJob extends JobImpl {
                                 _log.warn("Dropping unsolicited NetDbStore of " + cap + (isFF ? " Floodfill" : " Router") +
                                           " [" + key.toBase64().substring(0,6) + "] and banning for 8h -> Inconsistent signing keys");
                             }
-                            getContext().banlist().banlistRouter(key, " <b>➜</b> Inconsistent signing keys", null, null, now + 8*60*60*1000);
+                            getContext().banlist().banlistRouter(key, "Inconsistent signing keys", null, null, now + 8*60*60*1000);
                             _banLogger.logBan(key, getContext(), "Inconsistent signing keys", 8*60*60*1000);
                             shouldStore = false;
                         }

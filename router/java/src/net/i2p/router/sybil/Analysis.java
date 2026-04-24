@@ -252,7 +252,7 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                     if (b != null && b.length == Hash.HASH_LENGTH) {
                         Hash h = Hash.create(b);
                         long until = e.getValue().longValue();
-                        String reason = " <b>➜</b> Sybil Analysis {0}";
+                        String reason = "Sybil Analysis {0}";
                         ban.banlistRouter(h, reason, when, null, until);
                         String ipPort = "UNKNOWN";
                         RouterInfo ri = _context.netDb().lookupRouterInfoLocally(h);
@@ -580,7 +580,7 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                         if (host != null) {blocks.add(host);}
                     }
                 }
-                String reason = " <b>➜</b> Sybil Analysis (" + fmt.format(p).replace(".00", "") + " points)";
+                String reason = "Sybil Analysis (" + fmt.format(p).replace(".00", "") + " points)";
                 _context.banlist().banlistRouter(h, reason, null, null, blockUntil);
                 _banLogger.logBan(h, ipPort, reason, blockUntil);
 

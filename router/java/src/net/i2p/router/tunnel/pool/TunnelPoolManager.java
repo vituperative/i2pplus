@@ -58,8 +58,8 @@ public class TunnelPoolManager implements TunnelManagerFacade {
     private static final String PROP_PRUNE_EARLY_EXPIRY = "router.tunnel.pruneEarlyExpiryDelay";
     private static final long DEFAULT_PRUNE_EARLY_EXPIRY = 30*1000; // 30 seconds
     private static final int DEFAULT_SLOW_THRESHOLD_MS = 0; // 0 means use 1.5x average
-    private static final int DEFAULT_RUN_INTERVAL_MS = 60*1000; // 1m default
-    private static final long REFRESH_DELAY_AFTER_REMOVAL = 5*1000; // wait for new tunnels to build
+    private static final int DEFAULT_RUN_INTERVAL_MS = 90*1000; // 90s default
+    private static final long REFRESH_DELAY_AFTER_REMOVAL = 15*1000; // wait for new tunnels to build
     private static final double MAX_SHARE_RATIO = 100000d;
 
     public TunnelPoolManager(RouterContext ctx) {
@@ -678,7 +678,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
             long avgLag = _mgr._context.jobQueue().getAvgLag();
             // If queue overloaded, increase interval to reduce load (check both max and avg lag)
             if (readyCount > maxWaiting || maxLag >= 10 || avgLag >= 10) {
-                interval = 90 * 1000; // 90s
+                interval = 2 * 60 * 1000; // 2m
                 if (_mgr._log.shouldWarn()) {
                     _mgr._log.warn("Job queue overloaded (Ready jobs: " + readyCount + ", Max lag: " + maxLag +
                                    "ms, Avg lag: " + avgLag + "ms) -> Increasing interval to 90s...");
@@ -694,7 +694,7 @@ public class TunnelPoolManager implements TunnelManagerFacade {
 
     /**
      * Job to refresh LeaseSets after slow tunnel removal.
-     * Runs ~5s after RemoveSlowTunnelsJob to allow new tunnels to build.
+     * Runs ~15s after RemoveSlowTunnelsJob to allow new tunnels to build.
      */
     private static class RefreshLeaseSetsJob extends JobImpl {
         private final TunnelPoolManager _mgr;

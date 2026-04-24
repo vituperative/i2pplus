@@ -987,9 +987,15 @@ public class TunnelController implements Logging {
             if (oldState != TunnelState.STOPPED) {stopTunnel();}
         }
         if (oldState != TunnelState.STOPPED) {
-            long ms = _tunnel.getContext().isRouterContext() ? 1000 : 500;
-            try {Thread.sleep(ms);}
-            catch (InterruptedException ie) {}
+            // Wait up to 10s for tunnel to actually stop (stopTunnel is async)
+            int waited = 0;
+            while (_state != TunnelState.STOPPED && waited < 10000) {
+                try {Thread.sleep(50);}
+                catch (InterruptedException ie) {break;}
+                waited += 50;
+            }
+            if (_state != TunnelState.STOPPED && _log.shouldWarn())
+                _log.warn("Tunnel [" + getName() + "] didn't stop after " + waited + "ms -> Forcing restart...");
         }
         startTunnel();
     }

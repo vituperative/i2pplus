@@ -1,3 +1,5 @@
+2026-04-25 2.12+ (API 0.9.69) released
+
 2026-04-21 dr|z3d
   * Router:
     - Tunnel pool pruning: add pruneExcessTunnels() method to stay within

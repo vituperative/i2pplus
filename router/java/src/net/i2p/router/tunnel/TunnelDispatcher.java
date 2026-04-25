@@ -712,7 +712,7 @@ public class TunnelDispatcher implements Service {
             OutboundTunnelEndpoint endpoint = _outboundEndpoints.get(msg.getTunnelIdObj());
             if (endpoint != null) {
                 if (_log.shouldDebug())
-                    _log.debug("Dispatch where we are the Outbound Endpoint:\n* " + endpoint + ": " + msg + " from [" + recvFrom.toBase64().substring(0, 6) + "]");
+                    _log.debug("Dispatch where we are the Outbound Endpoint:\n* " + endpoint + msg + " from [" + recvFrom.toBase64().substring(0, 6) + "]");
                 _context.messageHistory().tunnelDispatched(msg.getUniqueId(), msg.getTunnelId(), "outbound endpoint");
                 endpoint.dispatch(msg, recvFrom);
                 _context.statManager().addRateData("tunnel.dispatchEndpoint", 1);
@@ -789,10 +789,11 @@ public class TunnelDispatcher implements Service {
         long now = _context.clock().now();
         long age = now - msg.getMessageExpiration();
         TunnelGateway gw = _outboundGateways.get(outboundTunnel);
+        boolean hasMsg = msg != null && !msg.toString().isEmpty();
 
         if (gw != null) {
             if (_log.shouldDebug()) {
-                _log.debug("Dispatch Outbound through " + outboundTunnel.getTunnelId() + " -> " + msg);
+                _log.debug("Dispatching Outbound through " + outboundTunnel.getTunnelId() + (hasMsg ? msg : ""));
             }
 
             if (msg.getMessageExpiration() < now - Router.CLOCK_FUDGE_FACTOR) {
@@ -803,12 +804,12 @@ public class TunnelDispatcher implements Service {
                 return;
             } else if (msg.getMessageExpiration() < now) {
                 if (_log.shouldWarn()) {
-                    _log.warn("Dropping stale tunnel message  -> Expired " + age + "ms ago (Cutoff: 60s)\n* " + msg);
+                    _log.warn("Dropping stale tunnel message  -> Expired " + age + "ms ago (Cutoff: 60s)" + (hasMsg ? msg : ""));
                 }
             } else if (msg.getMessageExpiration() > now + MAX_FUTURE_EXPIRATION) {
                 if (_log.shouldWarn()) {
                     _log.warn("Dropping tunnel message that expires " + age + "ms in the future [!] (Cutoff: " +
-                               MAX_FUTURE_EXPIRATION / 1000 + "s) \n* " + msg);
+                               MAX_FUTURE_EXPIRATION / 1000 + "s)" + (hasMsg ? msg : ""));
                 }
                 return;
             }
@@ -828,7 +829,7 @@ public class TunnelDispatcher implements Service {
             _context.messageHistory().droppedTunnelGatewayMessageUnknown(msg.getUniqueId(), outboundTunnel.getTunnelId());
             if (_log.shouldWarn()) {
                 _log.warn("No matching Outbound tunnel for [TunnelId " + outboundTunnel +
-                          "] from " + _outboundGateways.size() + " Outbound gateways", new Exception("src"));
+                          "] from " + _outboundGateways.size() + " Outbound gateways"); //, new Exception("src"));
             }
         }
     }
@@ -881,24 +882,29 @@ public class TunnelDispatcher implements Service {
         _context.statManager().addRateData("tunnel.participatingTunnels", partCount);
     }
 
-    /**
-     * Implement RED (Random Early Discard) to enforce bandwidth limits
-     */
-    boolean shouldDropParticipatingMessage(Location loc, int type, int length, SyntheticREDQueue bwe) {
-        if (length <= 0) return false;
+/**
+         * Implement RED (Random Early Discard) to enforce bandwidth limits.
+         * Only active when queue size > minThreshold (congestion).
+         * When queue > maxThreshold, ALL messages are dropped (regardless of factor).
+         */
+        boolean shouldDropParticipatingMessage(Location loc, int type, int length, SyntheticREDQueue bwe) {
+            if (length <= 0) return false;
 
-        // Enable adaptive throttling to prevent queue overflow during congestion
-        // Configurable via router.transitThrottleFactor property (default: 0.95f)
-        // 0.0f disables all RED-based dropping
-        // 1.0f is aggressive (up to 100% drop at high load)
-        float factor = _context.getProperty("router.transitThrottleFactor", 0.95f);
+// Enable transit throttling. Configurable via router.transitThrottleFactor.
+// 0.0f = disabled
+// 0.95f = light (~5% drop at high congestion)
+// 0.1f = aggressive (higher drop rate)
+// 1.0f = most aggressive
+float factor = _context.getProperty("router.transitThrottleFactor", 0.95f);
 
-        int percentage = (int) Math.min(Math.round((factor - 1.0f) * 100.0f), 100.0f);
+// Approximate drop probability for logging
+// 0.1f = ~90%, 0.95f = ~5%, 0.0f = 0%
+int pct = Math.max(0, (int)((1.0f - factor) * 100));
 
         if (bwe != null && !bwe.offer(length, factor)) {
             if (_log.shouldWarn()) {
                 _log.warn("Dropping participating message (per-tunnel limit)" +
-                          (percentage > 0 ? " -> Drop probability: " + Math.min(percentage, 100) + "%" : "") +
+                          (pct > 0 ? " -> Approx drop: " + pct + "%" : "") +
                           "\n* Location: " + loc + ", Type: " + type + ", Length: " + length +
                           ", BWE: " + bwe);
             }
@@ -909,7 +915,7 @@ public class TunnelDispatcher implements Service {
         if (reject) {
             if (_log.shouldWarn()) {
                 _log.warn("Dropping participating message (global bandwidth limit)" +
-                          (percentage > 0 ? " -> Drop probability: " + Math.min(percentage, 100) + "%" : "") +
+                          (pct > 0 ? " -> Approx drop: " + pct + "%" : "") +
                           "\n* Location: " + loc + ", Type: " + type + ", Length: " + length);
             }
             _context.statManager().addRateData("tunnel.participatingMessageDropped", 1);
@@ -917,18 +923,28 @@ public class TunnelDispatcher implements Service {
         return reject;
     }
 
-    /**
-     * Get the max bandwidth per tunnel
-     */
-    int getMaxPerTunnelBandwidth(Location loc) {
-        final int MAX_TUNNELS_THRESHOLD = 4000;
-        int maxTunnels = _context.getProperty(RouterThrottleImpl.PROP_MAX_TUNNELS,
-                                              RouterThrottleImpl.DEFAULT_MAX_TUNNELS);
-        int max = _context.bandwidthLimiter().getMaxShareBandwidth();
+/**
+         * Get the max bandwidth per transit tunnel.
+         * Scales with allocation: higher share = higher per-tunnel cap.
+         */
+        int getMaxPerTunnelBandwidth(Location loc) {
+            final int MAX_TUNNELS_THRESHOLD = 4000;
+            int maxTunnels = _context.getProperty(RouterThrottleImpl.PROP_MAX_TUNNELS,
+                                                  RouterThrottleImpl.DEFAULT_MAX_TUNNELS);
+            int max = _context.bandwidthLimiter().getMaxShareBandwidth();
 
-        // Maximum bandwidth allocation - completely remove per-tunnel limits
-        return Integer.MAX_VALUE;
-    }
+            // Per-tunnel cap: use share / min(maxTunnels, 100)
+            // Only apply floor if share is generous (> 256 KB/s)
+            int calculated = max / Math.min(maxTunnels, 100);
+            if (max > 256 * 1024) {
+                // Scale floor based on allocation
+                int floor = 10 * 1024; // 10 KB/s default
+                if (max > 10 * 1024 * 1024) floor = 50 * 1024;
+                else if (max > 1024 * 1024) floor = 30 * 1024;
+                return Math.max(calculated, floor);
+            }
+            return calculated;
+        }
 
     /**
      * Start up the TunnelDispatcher

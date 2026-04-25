@@ -736,7 +736,7 @@ class EventPumper implements Runnable {
                     } else if (shouldDebug) {
                         _log.debug("EOF on " + con);
                     }
-                    con.closeOnTimeout("\n* EOF on Inbound connection -> No data received", null);
+                    con.closeOnTimeout("\n* EOF on " + (con.isInbound() ? "Inbound" : "Outbound") + " connection -> No data received", null);
                     releaseBuf(buf);
                     break;
                 }

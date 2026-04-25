@@ -1,0 +1,14 @@
+<launch4jConfig>
+  <headerType>0</headerType>
+  <jar>../../build/launchi2p.jar</jar>
+  <outfile>../../build/i2p.exe</outfile>
+  <errTitle>I2P+</errTitle>
+  <chdir>.</chdir>
+  <customProcName>false</customProcName>
+  <!-- icon>../../resources/windows/start.ico</icon -->
+  <jre>
+    <minVersion>1.8.0</minVersion>
+    <maxHeapSize>512</maxHeapSize>
+    <args>-Djava.library.path=.;lib -DloggerFilenameOverride=logs/log-router-@.txt -Dorg.mortbay.http.Version.paranoid=true -Dorg.mortbay.util.FileResource.checkAliases=false</args>
+  </jre>
+</launch4jConfig>

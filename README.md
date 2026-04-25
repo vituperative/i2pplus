@@ -16,6 +16,10 @@ Latest release: https://i2pplus.github.io/
 
 See [INSTALL.md](docs/INSTALL.md) or https://i2pplus.github.io/ for installation instructions.
 
+### Windows installer note
+
+With Java > 1.8 or alternative distributions (AdoptOpenJDK, etc.), the installer exe may fail with "Java not found" or "invalid/corrupt" errors. Workaround: extract install.jar from the exe and run `java -jar install.jar` from the command line.
+
 ## Documentation
 
 https://geti2p.net/how

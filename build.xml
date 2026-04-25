@@ -1607,6 +1607,14 @@
       <!-- Gradle cleanup -->
       <delete dir=".gradle" quiet="true"/>
       <delete dir="tools/gradle/wrapper/.gradle" quiet="true"/>
+      <!-- Eclipse cleanup -->
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir=".">
+          <include name=".classpath"/>
+          <include name=".project"/>
+          <include name=".settings"/>
+        </fileset>
+      </delete>
       <!-- Clean Gradle build directories from subprojects -->
       <delete includeEmptyDirs="true" quiet="true">
         <fileset dir="." includes="**/build" excludes="build/README.md"/>
@@ -1765,6 +1773,7 @@
       <delete dir="core/c/jcpuid/lib" quiet="true"/>
       <delete dir="installer/lib/izpack/5/patches/java/build" quiet="true"/>
       <delete dir="installer/lib/wrapper/build-temp" quiet="true"/>
+      <delete dir="installer/build" quiet="true"/>
       <delete dir="reproducible/build" quiet="true"/>
       <delete quiet="true">
         <fileset dir="installer/lib/wrapper/win64">
@@ -1842,9 +1851,6 @@
     <mkdir dir="dist"/>
     <parallel>
       <copy quiet="true" file="build/jbigi.jar" todir="pkg-temp/lib"/>
-      <copy quiet="true" todir="pkg-temp/lib/wrapper/solaris/">
-        <fileset dir="installer/lib/wrapper/solaris/" excludes="*.txt README.md"/>
-      </copy>
       <!--
          Force using the new wrapper.jar.
          The new jar with the old Windows binaries will *fail to work* on windows, so we'll copy the correct
@@ -2321,14 +2327,8 @@
     <copy quiet="true" file="apps/jetty/apache-tomcat-${tomcat.ver}/NOTICE" tofile="pkg-temp/licenses/NOTICE-Tomcat.txt"/>
   </target>
 
-  <!-- DOES include launch4j licenses for Windows builds -->
+<!-- DOES include launch4j licenses for Windows builds -->
   <target name="preplicenses-windows" depends="preplicenses">
-    <!--
-              The license in launch4j/ is a BSD license for launch4j
-              The license in launch4j/head is a MIT license for the code that is actually wrapped around the jars
-              So we include the MIT one in our binary package
-        -->
-    <copy quiet="true" file="installer/lib/launch4j/head/LICENSE.txt" tofile="pkg-temp/licenses/LICENSE-Launch4j.txt"/>
   </target>
 
   <target name="prepthemeupdates">

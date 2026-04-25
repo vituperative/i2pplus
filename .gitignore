@@ -218,5 +218,8 @@ installer/lib/wrapper/win64/*.o
 installer/lib/wrapper/win64/*.rc
 installer/lib/wrapper/win64/console.ico
 
+# Installer build artifacts
+installer/build/
+
 # Session bans
 router/sessionbans/

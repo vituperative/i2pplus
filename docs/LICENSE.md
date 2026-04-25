@@ -146,6 +146,11 @@ Launch4j includes the following third-party components:
 **FlatLaf** (flatlaf.jar) - Apache License 2.0
 **Nuvola Icon Theme** (Nuvola.Icon.Theme.jar) - LGPL 2.1
 
+**MinGW / w32api** (launch4j/bin, launch4j/w32api)
+MinGW base runtime is public domain.
+w32api: Free to use, modify and copy. No restrictions on compiled programs.
+GCC/GDB/GNU Make: GNU General Public License.
+
 ## GEOIP DATA
 
 Database and Contents Copyright (c) 2018 MaxMind, Inc. This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.

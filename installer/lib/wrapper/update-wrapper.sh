@@ -37,6 +37,24 @@ mkdir -p "${CACHE_DIR}"
 DELTA_CACHE="${CACHE_DIR}/${DELTA_PACK}"
 DELTA_DIR="${CACHE_DIR}/deltapack_${VERSION}"
 
+echo "Checking wrapper ${VERSION}..."
+
+check_up_to_date() {
+    [ -f "${WRAPPER_DIR}/all/wrapper.jar" ] || return 1
+    [ -f "${WRAPPER_DIR}/linux64/libwrapper.so" ] || return 1
+    [ -f "${WRAPPER_DIR}/linux64/i2psvc" ] || return 1
+    [ -f "${WRAPPER_DIR}/win64/wrapper.dll" ] || return 1
+    [ -f "${WRAPPER_DIR}/macosx/libwrapper-macosx-universal-64.jnilib" ] || return 1
+    local jar_ver=$(unzip -p "${WRAPPER_DIR}/all/wrapper.jar" META-INF/MANIFEST.MF 2>/dev/null | grep "Implementation-Version" | cut -d' ' -f2 | tr -d '\r')
+    [ "${jar_ver}" = "${VERSION}" ] || return 1
+    return 0
+}
+
+if check_up_to_date; then
+    echo "Nothing to do, all wrapper files are up to date."
+    exit 0
+fi
+
 for f in "${CACHE_DIR}"/deltapack_*; do
     [ -d "$f" ] || continue
     if [ "$f" != "${DELTA_DIR}" ]; then
@@ -58,9 +76,9 @@ if [ -d "${DELTA_DIR}" ]; then
 else
     echo "=== Downloading Delta Pack ${VERSION} ==="
     echo "URL: ${BASE_URL}/Wrapper_${VERSION}_${SRC_DATE}/${DELTA_PACK}"
-    
+
     curl -fSL "${BASE_URL}/Wrapper_${VERSION}_${SRC_DATE}/${DELTA_PACK}" -o "${DELTA_CACHE}"
-    
+
     echo "Extracting..."
     mkdir -p "${DELTA_DIR}"
     unzip -qo "${DELTA_CACHE}" -d "${DELTA_DIR}"

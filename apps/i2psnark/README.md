@@ -39,3 +39,13 @@ I2PSnark brings BitTorrent to I2P with privacy built-in:
 # Ant (from repo root)
 ant buildI2PSnark
 ```
+
+## Standalone Build
+
+Creates a standalone ZIP with bundled Jetty that can run independently of the router:
+
+```bash
+ant i2psnark        # ZIP: dist/i2psnark-standalone.zip
+ant i2psnark7zip    # 7z: dist/i2psnark-standalone.7z
+ant i2psnark_nozip   # Directory: dist/i2psnark_standalone/
+```

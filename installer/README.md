@@ -11,16 +11,12 @@ Builds the I2P+ installer JAR and Windows EXE packages using IzPack (v4 and v5).
 | `lib/wrapper/`  | Tanuki Java Service Wrapper binaries                |
 | `lib/launch4j/` | Launch4j Windows EXE wrapper                        |
 | `resources/`    | Files bundled into the installed I2P package        |
-| `c/i2pExe/`     | Windows native launcher source (Visual Studio)      |
 | `java/`         | Installer Java source                               |
 | `tools/`        | Build-time utilities                                |
 
 ## Building
 
 ```bash
-# Gradle
-./gradlew :installer:jar
-
 # Ant (from repo root)
 ant build
 ```

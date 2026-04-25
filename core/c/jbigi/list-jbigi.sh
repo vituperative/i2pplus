@@ -48,5 +48,5 @@ print_platform() {
 [ "$LINUX64_COUNT" -gt 0 ] && print_platform "Linux 64-bit" "$LINUX64" "$LINUX64_COUNT"
 [ "$ARM64_COUNT" -gt 0 ] && print_platform "Linux ARM64" "$ARM64" "$ARM64_COUNT"
 
-printf "  Total: %d binaries in %s\n" "$TOTAL" "$DIR"
+printf "  Total: %d binaries in %s\n" "$TOTAL" "${DIR#$(pwd)/}"
 echo ""

@@ -43,6 +43,8 @@ import net.i2p.util.HexDump;
  */
 class SOCKS4aServer extends SOCKSServer {
 
+    private static final int MAX_STRING_LEN = 1024;
+
     private boolean setupCompleted;
 
     /**
@@ -140,11 +142,15 @@ class SOCKS4aServer extends SOCKSServer {
             connHostName = readString(in);
     }
 
-    private String readString(DataInputStream in) throws IOException {
+    private static String readString(DataInputStream in) throws IOException {
         StringBuilder sb = new StringBuilder(16);
+        int i = 0;
         char c;
-        while ((c = (char) (in.readByte() & 0xff)) != 0)
+        while ((c = (char) (in.readByte() & 0xff)) != 0) {
+            if (i++ >= MAX_STRING_LEN)
+                throw new IOException("String too long");
             sb.append(c);
+        }
         return sb.toString();
     }
 

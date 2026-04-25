@@ -181,6 +181,10 @@ tools/codeql/db/
 tools/codeql/packs/
 tools/template/.source-index.json
 tools/codeql/packs/*/
+tools/codeql/codeql-*/
+tools/codeql/version.txt
+tools/pmd/version.txt
+tools/checkstyle/version.txt
 TODO.md
 google-java-format/
 !tools/java-format/google-java-format/build.sh

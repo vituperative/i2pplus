@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+  "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+  Checkstyle configuration for I2P+.
+  Complements PMD (which covers error-prone, performance, threading, security).
+  Modules marked NOISY produce thousands of violations in legacy code.
+  Remove them en-masse by searching for NOISY.
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+
+  <!-- Newline at end of file -->
+  <module name="NewlineAtEndOfFile"/>
+
+  <!-- Exclusions: skip third-party code, generated code, build output -->
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*/.*_jsp\.java$"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]WEB-INF[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]build[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]org[/\\]apache[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]org[/\\]minidns[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]mpatric[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]metanotion[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]vuze[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]ndt[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]gnu[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]google[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]org[/\\]bouncycastle[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]org[/\\]cybergarage[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]jetty[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]maxmind[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]freenetproject[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]org[/\\]freenetproject[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]UPnP\.java$"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]pack200[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]jrobin[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]southernstorm[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]wrapper[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]json[/\\]simple[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]thetransactioncompany[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]mindrot[/\\].*"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value=".*[/\\]com[/\\]maxmind[/\\].*"/>
+  </module>
+
+  <!-- Line length (generous for I2P+ conventions) -->
+  <module name="LineLength">
+    <property name="max" value="1000"/>
+    <property name="ignorePattern" value="^package.*|^import.*|a]href|href|http://|https://|ftp://"/>
+  </module>
+
+  <!-- Tab characters NOISY -->
+  <!-- <module name="FileTabCharacter"><property name="eachLine" value="true"/></module> -->
+
+  <module name="TreeWalker">
+    <!-- Naming conventions NOISY -->
+    <!-- <module name="ConstantName"/> -->
+    <!-- <module name="LocalFinalVariableName"/> -->
+    <!-- <module name="LocalVariableName"/> -->
+    <!-- <module name="MemberName"/> -->
+    <!-- <module name="MethodName"/> -->
+    <!-- <module name="PackageName"/> -->
+    <!-- <module name="ParameterName"/> -->
+    <!-- <module name="StaticVariableName"/> -->
+    <!-- <module name="TypeName"/> -->
+
+    <!-- Imports -->
+    <!-- <module name="AvoidStarImport"/> NOISY -->
+    <module name="RedundantImport"/>
+    <!-- <module name="UnusedImports"/> -->
+
+    <!-- Whitespace -->
+    <!-- <module name="WhitespaceAfter"/> NOISY -->
+    <module name="NoWhitespaceBefore"/>
+    <!-- <module name="GenericWhitespace"/> NOISY -->
+    <!-- <module name="MethodParamPad"/> NOISY -->
+    <!-- <module name="ParenPad"/> NOISY -->
+    <!-- <module name="TypecastParenPad"/> NOISY -->
+
+    <!-- Blocks -->
+    <!-- <module name="NeedBraces"><property name="allowSingleLineStatement" value="true"/></module> NOISY -->
+    <!-- <module name="LeftCurly"/> NOISY -->
+    <!-- <module name="RightCurly"/> NOISY -->
+    <!-- <module name="EmptyBlock"><property name="option" value="TEXT"/></module> NOISY -->
+
+    <!-- Coding -->
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="StringLiteralEquality"/>
+    <!-- <module name="OneStatementPerLine"/> NOISY -->
+    <module name="FallThrough"/>
+    <!-- <module name="MissingSwitchDefault"/> NOISY -->
+    <module name="UpperEll"/>
+    <!-- <module name="MultipleVariableDeclarations"/> NOISY -->
+    <!-- <module name="ModifierOrder"/> NOISY -->
+    <!-- <module name="OverloadMethodsDeclarationOrder"/> NOISY -->
+    <!-- <module name="VariableDeclarationUsageDistance"/> NOISY -->
+
+    <!-- Indentation -->
+    <module name="Indentation">
+      <property name="basicOffset" value="4"/>
+      <property name="caseIndent" value="4"/>
+      <property name="arrayInitIndent" value="4"/>
+      <property name="lineWrappingIndentation" value="4"/>
+      <property name="tabWidth" value="4"/>
+    </module>
+
+    <!-- Support @SuppressWarnings("checkstyle:...") -->
+    <module name="SuppressWarningsHolder"/>
+  </module>
+
+  <module name="SuppressWarningsFilter"/>
+</module>

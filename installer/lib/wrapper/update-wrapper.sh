@@ -1,0 +1,108 @@
+#!/bin/bash
+# Update Tanuki Wrapper from Delta Pack
+# Downloads the delta pack from SourceForge and extracts Linux/FreeBSD/macOS binaries
+#
+# Usage: update-wrapper.sh [--version X.X.X]
+# Requirements: curl, unzip
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+WRAPPER_DIR="${SCRIPT_DIR}"
+CACHE_DIR="${WRAPPER_DIR}/cache"
+
+if [ -f "${WRAPPER_DIR}/version.txt" ]; then
+    VERSION=$(grep "^WRAPPER_VERSION=" "${WRAPPER_DIR}/version.txt" | cut -d= -f2)
+else
+    VERSION="3.6.4"
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --version) VERSION="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
+SRC_DATE="20251218"
+case "$VERSION" in
+    3.6.5) SRC_DATE="20260317" ;;
+    3.6.4) SRC_DATE="20251218" ;;
+    3.6.3) SRC_DATE="20250910" ;;
+esac
+
+BASE_URL="https://sourceforge.net/projects/wrapper/files/wrapper"
+DELTA_PACK="wrapper-delta-pack-${VERSION}.zip"
+
+mkdir -p "${CACHE_DIR}"
+
+DELTA_CACHE="${CACHE_DIR}/${DELTA_PACK}"
+DELTA_DIR="${CACHE_DIR}/deltapack_${VERSION}"
+
+for f in "${CACHE_DIR}"/deltapack_*; do
+    [ -d "$f" ] || continue
+    if [ "$f" != "${DELTA_DIR}" ]; then
+        echo "Removing old delta pack: $f"
+        rm -rf "$f"
+    fi
+done
+
+for f in "${CACHE_DIR}"/*delta*.zip; do
+    [ -f "$f" ] || continue
+    if [ "$f" != "${DELTA_CACHE}" ]; then
+        echo "Removing old zip: $f"
+        rm -f "$f"
+    fi
+done
+
+if [ -d "${DELTA_DIR}" ]; then
+    echo "Using cached delta pack: ${DELTA_DIR}"
+else
+    echo "=== Downloading Delta Pack ${VERSION} ==="
+    echo "URL: ${BASE_URL}/Wrapper_${VERSION}_${SRC_DATE}/${DELTA_PACK}"
+    
+    curl -fSL "${BASE_URL}/Wrapper_${VERSION}_${SRC_DATE}/${DELTA_PACK}" -o "${DELTA_CACHE}"
+    
+    echo "Extracting..."
+    mkdir -p "${DELTA_DIR}"
+    unzip -qo "${DELTA_CACHE}" -d "${DELTA_DIR}"
+fi
+
+LIB="${DELTA_DIR}/wrapper-delta-pack-${VERSION}/lib"
+BIN="${DELTA_DIR}/wrapper-delta-pack-${VERSION}/bin"
+
+echo "Updating wrapper.jar..."
+cp "${LIB}/wrapper.jar" "${WRAPPER_DIR}/all/wrapper.jar"
+
+echo "Updating platform binaries..."
+
+declare -A MAPPINGS=(
+    ["libwrapper-linux-x86-32.so"]="linux"
+    ["libwrapper-linux-x86-64.so"]="linux64"
+    ["libwrapper-linux-arm-64.so"]="linux64-armv8"
+    ["libwrapper-linux-armel-32.so"]="linux-armv5"
+    ["libwrapper-linux-armhf-32.so"]="linux-armv7"
+    ["libwrapper-freebsd-x86-32.so"]="freebsd"
+    ["libwrapper-freebsd-x86-64.so"]="freebsd64"
+    ["libwrapper-freebsd-arm-64.so"]="freebsd-arm64"
+)
+
+for lib in "${!MAPPINGS[@]}"; do
+    target="${MAPPINGS[$lib]}"
+    if [ -f "${LIB}/${lib}" ]; then
+        cp "${LIB}/${lib}" "${WRAPPER_DIR}/${target}/libwrapper.so"
+        if [ -f "${BIN}/${lib%.so}" ]; then
+            cp "${BIN}/${lib%.so}" "${WRAPPER_DIR}/${target}/i2psvc"
+            chmod -x "${WRAPPER_DIR}/${target}/i2psvc"
+            strip "${WRAPPER_DIR}/${target}/i2psvc" 2>/dev/null || true
+        fi
+        chmod -x "${WRAPPER_DIR}/${target}/libwrapper.so"
+        strip "${WRAPPER_DIR}/${target}/libwrapper.so" 2>/dev/null || true
+    fi
+done
+
+cp "${LIB}/libwrapper-macosx-universal-64.jnilib" "${WRAPPER_DIR}/macosx/" 2>/dev/null || true
+cp "${LIB}/libwrapper-macosx-arm-64.dylib" "${WRAPPER_DIR}/macosx-arm64/" 2>/dev/null || true
+
+echo ""
+echo "=== Updated ==="
+ls -la "${WRAPPER_DIR}/all/"
+ls -la "${WRAPPER_DIR}/linux64/"

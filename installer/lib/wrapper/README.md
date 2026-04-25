@@ -40,21 +40,54 @@ From the delta pack's `lib/` directory, strip binaries (if tools are available) 
 
 From the delta pack's `bin/` directory, strip binaries (if tools are available) and copy to the appropriate directory:
 
-| Platform          | Directory            | File                                                             |
-| ----------------- | -------------------- | ---------------------------------------------------------------- |
-| FreeBSD x86       | freebsd/             | i2psvc                                                           |
-| FreeBSD x86-64    | freebsd64/           | i2psvc                                                           |
-| FreeBSD ARM64     | freebsd-arm64/       | i2psvc                                                           |
-| Linux x86         | linux/               | i2psvc                                                           |
-| Linux x86-64      | linux64/             | i2psvc                                                           |
-| Linux ARM64       | linux64-armv8/       | i2psvc                                                           |
-| Linux ARM v5      | linux-armv5/         | i2psvc                                                           |
-| Linux ARM v7      | linux-armv7/         | i2psvc                                                           |
-| macOS Universal   | macosx/              | i2psvc-macosx-universal-64                                       |
-| Windows x86       | win32/               | I2Psvc.exe                                                       |
-| Windows x86-64    | win64/               | I2Psvc.exe                                                       |
+| Platform          | Directory            | File                                                      |
+| ----------------- | -------------------- | --------------------------------------------------------- |
+| FreeBSD x86       | freebsd/             | i2psvc                                                    |
+| FreeBSD x86-64    | freebsd64/           | i2psvc                                                    |
+| FreeBSD ARM64     | freebsd-arm64/       | i2psvc                                                    |
+| Linux x86         | linux/               | i2psvc                                                    |
+| Linux x86-64      | linux64/             | i2psvc                                                    |
+| Linux ARM64       | linux64-armv8/       | i2psvc                                                    |
+| Linux ARM v5      | linux-armv5/         | i2psvc                                                    |
+| Linux ARM v7      | linux-armv7/         | i2psvc                                                    |
+| macOS Universal   | macosx/              | i2psvc-macosx-universal-64                                |
+| Windows x86       | win32/               | I2Psvc.exe                                                |
+| Windows x86-64    | win64/               | I2Psvc.exe                                                |
 
 ## Building from Source
+
+### FreeBSD
+
+Prerequisites for compiling the wrapper can be installed with:
+```
+pkg_add -r apache-ant gmake openjdk7
+```
+
+One the prereqs are installed, cd into the wrapper source and run:
+
+For 32bit:
+```
+ant -Dbits=32 compile-c-unix
+```
+
+For 64bit:
+```
+ant -Dbits=64 compile-c-unix
+```
+
+Omit "compile-c-unix" from the command-lines if you want to compile wrapper.jar too.
+
+Then strip the binaries:
+```
+strip --strip-unneeded bin/wrapper lib/libwrapper.so
+```
+
+...and turn off the executable bit:
+```
+chmod 644 bin/wrapper lib/libwrapper.so
+```
+
+Don't forget to rename the binary "wrapper" to "i2psvc".
 
 ### Linux/ARM (armv6)
 
@@ -62,8 +95,22 @@ Build from source following instructions in `linux-armv5/README.txt`.
 
 ### macOS
 
-Combine (if possible) the `universal-32` and `universal-64` files from the delta pack into a "quad-fat" binary.
-See `macosx/README.txt` for instructions.
+With access to an OSX box, make the wrapper "quadfat" using lipo:
+```
+lipo -create wrapper-macosx-universal-32 wrapper-macosx-universal-64 -output i2psvc
+lipo -create libwrapper-macosx-universal-32.jnilib libwrapper-macosx-universal-64.jnilib -output libwrapper.jnilib
+```
+
+Then strip the wrapper:
+```
+strip i2psvc
+```
+
+The jnilib file does not need to be stripped.
+
+Without access to an OSX box, you can copy the osx binaries into this folder, then rename "^wrapper*" to "i2psvc-*":
+- wrapper-macosx-universal-32 -> i2psvc-macosx-universal-32
+- wrapper-macosx-universal-64 -> i2psvc-macosx-universal-64
 
 ### Windows (x86 and x86-64)
 

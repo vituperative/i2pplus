@@ -210,5 +210,9 @@ hs_err_*.log
 # Log files
 *.log
 
+# Wrapper cache (source and delta pack downloads)
+installer/lib/wrapper/cache/
+installer/lib/wrapper/Makefile-windows-*.mingw
+
 # Session bans
 router/sessionbans/

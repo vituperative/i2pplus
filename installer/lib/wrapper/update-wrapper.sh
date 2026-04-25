@@ -120,6 +120,14 @@ done
 cp "${LIB}/libwrapper-macosx-universal-64.jnilib" "${WRAPPER_DIR}/macosx/" 2>/dev/null || true
 cp "${LIB}/libwrapper-macosx-arm-64.dylib" "${WRAPPER_DIR}/macosx-arm64/" 2>/dev/null || true
 
+echo "Removing platforms not in deltapack..."
+for dir in linux-ppc solaris; do
+    if [ -d "${WRAPPER_DIR}/${dir}" ]; then
+        echo "  Removing ${dir}/ (not in deltapack)"
+        rm -rf "${WRAPPER_DIR}/${dir}"
+    fi
+done
+
 echo ""
 echo "=== Updated ==="
 ls -la "${WRAPPER_DIR}/all/"

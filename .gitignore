@@ -224,3 +224,6 @@ installer/bin/
 
 # Session bans
 router/sessionbans/
+
+# Build temp
+build/messages-news-src-tmp/

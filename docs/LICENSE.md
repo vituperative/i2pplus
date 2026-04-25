@@ -126,7 +126,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 ## INSTALLER
 
 **Launch4j**
-Launch4j (http://launch4j.sourceforge.net/) - Cross-platform Java application wrapper for creating Windows native executables. Copyright (c) 2004, 2021 Grzegorz Kowal. All rights reserved.
+Launch4j (http://launch4j.sourceforge.net/) - Cross-platform Java application wrapper for creating Windows native executables. Copyright (c) 2004, 2022 Grzegorz Kowal. All rights reserved. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.

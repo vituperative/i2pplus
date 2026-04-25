@@ -1773,6 +1773,7 @@
       <delete dir="core/c/jcpuid/lib" quiet="true"/>
       <delete dir="installer/lib/izpack/5/patches/java/build" quiet="true"/>
       <delete dir="installer/lib/wrapper/build-temp" quiet="true"/>
+      <delete dir="installer/bin" quiet="true"/>
       <delete dir="installer/build" quiet="true"/>
       <delete dir="reproducible/build" quiet="true"/>
       <delete quiet="true">

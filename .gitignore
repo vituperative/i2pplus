@@ -220,6 +220,7 @@ installer/lib/wrapper/win64/console.ico
 
 # Installer build artifacts
 installer/build/
+installer/bin/
 
 # Session bans
 router/sessionbans/

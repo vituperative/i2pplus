@@ -1,156 +1,115 @@
-# Wrapper Update Instructions
+# Tanuki Java Service Wrapper
 
 This directory contains the Tanuki Java Service Wrapper binaries for all supported platforms.
-The wrapper version is currently **3.6.4**.
+The wrapper version is managed via `version.txt` (currently **3.6.5**).
 
-## Sources
+## Automated Updates
 
-- **Delta Pack**: http://wrapper.tanukisoftware.com/doc/english/download.jsp
-- **Source Code**: http://wrapper.tanukisoftware.com/downloads/
+### ant updateWrapper
 
-## Updating Wrapper Binaries
+The easiest way to update all wrapper binaries:
 
-### 1. wrapper.jar
+```bash
+ant updateWrapper
+```
 
-Copy `lib/wrapper.jar` from the delta pack to:
+This will:
+1. Download the delta pack and update Unix/Linux/FreeBSD/macOS binaries
+2. Download source and cross-compile Windows x64 binaries
+3. Automatically remove obsolete platforms not in the current delta pack
 
-- `all/wrapper.jar` (used by most installers)
-- `win-all/wrapper.jar` (used by Windows installer)
+### Manual Scripts
 
-### 2. Native Libraries (.so, .jnilib, .dll)
+#### update-wrapper.sh
 
-From the delta pack's `lib/` directory, strip binaries (if tools are available) and copy to the appropriate directory:
+Downloads delta pack and updates Unix binaries:
 
-| Platform        | Directory      | File                                                              |
-| --------------- | -------------- | ----------------------------------------------------------------- |
-| FreeBSD x86     | freebsd/       | libwrapper.so                                                     |
-| FreeBSD x86-64  | freebsd64/     | libwrapper.so                                                     |
-| FreeBSD ARM64   | freebsd-arm64/ | libwrapper.so                                                     |
-| Linux x86       | linux/         | libwrapper.so                                                     |
-| Linux x86-64    | linux64/       | libwrapper.so                                                     |
-| Linux ARM64     | linux64-armv8/ | libwrapper.so                                                     |
-| Linux ARM v5    | linux-armv5/   | libwrapper.so                                                     |
-| Linux ARM v7    | linux-armv7/   | libwrapper.so                                                     |
-| macOS Universal | macosx/        | libwrapper-macosx-universal-64.jnilib                             |
-| macOS ARM64     | macosx-arm64/  | libwrapper-macosx-arm-64.dylib (JNI only, no service executable)  |
-| Windows x86     | win32/         | wrapper.dll                                                       |
-| Windows x86-64  | win64/         | wrapper.dll                                                       |
+```bash
+./update-wrapper.sh              # Update using version.txt
+./update-wrapper.sh --version 3.6.5  # Specific version
+```
 
-### 3. Executables (i2psvc, wrapper.exe)
+#### build-wrapper-win64.sh
 
-From the delta pack's `bin/` directory, strip binaries (if tools are available) and copy to the appropriate directory:
+Cross-compiles Windows x64 binaries:
 
-| Platform          | Directory            | File                                                      |
-| ----------------- | -------------------- | --------------------------------------------------------- |
-| FreeBSD x86       | freebsd/             | i2psvc                                                    |
-| FreeBSD x86-64    | freebsd64/           | i2psvc                                                    |
-| FreeBSD ARM64     | freebsd-arm64/       | i2psvc                                                    |
-| Linux x86         | linux/               | i2psvc                                                    |
-| Linux x86-64      | linux64/             | i2psvc                                                    |
-| Linux ARM64       | linux64-armv8/       | i2psvc                                                    |
-| Linux ARM v5      | linux-armv5/         | i2psvc                                                    |
-| Linux ARM v7      | linux-armv7/         | i2psvc                                                    |
-| macOS Universal   | macosx/              | i2psvc-macosx-universal-64                                |
-| Windows x86       | win32/               | I2Psvc.exe                                                |
-| Windows x86-64    | win64/               | I2Psvc.exe                                                |
+```bash
+./build-wrapper-win64.sh         # Build using version.txt
+./build-wrapper-win64.sh --version 3.6.5  # Specific version
+```
 
-## Building from Source
+Requirements: `mingw-w64`
+
+## Supported Platforms
+
+### Native Libraries
+
+| Platform          | Directory        | File                                   |
+| ----------------- | ---------------- | -------------------------------------- |
+| FreeBSD x86       | freebsd/         | libwrapper.so                          |
+| FreeBSD x86-64    | freebsd64/       | libwrapper.so                          |
+| FreeBSD ARM64     | freebsd-arm64/   | libwrapper.so                          |
+| Linux x86         | linux/           | libwrapper.so                          |
+| Linux x86-64      | linux64/         | libwrapper.so                          |
+| Linux ARM64       | linux64-armv8/   | libwrapper.so                          |
+| Linux ARM v5      | linux-armv5/     | libwrapper.so                          |
+| Linux ARM v7      | linux-armv7/     | libwrapper.so                          |
+| macOS Universal   | macosx/          | libwrapper-macosx-universal-64.jnilib  |
+| macOS ARM64       | macosx-arm64/    | libwrapper-macosx-arm-64.dylib         |
+| Windows x86       | win32/           | wrapper.dll                            |
+| Windows x86-64    | win64/           | wrapper.dll                            |
+
+### Executables
+
+| Platform          | Directory        | File                                   |
+| ----------------- | ---------------- | -------------------------------------- |
+| FreeBSD x86       | freebsd/         | i2psvc                                 |
+| FreeBSD x86-64    | freebsd64/       | i2psvc                                 |
+| FreeBSD ARM64     | freebsd-arm64/   | i2psvc                                 |
+| Linux x86         | linux/           | i2psvc                                 |
+| Linux x86-64      | linux64/         | i2psvc                                 |
+| Linux ARM64       | linux64-armv8/   | i2psvc                                 |
+| Linux ARM v5      | linux-armv5/     | i2psvc                                 |
+| Linux ARM v7      | linux-armv7/     | i2psvc                                 |
+| macOS Universal   | macosx/          | i2psvc-macosx-universal-64             |
+| Windows x86       | win32/           | I2Psvc.exe                             |
+| Windows x86-64    | win64/           | I2Psvc.exe, wrapper.exe                |
+
+## Building Other Platforms from Source
 
 ### FreeBSD
 
-Prerequisites for compiling the wrapper can be installed with:
-```
+```bash
 pkg_add -r apache-ant gmake openjdk7
-```
 
-One the prereqs are installed, cd into the wrapper source and run:
-
-For 32bit:
-```
+# 32-bit
 ant -Dbits=32 compile-c-unix
-```
 
-For 64bit:
-```
+# 64-bit
 ant -Dbits=64 compile-c-unix
-```
 
-Omit "compile-c-unix" from the command-lines if you want to compile wrapper.jar too.
-
-Then strip the binaries:
-```
 strip --strip-unneeded bin/wrapper lib/libwrapper.so
-```
-
-...and turn off the executable bit:
-```
 chmod 644 bin/wrapper lib/libwrapper.so
+# Rename "wrapper" to "i2psvc"
 ```
 
-Don't forget to rename the binary "wrapper" to "i2psvc".
+### Linux/ARM
 
-### Linux/ARM (armv6)
-
-Build from source following instructions in `linux-armv5/README.txt`.
+See `linux-armv5/README.txt` for cross-compilation instructions.
 
 ### macOS
 
-With access to an OSX box, make the wrapper "quadfat" using lipo:
-```
+```bash
+# Create universal binary
 lipo -create wrapper-macosx-universal-32 wrapper-macosx-universal-64 -output i2psvc
 lipo -create libwrapper-macosx-universal-32.jnilib libwrapper-macosx-universal-64.jnilib -output libwrapper.jnilib
-```
 
-Then strip the wrapper:
-```
 strip i2psvc
 ```
 
-The jnilib file does not need to be stripped.
+## Notes
 
-Without access to an OSX box, you can copy the osx binaries into this folder, then rename "^wrapper*" to "i2psvc-*":
-- wrapper-macosx-universal-32 -> i2psvc-macosx-universal-32
-- wrapper-macosx-universal-64 -> i2psvc-macosx-universal-64
-
-### Windows (x86 and x86-64)
-
-You can cross-compile Windows binaries from Linux using the build script:
-
-```bash
-# Install dependencies
-sudo apt install mingw-w64 binutils-mingw-w64-x86-64 gcc-mingw-w64-x86-64 git
-
-# Download wrapper source from https://wrapper.tanukisoftware.com/downloads/
-# Extract to /path/to/wrapper_3.6.4_src
-
-# Build Windows x86-64 binaries (exe + dll)
-bash scripts/build-wrapper-windows.sh /path/to/wrapper_3.6.4_src --arch x64
-
-# Build Windows x86 binaries
-bash scripts/build-wrapper-windows.sh /path/to/wrapper_3.6.4_src --arch win32
-
-# Clean build artifacts
-bash scripts/build-wrapper-windows.sh /path/to/wrapper_3.6.4_src --clean
-```
-
-The script automatically:
-- Downloads JNI headers for DLL compilation
-- Applies SEH patches for mingw compatibility
-- Builds both I2Psvc.exe and wrapper.dll
-- Strips binaries for smaller size
-- Installs to the correct `win64/` or `win32/` directory
-
-After building, delete `win-all/wrapper.jar` and update build.xml to use `all/wrapper.jar` for the Windows installer.
-
-## Incremental Updates
-
-The native wrapper binaries (i2psvc, wrapper.dll, libwrapper.so) are **not** included in incremental updates (`ant updater`).
-They are only distributed via full installers (`ant pkg`).
-
-To update wrapper binaries on an existing installation:
-1. Stop the I2P service
-2. Copy the new files to the installation directory:
-   - Copy `libwrapper.so` or `wrapper.dll` to `lib/`
-   - Copy `i2psvc` or `I2Psvc.exe` to the root installation directory
-   - Copy `wrapper.jar` to `lib/`
-3. Restart the service
+- Native wrapper binaries are **not** included in incremental updates (`ant updater`).
+- They are only distributed via full installers (`ant pkg`).
+- Cache location: `installer/lib/wrapper/cache/`
+- Use `version.txt` to manage the wrapper version.

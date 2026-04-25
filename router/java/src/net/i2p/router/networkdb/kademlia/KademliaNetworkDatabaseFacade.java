@@ -108,13 +108,13 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
     private final ConcurrentMap<Hash, Set<RepublishLeaseSetJob>> _publishingLeaseSets =
         new ConcurrentHashMap<>(8);
 
-    /**
-     * Map of remote destination Hash to last access time for LeaseSets.
-     * Used to refresh remote LeaseSets every 60s and remove after 60s inactivity.
-     */
-    private final ConcurrentHashMap<Hash, Long> _remoteLeaseSetAccessTime = new ConcurrentHashMap<>(32);
+    private static final long LOCAL_LEASESET_REFRESH_INTERVAL = 90 * 1000;  // 90 seconds
 
-    private static final long REMOTE_LEASESET_REFRESH_INTERVAL = 90 * 1000;  // 90 seconds
+    /**
+     * Map of remote destination Hash to last access time for LeaseSets we're using as a client.
+     * Used to refresh remote LeaseSets we're actively accessing and remove after 90s inactivity.
+     */
+    private final ConcurrentHashMap<Hash, Long> _clientLeaseSetAccessTime = new ConcurrentHashMap<>(32);
 
     /**
      * Hash of the key currently being searched for, pointing the SearchJob that
@@ -445,10 +445,12 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         _elj.getTiming().setStartAfter(now + 30*1000);
         _context.jobQueue().addJob(_elj); // expire old leases
 
-        // Periodically refresh remote LeaseSets and remove stale ones
-        RefreshLeaseSetsJob job = new RefreshLeaseSetsJob(_context, this);
-        job.getTiming().setStartAfter(now + REMOTE_LEASESET_REFRESH_INTERVAL);
-        _context.jobQueue().addJob(job);
+        // Periodically refresh client LeaseSets we're using and remove stale ones
+        if (isClientDb()) {
+            RefreshClientLeaseSetsJob job = new RefreshClientLeaseSetsJob(_context, this);
+            job.getTiming().setStartAfter(now + LOCAL_LEASESET_REFRESH_INTERVAL);
+            _context.jobQueue().addJob(job);
+        }
 
         // expire some routers
         // Don't run until after RefreshRoutersJob has run, and after validate() will return invalid for old routers.
@@ -707,9 +709,8 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         if (ds == null || !ds.isLeaseSet()) {return null;}
         LeaseSet ls = (LeaseSet) ds;
         if (ls.isCurrent(Router.CLOCK_FUDGE_FACTOR)) {
-            // Track access time for remote LeaseSets
-            if (!isLocalDest(key)) {
-                _remoteLeaseSetAccessTime.put(key, _context.clock().now());
+            if (isClientDb()) {
+                _clientLeaseSetAccessTime.put(key, _context.clock().now());
             }
             return ls;
         }
@@ -720,12 +721,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         return null;
     }
 
-    /**
-     * Check if destination is local (managed by this router).
-     */
-    private boolean isLocalDest(Hash key) {
-        return _context.clientManager().isLocal(key);
-    }
+    
 
     /**
      *  Lookup using the client's tunnels
@@ -2475,39 +2471,6 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
         return 0;
     }
 
-    /**
-     * Refresh remote LeaseSets we're actively using and remove stale ones.
-     * 1. Re-fetch LeaseSets accessed between 60s-90s ago
-     * 2. Remove LeaseSets not accessed in 60s
-     */
-    private void refreshRemoteLeaseSets() {
-        long now = _context.clock().now();
-        long inactiveThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL;          // 90s
-        long refreshThreshold = now - REMOTE_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
-
-        // Iterate over remote LeaseSet access times
-        for (Hash key : _remoteLeaseSetAccessTime.keySet()) {
-            Long lastAccess = _remoteLeaseSetAccessTime.get(key);
-            if (lastAccess == null) continue;
-
-            if (lastAccess < inactiveThreshold) {
-                // Not accessed in 180s (3 min) - fail so it gets refetched on next access
-                _remoteLeaseSetAccessTime.remove(key);
-                fail(key);
-                if (_log.shouldDebug()) {
-                    _log.debug("Removed stale remote LeaseSet: " + key.toBase32().substring(0, 8));
-                }
-            } else if (lastAccess < refreshThreshold) {
-                // Accessed between 180s-270s ago - refresh it
-                _remoteLeaseSetAccessTime.remove(key);
-                lookupLeaseSetRemotely(key, null);
-                if (_log.shouldDebug()) {
-                    _log.debug("Refreshing remote LeaseSet: " + key.toBase32().substring(0, 8));
-                }
-            }
-        }
-    }
-
     /** @since 0.9.52 */
     private class Disconnector implements SimpleTimer.TimedEvent {
         private final Hash h;
@@ -2516,24 +2479,54 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
     }
 
     /**
-     * Job to refresh remote LeaseSets periodically.
-     * Refreshes LeaseSets accessed 180s-270s ago, removes ones not accessed in 180s+.
+     * Refresh client LeaseSets we're actively using and remove stale ones.
+     * Only applies to client NetDB (not main NetDB).
+     * 1. Re-fetch LeaseSets accessed between 90s-135s ago
+     * 2. Remove LeaseSets not accessed in 90s
      */
-    private static class RefreshLeaseSetsJob extends JobImpl {
+    private void refreshClientLeaseSets() {
+        long now = _context.clock().now();
+        long inactiveThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL;          // 90s
+        long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
+
+        for (Hash key : _clientLeaseSetAccessTime.keySet()) {
+            Long lastAccess = _clientLeaseSetAccessTime.get(key);
+            if (lastAccess == null) continue;
+
+            if (lastAccess < inactiveThreshold) {
+                _clientLeaseSetAccessTime.remove(key);
+                if (_log.shouldDebug()) {
+                    _log.debug("Removing stale client LeaseSet: " + key.toBase32().substring(0, 8));
+                }
+            } else if (lastAccess < refreshThreshold) {
+                _clientLeaseSetAccessTime.remove(key);
+                lookupLeaseSetRemotely(key, null);
+                if (_log.shouldDebug()) {
+                    _log.debug("Refreshing client LeaseSet: " + key.toBase32().substring(0, 8));
+                }
+            }
+        }
+    }
+
+    /**
+     * Job to refresh client LeaseSets periodically.
+     * Only for client NetDB - refreshes LeaseSets we're actively using.
+     */
+    private static class RefreshClientLeaseSetsJob extends JobImpl {
         private final KademliaNetworkDatabaseFacade _facade;
         private final Log _log;
 
-        public RefreshLeaseSetsJob(RouterContext ctx, KademliaNetworkDatabaseFacade facade) {
+        public RefreshClientLeaseSetsJob(RouterContext ctx, KademliaNetworkDatabaseFacade facade) {
             super(ctx);
             _facade = facade;
-            _log = ctx.logManager().getLog(RefreshLeaseSetsJob.class);
+            _log = ctx.logManager().getLog(RefreshClientLeaseSetsJob.class);
         }
 
-        public String getName() { return "Refresh remote LeaseSets"; }
+        public String getName() { return "Refresh client LeaseSets"; }
 
         public void runJob() {
-            _facade.refreshRemoteLeaseSets();
-            requeue(REMOTE_LEASESET_REFRESH_INTERVAL);
+            _facade.refreshClientLeaseSets();
+            requeue(LOCAL_LEASESET_REFRESH_INTERVAL);
         }
     }
 

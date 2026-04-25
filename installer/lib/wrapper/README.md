@@ -31,14 +31,17 @@ Downloads delta pack and updates Unix binaries:
 
 #### build-wrapper-win64.sh
 
-Cross-compiles Windows x64 binaries:
+Cross-compiles Windows x64 binaries using mingw-w64.
+
+Requirements:
+```bash
+sudo apt install mingw-w64
+```
 
 ```bash
 ./build-wrapper-win64.sh         # Build using version.txt
 ./build-wrapper-win64.sh --version 3.6.5  # Specific version
 ```
-
-Requirements: `mingw-w64`
 
 ## Supported Platforms
 

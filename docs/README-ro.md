@@ -77,9 +77,10 @@ puteți construi un zip de instalare complet care poate fi extras și executat p
 
 Rulați 'ant' fără argumente pentru a vedea alte opțiuni de build.
 
-### Docker
+
 
 Pentru mai multe informații despre cum să rulați I2P în Docker, consultați [docker/README.md](docker/README.md)
+
 
 ## Informații de contact
 
@@ -136,6 +137,7 @@ Pentru licențele diferitelor sub-componente, consultați: [README.md](docs/LICE
 - [tools/scripts/README.md](tools/scripts/README.md) - Scripturi utilitare pentru dezvoltare și administrare
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Scripturi de validare și testare
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - Rulare I2P+ în Docker
+

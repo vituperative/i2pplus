@@ -78,65 +78,264 @@ https://geti2p.net/how
 
 قم بتشغيل 'ant' بدون وسيطات لرؤية خيارات البناء الأخرى.
 
-### Docker
+
 
 لمزيد من المعلومات حول كيفية تشغيل I2P في Docker، انظر [docker/README.md](docker/README.md)
 
-## معلومات الاتصال
 
+
+
+
+## معلومات الاتصال
 تحتاج إلى مساعدة؟ قم بزيارة قناة IRC #saltR على شبكة I2P IRC
 
+## معلومات الاتصال
+
+
+## معلومات الاتصال
 تقارير الأخطاء: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues أو https://github.com/I2PPlus/i2pplus/issues
 
-## التراخيص
+## معلومات الاتصال
 
+
+## معلومات الاتصال
+
+
+## معلومات الاتصال
+## التراخيص
 مرخص I2P+ تحت AGPL v.3.
 
+## معلومات الاتصال
+## التراخيص
+
+
+## معلومات الاتصال
+## التراخيص
 للتراخيص الفرعية للمكونات المختلفة، انظر: [README.md](docs/LICENSE.md)
 
-## انظر أيضًا
+## معلومات الاتصال
+## التراخيص
 
+
+## معلومات الاتصال
+## التراخيص
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 ### التوثيق
 
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/README.md](docs/README.md) - فهرس التوثيق الكامل
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/INSTALL.md](docs/INSTALL.md) - دليل التثبيت
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - التثبيت بدون واجهة رسومية (وضع وحدة التحكم)
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/HACKING.md](docs/HACKING.md) - دليل المطور وأنظمة البناء
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - تخطيط شجرة المصدر وأين تجد الأشياء
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - إدارة حظر جلسات I2P باستخدام nftables
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/LICENSE.md](docs/LICENSE.md) - تراخيص الأطراف الثالثة
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/history.txt](docs/history.txt) - سجل التغييرات الكامل
 
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 ### Sub-projects
 
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/README.md](apps/README.md) - نظرة عامة على التطبيقات
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/addressbook/README.md](apps/addressbook/README.md) - تطبيق دفتر العناوين
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - تطبيق واجهة المستخدم الرسومية للسطح المكتب
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - واجهة برمجة تطبيقات تحكم I2P
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/i2psnark/README.md](apps/i2psnark/README.md) - عميل BitTorrent I2PSnark
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - تطبيق نفق I2P
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/imagegen/README.md](apps/imagegen/README.md) - أدوات إنشاء الصور
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/jetty/README.md](apps/jetty/README.md) - خادم HTTP Jetty
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/jrobin/README.md](apps/jrobin/README.md) - مكتبة المراقبة JRobin
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - مكتبة البث المصغرة
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/pack200/README.md](apps/pack200/README.md) - ضغط Pack200
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - نصوص الوكيل
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - وحدة تحكم الموجه
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/sam/README.md](apps/sam/README.md) - المراسلة المجهولة البسيطة
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/streaming/README.md](apps/streaming/README.md) - مكتبة البث
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/susidns/README.md](apps/susidns/README.md) - خادم DNS
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/susimail/README.md](apps/susimail/README.md) - عميل البريد الإلكتروني I2P
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [apps/systray/README.md](apps/systray/README.md) - تطبيق علبة النظام
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [core/README.md](core/README.md) - توثيق المكتبة الأساسية
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - مكتبة JNI الأصلية للتشفير (GMP)
 
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 ### MISC
 
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - إدارة حظر جلسات I2P باستخدام nftables
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [installer/resources/README.md](installer/resources/README.md) - موارد المثبت المجمعة
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [tools/scripts/README.md](tools/scripts/README.md) - نصوص مساعدة للتطوير والإدارة
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - نصوص التحقق والاختبار
 
-### Docker
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
+
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا
 - [docker/README.md](docker/README.md) - تشغيل I2P+ في Docker
+
+## معلومات الاتصال
+## التراخيص
+## انظر أيضًا

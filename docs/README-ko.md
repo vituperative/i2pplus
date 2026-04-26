@@ -76,9 +76,10 @@ IzPack5로 빌드하려면 다음에서 다운로드: http://izpack.org/download
 
 다른 빌드 옵션을 보려면 인자 없이 'ant'를 실행하세요.
 
-### Docker
+
 
 Docker에서 I2P를 실행하는 방법에 대한 자세한 내용은 [docker/README.md](docker/README.md)를 참조하세요
+
 
 ## 연락처 정보
 
@@ -132,5 +133,5 @@ various 하위 구성 요소 라이선스는 다음을 참조하세요: [README.
 - [tools/scripts/README.md](tools/scripts/README.md) - 개발 및 관리용 유틸리티 스크립트
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - 검증 및 테스트 스크립트
 
-### Docker
 - [docker/README.md](docker/README.md) - Docker에서 I2P+ 실행
+

@@ -77,9 +77,10 @@ můžete sestavit úplný instalační zip, který lze rozbalit a spustit na mí
 
 Spusťte 'ant' bez argumentů pro zobrazení dalších možností sestavení.
 
-### Docker
+
 
 Další informace o spouštění I2P v Docker naleznete v [docker/README.md](docker/README.md)
+
 
 ## Kontaktní informace
 
@@ -136,6 +137,7 @@ Pro licence různých subkomponent viz: [README.md](docs/LICENSE.md)
 - [tools/scripts/README.md](tools/scripts/README.md) - Utilitní skripty pro vývoj a správu
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validační a testovací skripty
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - Spouštění I2P+ v Docker
+

@@ -77,9 +77,10 @@ kun je een volledige installatie-zip bouwen die kan worden uitgepakt en ter plaa
 
 Voer 'ant' uit zonder argumenten om andere build-opties te zien.
 
-### Docker
+
 
 Raadpleeg [docker/README.md](docker/README.md) voor meer informatie over het uitvoeren van I2P in Docker.
+
 
 ## Contactgegevens
 
@@ -136,6 +137,7 @@ Voor de verschillende sub-component licenties, zie: [README.md](docs/LICENSE.md)
 - [tools/scripts/README.md](tools/scripts/README.md) - Nutsscripts voor ontwikkeling en beheer
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validatie- en test-scripts
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - I2P+ uitvoeren in Docker
+

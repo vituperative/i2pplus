@@ -77,9 +77,10 @@ Anda dapat membuat zip instalasi lengkap yang dapat diekstrak dan dijalankan di 
 
 Jalankan 'ant' tanpa argumen untuk melihat opsi build lainnya.
 
-### Docker
+
 
 Untuk informasi lebih lanjut tentang cara menjalankan I2P di Docker, lihat [docker/README.md](docker/README.md)
+
 
 ## Info Kontak
 
@@ -136,6 +137,7 @@ Untuk lisensi sub-komponen lainnya, lihat: [README.md](docs/LICENSE.md)
 - [tools/scripts/README.md](tools/scripts/README.md) - Skrip utilitas untuk pengembangan dan administrasi
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Skrip validasi dan pengujian
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - Menjalankan I2P+ di Docker
+

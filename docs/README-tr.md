@@ -76,13 +76,18 @@ Tam bir yükleyici oluştururken sorun yaşıyorsanız (Java14 ve sonraki sürü
 
 Diğer derleme seçeneklerini görmek için 'ant'ı argümansız çalıştırın.
 
-### Docker
+
 
 I2P'yi Docker'da çalıştırma hakkında daha fazla bilgi için [docker/README.md](docker/README.md) dosyasına bakın
 
-## İletişim Bilgileri
 
+
+
+
+## İletişim Bilgileri
 Yardıma mı ihtiyacınız var? I2P IRC ağındaki #saltR IRC kanalını ziyaret edin
+
+## İletişim Bilgileri
 
 Hata raporları: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues veya https://github.com/I2PPlus/i2pplus/issues
 
@@ -135,6 +140,9 @@ I2P+, AGPL v.3 altında lisanslanmıştır.
 - [tools/scripts/README.md](tools/scripts/README.md) - Geliştirme ve yönetim için yardımcı betikler
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Doğrulama ve test betikleri
 
-### Docker
 
+
+## İletişim Bilgileri
 - [docker/README.md](docker/README.md) - Docker'da I2P+ çalıştırma
+
+## İletişim Bilgileri

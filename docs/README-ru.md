@@ -69,8 +69,6 @@ API: https://i2pplus.github.io/javadoc/
 
 Запустите 'ant' без аргументов, чтобы увидеть другие варианты сборки.
 
-### Docker
-Дополнительную информацию о запуске I2P в Docker см. [Docker.md](../docker/Docker.md).
 ## Контактная информация
 
 Нужна помощь? Смотрите канал IRC #saltR в сети I2P IRC.
@@ -125,7 +123,3 @@ I2P+ лицензирована по AGPL v.3.
 - [installer/resources/README.md](installer/resources/README.md) - Ресурсы установщика
 - [tools/scripts/README.md](tools/scripts/README.md) - Утилитные скрипты для разработки и администрирования
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Скрипты проверки и тестирования
-
-### Docker
-
-- [docker/README.md](docker/README.md) - Запуск I2P+ в Docker

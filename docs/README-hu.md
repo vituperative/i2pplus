@@ -76,9 +76,10 @@ fordíthatsz egy teljes telepítő zip-et is, amit ki lehet csomagolni és a hel
 
 Futtasd az 'ant' parancsot argumentumok nélkül a további fordítási opciókért.
 
-### Docker
+
 
 Ha többet szeretnél tudni az I2P Docker-ben történő futtatásáról, lásd: [docker/README.md](docker/README.md)
+
 
 ## Kapcsolati adatok
 
@@ -135,6 +136,7 @@ A különböző alkomponensek licenciájáért lásd: [README.md](docs/LICENSE.m
 - [tools/scripts/README.md](tools/scripts/README.md) - Fejlesztési és adminisztrációs segédszkriptek
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validációs és tesztelési szkriptek
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - I2P+ futtatása Docker-ben
+

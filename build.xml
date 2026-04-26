@@ -141,6 +141,7 @@
     <echo message="  updateWrapper                                Download deltapack, update Unix binaries, build win64 binaries"/>
     <echo message=""/>
     <echo message=" === Distribution &amp; Packaging ==="/>
+    <echo message="  buildAppImage                                Build AppImage for Linux &#10140; ./dist/I2P+_{version}.appimage"/>
     <echo message="  bumpBuildTime                                Update core/java/src/net/i2p/time/BuildTime.java with today's date"/>
     <echo message="  bump                                         Increment build (minor version) by 1"/>
     <echo message="  createThemesZip                              Create zip with all console and webapp themes and resources &#10140; ./dist/themes.zip"/>
@@ -597,6 +598,7 @@
     <!-- default if not set by disableManifestClasspath -->
     <property name="manifest.classpath.name" value="Class-Path"/>
     <property name="full.version" value="${release.number}-${i2p.build.number}${build.extra}"/>
+  <property name="appimagetool.update" value=""/>
     <echo message="Ant: ${ant.version}"/>
     <echo message="Ant-Contrib: ${basedir}/tools/ant-contrib.jar"/>
     <echo message="JDK: ${java.vendor} ${java.version} (${java.runtime.name} ${java.runtime.version})"/>
@@ -1656,6 +1658,19 @@
           <include name="apps/*/*/*/bin"/>
         </fileset>
       </delete>
+      <!-- AppImage build artifacts (keep downloaded appimagetool) -->
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir="tools/appimage">
+          <include name="squashfs-root/"/>
+        </fileset>
+      </delete>
+      <delete includeemptydirs="true" quiet="true">
+        <fileset dir=".">
+          <include name="AppImage/"/>
+          <include name="*.appimage"/>
+          <include name="*.AppImage"/>
+        </fileset>
+      </delete>
       <!-- Ensure dist directory exists after cleanup -->
       <mkdir dir="./dist"/>
       <!-- Use exec to run ant subprojects quietly -->
@@ -2162,6 +2177,15 @@
       <arg value="-xr!README.md"/>
       <arg value="./dist/i2p-linux.7z"/>
       <arg value="./pkg-temp/i2p"/>
+    </exec>
+  </target>
+
+  <target name="buildAppImage" depends="preppkg-linux" description="Build AppImage for Linux">
+    <echo message="Building I2P+ AppImage..."/>
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="tools/appimage/build-appimage.sh"/>
+      <arg value="${full.version}"/>
+      <arg value="${appimagetool.update}"/>
     </exec>
   </target>
 

@@ -80,14 +80,14 @@ you can build a full installation zip which can be extracted and run in situ:
 
 Run 'ant' with no arguments to see other build options.
 
-### Docker
-
+To build an AppImage for Linux:
 ```bash
-docker pull ghcr.io/i2pplus/i2pplus:latest
-docker run -d -p 7667:7667 -p 4444:4444 ghcr.io/i2pplus/i2pplus:latest
+ant buildAppImage
 ```
 
-For more information how to run I2P in Docker, see [docker/README.md](docker/README.md)
+See [tools/appimage/README.md](tools/appimage/README.md) for details.
+
+To run in Docker, see [docker/README.md](docker/README.md)
 
 ## Contact info
 
@@ -142,7 +142,3 @@ For the various sub-component licenses, see: [README.md](docs/LICENSE.md)
 - [installer/resources/README.md](installer/resources/README.md) - Bundled installer resources
 - [tools/scripts/README.md](tools/scripts/README.md) - Utility scripts for development and administration
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validation and testing scripts
-
-### Docker
-
-- [docker/README.md](docker/README.md) - Running I2P+ in Docker

@@ -77,9 +77,10 @@ können Sie ein vollständiges Installations-zip erstellen, das extrahiert und a
 
 Führen Sie 'ant' ohne Argumente aus, um andere Build-Optionen zu sehen.
 
-### Docker
+
 
 Weitere Informationen zum Ausführen von I2P in Docker finden Sie unter [docker/README.md](docker/README.md)
+
 
 ## Kontaktinformationen
 
@@ -136,6 +137,7 @@ Für die verschiedenen Unterkomponentenlizenzen siehe: [README.md](docs/LICENSE.
 - [tools/scripts/README.md](tools/scripts/README.md) - Hilfsskripte für Entwicklung und Verwaltung
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Validierungs- und Testskripte
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - I2P+ in Docker ausführen
+

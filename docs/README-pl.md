@@ -77,9 +77,10 @@ możesz zbudować pełny zip instalacyjny, który można rozpakować i uruchomi�
 
 Uruchom 'ant' bez argumentów, aby zobaczyć inne opcje budowania.
 
-### Docker
+
 
 Aby uzyskać więcej informacji o tym, jak uruchomić I2P w Docker, zobacz [docker/README.md](docker/README.md)
+
 
 ## Informacje kontaktowe
 
@@ -136,6 +137,7 @@ W przypadku różnych subkomponentów zobacz: [README.md](docs/LICENSE.md)
 - [tools/scripts/README.md](tools/scripts/README.md) - Skrypty narzędziowe do programowania i administrowania
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Skrypty walidacji i testowania
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - Uruchamianie I2P+ w Docker
+

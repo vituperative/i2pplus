@@ -56,6 +56,7 @@ See also: [Project README](../README.md)
 - [../installer/lib/jbigi/README.md](../installer/lib/jbigi/README.md) - Native JNI library for cryptography (GMP)
 - [../apps/imagegen/zxing/README.md](../apps/imagegen/zxing/README.md) - Barcode library (maintenance mode)
 - [../apps/imagegen/identicon/README.md](../apps/imagegen/identicon/README.md) - Identicon generator
+- [../tools/appimage/README.md](../tools/appimage/README.md) - Building AppImage for Linux
 
 ## Development
 

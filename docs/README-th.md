@@ -76,65 +76,264 @@ API: https://i2pplus.github.io/javadoc/
 
 รัน 'ant' โดยไม่มีอาร์กิวเมนต์เพื่อดูตัวเลือกการ build อื่นๆ
 
-### Docker
+
 
 สำหรับข้อมูลเพิ่มเติมเกี่ยวกับวิธีรัน I2P ใน Docker ให้ดู [docker/README.md](docker/README.md)
 
-## ข้อมูลติดต่อ
 
+
+
+
+## ข้อมูลติดต่อ
 ต้องการความช่วยเหลือ? เยี่ยมชมช่อง IRC #saltR บนเครือข่าย I2P IRC
 
+## ข้อมูลติดต่อ
+
+
+## ข้อมูลติดต่อ
 รายงานข้อผิดพลาด: https://i2pgit.org/i2p-hackers/i2p.i2p/-/issues หรือ https://github.com/I2PPlus/i2pplus/issues
 
-## สิทธิ์อนุญาต
+## ข้อมูลติดต่อ
 
+
+## ข้อมูลติดต่อ
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
 I2P+ ได้รับสิทธิ์อนุญาตภายใต้ AGPL v.3
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
 สำหรับสิทธิ์อนุญาตของ sub-component ต่างๆ ดู: [README.md](docs/LICENSE.md)
 
-## ดูเพิ่มเติม
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
 
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 ### เอกสาร
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/README.md](docs/README.md) - ดัชนีเอกสารฉบับเต็ม
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/INSTALL.md](docs/INSTALL.md) - คู่มือการติดตั้ง
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/INSTALL-headless.md](docs/INSTALL-headless.md) - การติดตั้งแบบ headless (console mode)
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/HACKING.md](docs/HACKING.md) - คู่มือนักพัฒนาและระบบ build
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/DIRECTORIES.md](docs/DIRECTORIES.md) - โครงสร้างต้นไม้ซอร์สโค้ดและที่ที่จะหาสิ่งต่างๆ
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - การจัดการ I2P session bans ด้วย nftables
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/LICENSE.md](docs/LICENSE.md) - สิทธิ์อนุญาตของบุคคลที่สาม
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/history.txt](docs/history.txt) - บันทึกการเปลี่ยนแปลงฉบับเต็ม
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 ### โปรเจกต์ย่อย
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/README.md](apps/README.md) - ภาพรวมแอปพลิเคชัน
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/addressbook/README.md](apps/addressbook/README.md) - แอปพลิเคชันสมุดที่อยู่
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/desktopgui/README.md](apps/desktopgui/README.md) - แอปพลิเคชัน Desktop GUI
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/i2pcontrol/README.md](apps/i2pcontrol/README.md) - I2P Control API
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/i2psnark/README.md](apps/i2psnark/README.md) - คลient BitTorrent I2PSnark
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/i2ptunnel/README.md](apps/i2ptunnel/README.md) - แอปพลิเคชันอุโมงค์ I2P
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/imagegen/README.md](apps/imagegen/README.md) - เครื่องมือสร้างภาพ
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/jetty/README.md](apps/jetty/README.md) - Jetty HTTP server
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/jrobin/README.md](apps/jrobin/README.md) - คลังการตรวจสอบ JRobin
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/ministreaming/README.md](apps/ministreaming/README.md) - คลัง streaming ขั้นต่ำ
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/pack200/README.md](apps/pack200/README.md) - การบีบอัด Pack200
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/proxyscript/README.md](apps/proxyscript/README.md) - Proxy scripts
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/routerconsole/README.md](apps/routerconsole/README.md) - Router console
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/sam/README.md](apps/sam/README.md) - Simple Anonymous Messaging
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/streaming/README.md](apps/streaming/README.md) - คลัง streaming
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/susidns/README.md](apps/susidns/README.md) - DNS server
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/susimail/README.md](apps/susimail/README.md) - คลient email I2P
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [apps/systray/README.md](apps/systray/README.md) - แอปพลิเคชัน system tray
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [core/README.md](core/README.md) - เอกสารคลัง core
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [installer/lib/jbigi/README.md](installer/lib/jbigi/README.md) - คลัง JNI เนทีฟสำหรับการเข้ารหัส (GMP)
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 ### เบ็ดเตล็ด
 
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docs/i2p-sessionban-nftables.md](docs/i2p-sessionban-nftables.md) - การจัดการห้ามเซสชัน I2P ด้วย nftables
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [installer/resources/README.md](installer/resources/README.md) - ทรัพยากร installer
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [tools/scripts/README.md](tools/scripts/README.md) - สคริปต์ยูทิลิตี้สำหรับการพัฒนาและการจัดการ
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - สคริปต์ตรวจสอบและทดสอบ
 
-### Docker
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
+
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม
 - [docker/README.md](docker/README.md) - รั��� I2P+ ใน Docker
+
+## ข้อมูลติดต่อ
+## สิทธิ์อนุญาต
+## ดูเพิ่มเติม

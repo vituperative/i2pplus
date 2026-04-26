@@ -76,9 +76,10 @@ bạn có thể build file nén cài đặt đầy đủ có thể giải nén v
 
 Chạy 'ant' không có đối số để xem các tùy chọn build khác.
 
-### Docker
+
 
 Để biết thêm thông tin về cách chạy I2P trong Docker, xem [docker/README.md](docker/README.md)
+
 
 ## Thông tin liên hệ
 
@@ -135,6 +136,7 @@ I2P+ được cấp phép theo AGPL v.3.
 - [tools/scripts/README.md](tools/scripts/README.md) - Script tiện ích cho phát triển và quản trị
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - Script xác thực và kiểm tra
 
-### Docker
+
 
 - [docker/README.md](docker/README.md) - Chạy I2P+ trong Docker
+

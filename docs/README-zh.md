@@ -112,7 +112,3 @@ I2P+已根据AGPL v.3许可。
 - [installer/resources/README.md](installer/resources/README.md) - 安装程序资源
 - [tools/scripts/README.md](tools/scripts/README.md) - 开发和管理实用脚本
 - [tools/scripts/tests/README.md](tools/scripts/tests/README.md) - 验证和测试脚本
-
-### Docker
-
-- [docker/README.md](docker/README.md) - 在Docker中运行I2P+

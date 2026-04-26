@@ -1166,7 +1166,7 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 #tunnels .percentBarOuter,#tunnels .percentBarText{width:100px;transform:translateY(1px)}
 #transitFast #tunnels .percentBarText{font-size:85%;transform:translateY(-1px)}
 #transitFast #tunnels tr:hover .percentBarInner,#transitFast #tunnels tr:hover .percentBarText{color:var(--ink);opacity:1}
-#tunnels .percentBarOuter{margin:-1px 0 1px;position:relative;text-align:left;background:repeating-linear-gradient(90deg,#0000,#0000 5%,#020 5%,#020 10%) left center/100% 10%,linear-gradient(180deg,#0008,#0204);opacity:.9}
+#tunnels .percentBarOuter{margin:-1px 0 1px;position:relative;vertical-align:middle;text-align:left;background:repeating-linear-gradient(90deg,#0000,#0000 5%,#020 5%,#020 10%) left center/100% 10%,linear-gradient(180deg,#0008,#0204);opacity:.9}
 #tunnels .expiry .percentBarOuter{background:linear-gradient(90deg,#7115,#7304,#9904,#3934),repeating-linear-gradient(90deg,#0000,#0000 5%,#020 5%,#020 10%) left center/100% 10%,linear-gradient(180deg,#0008,#0204)}
 #tunnels span[hidden]{display:none}
 #tunnels table{position:relative;z-index:1}
@@ -1174,13 +1174,14 @@ h3.tabletitle+.statusnotes,table.tunneldisplay{margin-top:-1px}
 #tunnels .tab,#tunnels .tab2{min-width:140px}
 #tunnels .rid,#tunnels .routerHash,#tunnels .version{margin:0;vertical-align:middle;line-height:1.35}
 #tunnels .routerHash,#tunnels .version{margin-top:1px}
+#tunnels .expiry{padding:0 10px;width:1%;white-space:nowrap}
 #tunnels #participating{padding:6px 6px 4px 35px;letter-spacing:.1em;background:var(--share) no-repeat 10px center/18px,var(--title)}
 #tunnels #peercount{padding:6px 6px 4px 35px;letter-spacing:.1em;background:url(/themes/console/images/peers.svg) no-repeat 9px center/18px,var(--title)}
 #tunnels tbody td{border:var(--border_softer)}
 #tunnels td:not(.rif):not(.rih):not(.rbw):first-child,#tunnels #tunnelPeerCount td:first-child{border-left:var(--border)}
 #tunnels td:not(.rif):not(.rih):not(.rbw):last-child,#tunnels #tunnelPeerCount td:last-child{border-right:var(--border)}
 #tunnels td:not(.rif):not(.rih):not(.rbw).tcount,#tunnels #tunnelPeerCount .bar{width:1%;white-space:nowrap}
-#tunnels td:not(.rif):not(.rih):not(.rbw)>*{vertical-align:baseline}
+#tunnels td>*{vertical-align:middle}
 #tunnels td{text-align:center}
 #tunnels th{font-size:85%;position:relative;user-select:none}
 #tunnels th#tier[role="columnheader"]:not([data-sort-method="none"])::after,#tunnels th#router[role="columnheader"]:not([data-sort-method="none"])::after,#tunnels th#version[role="columnheader"]:not([data-sort-method="none"])::after{right:-2px;z-index:999}

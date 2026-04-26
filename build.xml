@@ -1637,6 +1637,11 @@
         <fileset dir="./logs"/>
       </delete>
       <delete includeemptydirs="true" quiet="true">
+        <fileset dir="installer/resources/blocklist">
+          <include name="*.bak"/>
+        </fileset>
+      </delete>
+      <delete includeemptydirs="true" quiet="true">
         <fileset dir=".">
           <include name="*.so"/>
           <include name="*.so.*"/>

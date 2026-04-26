@@ -152,7 +152,8 @@
     <!-- <module name="OverloadMethodsDeclarationOrder"/> NOISY -->
     <!-- <module name="VariableDeclarationUsageDistance"/> NOISY -->
 
-    <!-- Indentation -->
+    <!-- Indentation - disabled, produces too many noise warnings -->
+    <!--
     <module name="Indentation">
       <property name="basicOffset" value="4"/>
       <property name="caseIndent" value="4"/>
@@ -160,6 +161,7 @@
       <property name="lineWrappingIndentation" value="4"/>
       <property name="tabWidth" value="4"/>
     </module>
+    -->
 
     <!-- Support @SuppressWarnings("checkstyle:...") -->
     <module name="SuppressWarningsHolder"/>

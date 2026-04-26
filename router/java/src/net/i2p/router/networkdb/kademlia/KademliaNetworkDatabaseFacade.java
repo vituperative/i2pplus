@@ -711,7 +711,15 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         LeaseSet ls = (LeaseSet) ds;
         if (ls.isCurrent(Router.CLOCK_FUDGE_FACTOR)) {
             if (isClientDb()) {
-                _clientLeaseSetAccessTime.put(key, _context.clock().now());
+                // Only track LeaseSets with registered hostnames (services we access)
+                // Don't track our own published LeaseSets or tunnel participants
+                NamingService ns = _context.namingService();
+                if (ns != null) {
+                    String hostname = ns.reverseLookup(key);
+                    if (hostname != null) {
+                        _clientLeaseSetAccessTime.put(key, _context.clock().now());
+                    }
+                }
             }
             return ls;
         }

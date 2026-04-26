@@ -4721,7 +4721,7 @@
     <copy quiet="true" file="installer/resources/blocklist/blocklist.txt" todir="pkg-temp/"/>
     <copy quiet="true" file="installer/resources/blocklist/blocklist_tor.txt" todir="pkg-temp/"/>
     <copy quiet="true" file="installer/resources/hosts.txt" todir="pkg-temp/"/>
-    <copy quiet="true" file="installer/resources/readme.license.txt" todir="pkg-temp/"/>
+    <copy quiet="true" file="installer/resources/portable/README.md" tofile="pkg-temp/LICENSE.md"/>
     <!--<mkdir dir="pkg-temp/addressbook"/>-->
     <!--<copy quiet="true" file="apps/addressbook/subscriptions.txt" todir="pkg-temp/addressbook/"/>-->
     <!--<copy quiet="true" file="apps/addressbook/myhosts.txt"  todir="pkg-temp/addressbook/"/>-->

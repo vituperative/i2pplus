@@ -3381,9 +3381,8 @@
 
   <!-- CodeQL -->
   <target name="codeql-setup">
-    <available property="codeql.present" file="tools/codeql/codeql/codeql"/>
     <loadfile property="codeql.version" srcFile="tools/codeql/version.txt"/>
-    <property name="codeql.version" value="v2.25.0"/>
+    <available property="codeql.present" file="tools/codeql/codeql-${codeql.version}/codeql"/>
   </target>
 
   <target name="codeql-download" unless="codeql.present">
@@ -3405,19 +3404,19 @@
   <target name="codeql-packs-download" unless="codeql.packs.present">
     <echo message="Downloading Java query packs..."/>
     <mkdir dir="/tmp/codeql-packs"/>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="codeql/java-all"/>
       <arg value="--dir=/tmp/codeql-packs"/>
     </exec>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="codeql/java-queries"/>
       <arg value="--dir=/tmp/codeql-packs"/>
     </exec>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="githubsecuritylab/codeql-java-queries"/>
@@ -3448,19 +3447,19 @@
   <target name="codeql-js-packs-download" unless="codeql.js.packs.present">
     <echo message="Downloading JavaScript query packs..."/>
     <mkdir dir="/tmp/codeql-js-packs"/>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="codeql/javascript-all"/>
       <arg value="--dir=/tmp/codeql-js-packs"/>
     </exec>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="codeql/javascript-queries"/>
       <arg value="--dir=/tmp/codeql-js-packs"/>
     </exec>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" output="/dev/null" error="/dev/null">
       <arg value="pack"/>
       <arg value="download"/>
       <arg value="githubsecuritylab/codeql-javascript-queries"/>
@@ -3511,10 +3510,10 @@
     <echo message="Creating CodeQL Java database at /tmp/codeql/db-java..."/>
     <exec executable="bash" dir="${basedir}" failonerror="true">
       <arg value="-c"/>
-      <arg value="tools/codeql/codeql/codeql database create /tmp/codeql/db-java --language=java --source-root=. --overwrite --ram=8192 --search-path=tools/codeql/codeql-${codeql.version} --command='bash tools/codeql/build-java.sh'"/>
+      <arg value="tools/codeql/codeql-${codeql.version}/codeql database create /tmp/codeql/db-java --language=java --source-root=. --overwrite --ram=8192 --search-path=tools/codeql/codeql-to-html.py/codeql-${codeql.version} --command='bash tools/codeql/build-java.sh'"/>
     </exec>
     <echo message="Running CodeQL Java analysis..."/>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.java.result" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.java.result" error="/dev/null">
       <arg value="database"/>
       <arg value="analyze"/>
       <arg value="/tmp/codeql/db-java"/>
@@ -3526,19 +3525,19 @@
       <arg value="codeql/java-queries:codeql-suites/java-security-and-quality.qls"/>
     </exec>
     <exec executable="python3" failonerror="false">
-      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
       <arg value="dist/codeql-java.sarif"/>
       <arg value="dist/codeql-java.html"/>
     </exec>
     <exec executable="python3" failonerror="false">
-      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
       <arg value="dist/codeql-java.sarif"/>
       <arg value="dist/codeql-java-local.html"/>
       <arg value="--local"/>
     </exec>
     <exec executable="bash" failonerror="false" outputproperty="cq.java.count">
       <arg value="-c"/>
-      <arg value="python3 tools/codeql/sarif-count.py dist/codeql-java.sarif 2>/dev/null || echo 0"/>
+      <arg value="python3 tools/codeql/codeql-to-html.py/sarif-count.py dist/codeql-java.sarif 2>/dev/null || echo 0"/>
     </exec>
     <echo message="${cq.java.count}" file="dist/codeql-java.txt"/>
     <echo message="CodeQL Java: dist/codeql-java.html, dist/codeql-java-local.html (${cq.java.count} issues)"/>
@@ -3550,10 +3549,10 @@
     <echo message="Creating CodeQL JavaScript database at /tmp/codeql/db-js..."/>
     <exec executable="bash" dir="${basedir}" failonerror="true">
       <arg value="-c"/>
-      <arg value="tools/codeql/codeql/codeql database create /tmp/codeql/db-js --language=javascript --overwrite --ram=8192 --search-path=tools/codeql/codeql-${codeql.version}"/>
+      <arg value="tools/codeql/codeql-${codeql.version}/codeql database create /tmp/codeql/db-js --language=javascript --overwrite --ram=8192 --search-path=tools/codeql/codeql-to-html.py/codeql-${codeql.version}"/>
     </exec>
     <echo message="Running CodeQL JavaScript analysis..."/>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.js.result" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" failonerror="false" outputproperty="cq.js.result" error="/dev/null">
       <arg value="database"/>
       <arg value="analyze"/>
       <arg value="/tmp/codeql/db-js"/>
@@ -3565,13 +3564,13 @@
       <arg value="codeql/javascript-queries:codeql-suites/javascript-security-and-quality.qls"/>
     </exec>
     <exec executable="python3" failonerror="false">
-      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
       <arg value="dist/codeql-js.sarif"/>
       <arg value="dist/codeql-js.html"/>
     </exec>
     <exec executable="bash" failonerror="false" outputproperty="cq.js.count">
       <arg value="-c"/>
-      <arg value="python3 tools/codeql/sarif-count.py dist/codeql-js.sarif 2>/dev/null || echo 0"/>
+      <arg value="python3 tools/codeql/codeql-to-html.py/sarif-count.py dist/codeql-js.sarif 2>/dev/null || echo 0"/>
     </exec>
     <echo message="${cq.js.count}" file="dist/codeql-js.txt"/>
     <echo message="CodeQL JavaScript report written to dist/codeql-js.html (${cq.js.count} issues)"/>
@@ -3580,13 +3579,13 @@
   <target name="codeql-jsp">
     <echo message="Filtering JSP results from Java SARIF..."/>
     <exec executable="python3" failonerror="false" outputproperty="cq.jsp.count">
-      <arg value="tools/codeql/sarif-filter.py"/>
+      <arg value="tools/codeql/codeql-to-html.py/sarif-filter.py"/>
       <arg value="dist/codeql-java.sarif"/>
       <arg value="dist/codeql-jsp.sarif"/>
       <arg value="_jsp.java"/>
     </exec>
     <exec executable="python3" failonerror="false">
-      <arg value="tools/codeql/codeql-to-html.py"/>
+      <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
       <arg value="--no-exclude"/>
       <arg value="dist/codeql-jsp.sarif"/>
       <arg value="dist/codeql-jsp.html"/>
@@ -3603,8 +3602,7 @@
 
     <!-- CodeQL version setup (inline, since codeql-setup has download dependency we handle here) -->
     <loadfile property="codeql.version" srcFile="tools/codeql/version.txt"/>
-    <property name="codeql.version" value="v2.25.0"/>
-    <available property="codeql.present" file="tools/codeql/codeql/codeql"/>
+    <available property="codeql.present" file="tools/codeql/codeql-${codeql.version}/codeql"/>
     <antcall target="codeql-download"/>
 
     <!-- SpotBugs setup -->
@@ -3629,7 +3627,7 @@
     <echo message="  [1/2] CodeQL compilation..."/>
     <mkdir dir="/tmp/codeql"/>
     <mkdir dir="/tmp/codeql/classes"/>
-    <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="true" output="/dev/null" error="/dev/null">
+    <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" failonerror="true" output="/dev/null" error="/dev/null">
       <arg value="database"/>
       <arg value="create"/>
       <arg value="/tmp/codeql/db-java"/>
@@ -3637,7 +3635,7 @@
       <arg value="--source-root=."/>
       <arg value="--overwrite"/>
       <arg value="--ram=8192"/>
-      <arg value="--search-path=tools/codeql/codeql-${codeql.version}"/>
+      <arg value="--search-path=tools/codeql/codeql-to-html.py/codeql-${codeql.version}"/>
       <arg value="--command"/>
       <arg value="bash tools/codeql/build-java.sh"/>
     </exec>
@@ -3745,7 +3743,7 @@
       </sequential>
       <sequential>
         <echo message="    CodeQL running..."/>
-        <exec executable="tools/codeql/codeql/codeql" dir="${basedir}" failonerror="false" output="/dev/null" error="/dev/null">
+        <exec executable="tools/codeql/codeql-${codeql.version}/codeql" dir="${basedir}" failonerror="false" output="/dev/null" error="/dev/null">
           <arg value="database"/>
           <arg value="analyze"/>
           <arg value="/tmp/codeql/db-java"/>
@@ -3757,12 +3755,12 @@
           <arg value="codeql/java-queries:codeql-suites/java-security-and-quality.qls"/>
         </exec>
         <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
-          <arg value="tools/codeql/codeql-to-html.py"/>
+          <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
           <arg value="dist/codeql-java.sarif"/>
           <arg value="dist/codeql-java.html"/>
         </exec>
         <exec executable="python3" failonerror="false" output="/dev/null" error="/dev/null">
-          <arg value="tools/codeql/codeql-to-html.py"/>
+          <arg value="tools/codeql/codeql-to-html.py/codeql-to-html.py"/>
           <arg value="dist/codeql-java.sarif"/>
           <arg value="dist/codeql-java-local.html"/>
           <arg value="--local"/>

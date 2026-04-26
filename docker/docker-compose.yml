@@ -11,6 +11,14 @@ services:
     # Run the container in host network mode for direct access to host network
     network_mode: host
 
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+
+    restart: unless-stopped
+
     # Mount volumes for persistent data storage
     volumes:
       # Config directory for I2P router

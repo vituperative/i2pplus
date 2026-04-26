@@ -1088,6 +1088,18 @@ h3#scheduledjobs+ol li::before{background:var(--timer) no-repeat 6px center/12px
 #jobs #jobstats th:nth-child(n+2),#jobs #jobstats td:nth-child(n+2){text-align:right;padding-right:.5%}
 #jobstats td.updated:nth-child(n+2){animation:updatingTd .1s ease both}
 
+#jobs h3#activejobs{margin-top:14px}
+#jobs h3::after{display:none}
+#jobs h3.sectionToggle{position:relative}
+#jobs h3.sectionToggle.nojobs{pointer-events:none}
+#jobs .sectionToggle.toggle::after{width:10px;height:10px;display:inline-block;position:absolute;top:calc(50% - 5px);right:8px;left:auto;background:var(--dropdown);transform:rotate(-90deg);content:"";animation:none}
+#jobs .sectionToggle.toggle.expanded::after{transform:none}
+#jobs .sectionToggle:hover::after{background:var(--dropdown_hover)}
+#jobs #schedjobs{margin-top:0;display:table!important}
+#jobs #schedjobs ul{margin-top:1px}
+#jobs #qtotals:not(.expanded){margin-bottom:4px}
+#jobs #qtotals:not(.expanded)+#schedjobs{display:none!important}
+
 /* jobs */
 #schedjobs th:last-child{text-align:center}
 #schedjobs td:first-child{font-weight:700;color:var(--ink_light)}

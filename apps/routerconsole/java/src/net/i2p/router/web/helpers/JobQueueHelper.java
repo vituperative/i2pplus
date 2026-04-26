@@ -162,9 +162,9 @@ public class JobQueueHelper extends HelperBase {
                     totalRuntime += (end - start);
                 }
             }
-            String runtimeStr = totalRuntime > 0 ? " <span id=totalRuntime class=jobCounter style=float:right>" +
-                                                    _t("Duration: {0}", DataHelper.formatDuration2(totalRuntime)) +
-                                                    "</span>" : "";
+            String runtimeStr = " <span id=totalRuntime class=jobCounter style=float:right>" +
+                                _t("Duration: {0}", DataHelper.formatDuration2(totalRuntime)) +
+                                "</span>";
             buf.append("<div class=tablewrap id=finished><h3 id=finishedjobs>")
                .append(_t("Just finished jobs")).append(": ").append(justFinishedJobs.size()).append(runtimeStr)
                .append("</h3>\n<ol class=jobqueue>\n");
@@ -257,8 +257,7 @@ public class JobQueueHelper extends HelperBase {
         }
 
         boolean hasJobs = readyJobs.size() > 0;
-        String droppedStr = droppedCount > 0 ? " <span id=dropped class=jobCounter style=float:right>" +
-                                                _t("Dropped: {0}", droppedCount) + "</span>" : "";
+        String droppedStr = " <span id=dropped class=jobCounter style=float:right>" + _t("Dropped: {0}", droppedCount) + "</span>";
         buf.append("<div class=tablewrap id=ready><h3 id=readyjobs")
            .append(!hasJobs ? " class=nojobs" : "").append(">")
            .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
@@ -321,6 +320,7 @@ public class JobQueueHelper extends HelperBase {
         ObjectCounterUnsafe<String> totalQueueCounter = new ObjectCounterUnsafe<String>();
         Map<String, Map<Long, List<Job>>> groupedJobs = new HashMap<String, Map<Long, List<Job>>>();
         int eligibleScheduledCount = 0;
+        long maxScheduledDelay = 0;
 
         // First pass: collect and group all jobs
         for (int i = 0; i < timedJobs.size(); i++) {
@@ -328,6 +328,9 @@ public class JobQueueHelper extends HelperBase {
             String jobName = j.getName();
             long delay = j.getTiming().getStartAfter() - now;
             boolean isDisabled = jobName.toLowerCase(java.util.Locale.US).contains("disabled");
+
+            // Track max scheduled delay
+            if (delay > maxScheduledDelay) maxScheduledDelay = delay;
 
             // Count eligible jobs (1s to 20s delay, not disabled)
             if (delay > 1000 && delay <= 20000 && !isDisabled) {
@@ -370,12 +373,12 @@ public class JobQueueHelper extends HelperBase {
         StringBuilder scheduledBuf = new StringBuilder(8192);
         int activeRunners = _context.jobQueue().getActiveRunnerCount();
         int maxRunners = _context.jobQueue().getMaxRunnerCount();
-        String runnerStr = " <span id=runners class=jobCounter style=float:right>" +
-                          _t("Runners: {0} / {1}", activeRunners, maxRunners) + "</span>";
+        String maxDelayStr = " <span id=longest class=jobCounter style=float:right>" +
+                             _t("Max wait: {0}", DataHelper.formatDuration2(maxScheduledDelay));
         scheduledBuf.append("<div class=tablewrap id=scheduled><h3 id=scheduledjobs>")
            .append(_t("Scheduled jobs")).append(": ")
            .append(displayedJobCount).append(" / ").append(eligibleScheduledCount)
-           .append(runnerStr)
+           .append(maxDelayStr)
            .append("</h3>\n<ol class=jobqueue>\n");
 
         for (JobTimeEntry entry : sortedJobs) {
@@ -411,7 +414,8 @@ public class JobQueueHelper extends HelperBase {
         // Update header with actual counts (simple string replacement safe here since we control the format)
         String headerPlaceholder = displayedJobCount + " / " + eligibleScheduledCount;
         scheduledBuf.replace(0, scheduledBuf.indexOf("</h3>") + 5,
-            "<div class=tablewrap id=scheduled><h3 id=scheduledjobs>" + _t("Scheduled jobs") + ": " + headerPlaceholder + "</h3>\n");
+            "<div class=tablewrap id=scheduled><h3 id=scheduledjobs>" + _t("Scheduled jobs") + ": " +
+            headerPlaceholder + maxDelayStr + "</h3>\n");
 
         if (eligibleScheduledCount <= 0) {
             buf.setLength(0);
@@ -435,12 +439,12 @@ public class JobQueueHelper extends HelperBase {
     private void getJobCounts(StringBuilder buf, ObjectCounterUnsafe<String> counter, int scheduledCount) {
         List<String> names = new ArrayList<>(counter.objects());
         int totalJobs = _context.jobQueue().getReadyCount() + scheduledCount;
+        int activeRunners = _context.jobQueue().getActiveRunnerCount();
+        int maxRunners = _context.jobQueue().getMaxRunnerCount();
+        String runnerStr = " <span id=runners class=jobCounter style=float:right>" + _t("Runners: {0} / {1}", activeRunners, maxRunners) + "</span>";
 
-        buf.append("<div class=tablewrap id=totals><table id=schedjobs>\n")
-           .append("<thead><tr><th>")
-           .append(_t("Queue Totals")).append(": ").append(totalJobs)
-           .append("</span></th></tr></thead>\n")
-           .append("<tr><td>\n<ul>\n");
+        buf.append("<div class=tablewrap id=totals><h3 id=qtotals>").append(_t("Queue Totals"))
+           .append(": ").append(totalJobs).append(runnerStr).append("</h3><table id=schedjobs>\n<tr><td>\n<ul>\n");
 
         final String TEST_TUNNEL_EN = "Test Local Tunnel";
         int maxTestJobs = TestJob.maxQueuedTests;

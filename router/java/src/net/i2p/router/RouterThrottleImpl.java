@@ -291,11 +291,32 @@ public class RouterThrottleImpl implements RouterThrottle {
      * 10 minute lifetime of an exploratory tunnel. We use it as a baseline
      * minimum for estimating tunnel bandwidth, if accepted.
      *
-     * 200 KB in 10 minutes equals 340 Bps - optimized for high bandwidth contexts.
+     * 600 KB in 10 minutes equals ~4 KBps - increased from 200 for better
+     * bandwidth allocation per transit tunnel.
      *
      * @since public since 0.9.66, was package private
      */
-    public static final int DEFAULT_MESSAGES_PER_TUNNEL_ESTIMATE = 200; // .340KBps
+    public static final int DEFAULT_MESSAGES_PER_TUNNEL_ESTIMATE = 600; // ~4KBps
+
+    /**
+     * Calculate a floor for per-tunnel bandwidth allocation based on
+     * participating tunnel count and total outbound bandwidth share.
+     * This ensures a minimum allocation even when many tunnels are hosted.
+     *
+     * @return minimum bytes per second to allocate per tunnel
+     */
+    public static int getMinBandwidthFloorPerTunnel(RouterContext ctx) {
+        int maxKBps = ctx.bandwidthLimiter().getOutboundKBytesPerSecond();
+        int share = (int) (maxKBps * 1024 * ctx.router().getSharePercentage());
+        int numTunnels = ctx.tunnelManager().getParticipatingCount();
+        if (numTunnels <= 0 || share <= 0) {
+            return DEFAULT_MESSAGES_PER_TUNNEL_ESTIMATE * 4096 / (10*60);
+        }
+        // Floor: either 10% of share / tunnel count, or 4KB/s minimum
+        int floor = Math.max(share / Math.max(numTunnels, 10), 4 * 1024);
+        return Math.min(floor, share / 2); // Cap at 50% of share
+    }
+
     /** also limited to 90% - see below */
     private static final int MIN_AVAILABLE_BPS = 4*1024; // always leave at least 4KBps free when allowing
     //private static final String LIMIT_STR = _x("Declining Tunnel Requests" + ":<br>" + "Bandwidth limit");

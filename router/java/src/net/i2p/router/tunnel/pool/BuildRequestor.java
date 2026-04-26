@@ -90,14 +90,15 @@ abstract class BuildRequestor {
 
     /**
      * Timeout for waiting for a full tunnel build reply.
+     * Increased from 15s to 20s to reduce timeout failures on slow I2P network.
      */
-    static final int REQUEST_TIMEOUT = SystemVersion.isSlow() ? 20*1000 : 15*1000;
+    static final int REQUEST_TIMEOUT = SystemVersion.isSlow() ? 25*1000 : 20*1000;
 
     /**
      * Shorter timeout for the first hop of an outbound build,
      * to trigger early failure detection.
      */
-    private static final int FIRST_HOP_TIMEOUT = SystemVersion.isSlow() ? 8*1000 : 5*1000;
+    public static final int FIRST_HOP_TIMEOUT = SystemVersion.isSlow() ? 10*1000 : 8*1000;
 
     /**
      * Base expiration for the TunnelBuildMessage itself.

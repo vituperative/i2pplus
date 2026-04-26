@@ -55,6 +55,8 @@ public class FIFOBandwidthRefiller implements Runnable {
     private final FIFOBandwidthLimiter _limiter;
     // This is only changed if the config changes
     private volatile SyntheticREDQueue _partBWE;
+    // Inbound bandwidth limiter for participating tunnels
+    private volatile SyntheticREDQueue _partBWEIn;
 
     /** how many KBps do we want to allow? */
     private volatile int _inboundKBytesPerSecond;
@@ -250,6 +252,7 @@ public class FIFOBandwidthRefiller implements Runnable {
         int maxBps = getShareBandwidth();
         if (_partBWE == null || maxBps != _partBWE.getMaxBandwidth()) {
             _partBWE = new SyntheticREDQueue(_context, maxBps);
+            _partBWEIn = new SyntheticREDQueue(_context, maxBps);
         }
 
         // We are always limited for now
@@ -379,11 +382,25 @@ public class FIFOBandwidthRefiller implements Runnable {
      *
      *  @param size bytes
      *  @param factor multiplier of size for the drop calculation, 1 for no adjustment
-     *  @return true for accepted, false for drop
-     *  @since 0.8.12
-     */
+*  @return true for accepted, false for drop
+      *  @since 0.8.12
+      */
     boolean incrementParticipatingMessageBytes(int size, float factor) {
         return _partBWE.offer(size, factor);
+    }
+
+    /**
+     *  We intend to receive traffic for a participating tunnel
+     *  with the given size and adjustment factor.
+     *  Returns true if the message can be accepted within the current
+     *  share bandwidth limits, or false if it should be dropped.
+     *
+     *  @param size bytes
+     *  @param factor multiplier of size for the drop calculation, 1 for no adjustment
+     *  @return true for accepted, false for drop
+     */
+    boolean incrementParticipatingMessageBytesIn(int size, float factor) {
+        return _partBWEIn == null || _partBWEIn.offer(size, factor);
     }
 
     /**
@@ -394,6 +411,15 @@ public class FIFOBandwidthRefiller implements Runnable {
      */
     int getCurrentParticipatingBandwidth() {
         return (int) (_partBWE.getBandwidthEstimate() * 1000f);
+    }
+
+    /**
+     *  In bandwidth. Actual bandwidth, not smoothed, not bucketed.
+     *
+     *  @return Bps in recent period (a few seconds)
+     */
+    int getCurrentParticipatingBandwidthIn() {
+        return _partBWEIn != null ? (int) (_partBWEIn.getBandwidthEstimate() * 1000f) : 0;
     }
 
     /**
@@ -411,6 +437,7 @@ public class FIFOBandwidthRefiller implements Runnable {
      */
     private void updateParticipating(long now) {
             _context.statManager().addRateData("tunnel.participating OutBps", getCurrentParticipatingBandwidth());
+            _context.statManager().addRateData("tunnel.participating InBps", getCurrentParticipatingBandwidthIn());
             // this one is not a required stat
             if (_context.getBooleanProperty("stat.full"))
                 _context.statManager().addRateData("bwLimiter.participatingBandwidthQueue", (long) _partBWE.getQueueSizeEstimate());

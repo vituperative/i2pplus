@@ -207,12 +207,23 @@ public class FIFOBandwidthLimiter {
      *  share bandwidth limits, or false if it should be dropped.
      *
      *  @param size bytes
-     *  @param factor multiplier of size for the drop calculation, 1 for no adjustment
-     *  @return true for accepted, false for drop
-     *  @since 0.8.12
-     */
+*  @param factor multiplier of size for the drop calculation, 1 for no adjustment
+      *  @return true for accepted, false for drop
+      *  @since 0.8.12
+      */
     public boolean sentParticipatingMessage(int size, float factor) {
         return _refiller.incrementParticipatingMessageBytes(size, factor);
+    }
+
+    /**
+     *  Check if we should accept an inbound participating message.
+     *
+     *  @param size bytes
+     *  @param factor multiplier of size for the drop calculation, 1 for no adjustment
+     *  @return true for accepted, false for drop
+     */
+    public boolean receivedParticipatingMessage(int size, float factor) {
+        return _refiller.incrementParticipatingMessageBytesIn(size, factor);
     }
 
     /**
@@ -223,6 +234,15 @@ public class FIFOBandwidthLimiter {
      */
     public int getCurrentParticipatingBandwidth() {
         return _refiller.getCurrentParticipatingBandwidth();
+    }
+
+    /**
+     *  In bandwidth. Actual bandwidth, not smoothed, not bucketed.
+     *
+     *  @return Bps in recent period (a few seconds)
+     */
+    public int getCurrentParticipatingBandwidthIn() {
+        return _refiller.getCurrentParticipatingBandwidthIn();
     }
 
     /**

@@ -540,24 +540,40 @@ class BuildHandler implements Runnable {
             int limit = Math.max(MIN_LOOKUP_LIMIT, Math.min(MAX_LOOKUP_LIMIT, numTunnels * PERCENT_LOOKUP_LIMIT / 100));
             long uptime = _context.router().getUptime();
             long maxQueueLag = _context.jobQueue().getMaxLag();
-            boolean highLoad = SystemVersion.getCPULoadAvg() > 60 || maxQueueLag > 500;
+
+            // Check bandwidth usage instead of tunnel count - don't throttle until 95% of shared bandwidth used
+            int maxKBps = _context.bandwidthLimiter().getOutboundKBytesPerSecond();
+            int share = (int) (maxKBps * _context.router().getSharePercentage());
+            int used = _context.router().get15sRate(true);
+            int shareBytes = share * 1024;
+            int bwUsagePercent = (shareBytes > 0) ? (used * 100 / shareBytes) : 0;
+            double cpuLoad = SystemVersion.getCPULoadAvg();
+            boolean highLoad = bwUsagePercent > 95 || cpuLoad > 90 || maxQueueLag > 1000;
+            boolean moderateLoad = bwUsagePercent > 85;
             boolean isSlow = SystemVersion.isSlow();
-            if (isSlow) {highLoad = SystemVersion.getCPULoadAvg() > 40 || maxQueueLag > 800;}
+            if (isSlow) {highLoad = bwUsagePercent > 90 || cpuLoad > 85 || maxQueueLag > 1000;}
 
             boolean lucky;
             int dropPercent;
             if (highLoad) {
                 lucky = false;
                 dropPercent = 100;
-            } else if (numTunnels < 500) {
+                if (_log.shouldInfo()) {
+                    String reason = "";
+                    if (bwUsagePercent > 95) reason += "BW:" + bwUsagePercent + "% (" + (maxKBps) + "KB/s configured, " + used + "B/s used) ";
+                    if (cpuLoad > (isSlow ? 40 : 60)) reason += "CPU:" + String.format("%.1f", cpuLoad) + "% ";
+                    if (maxQueueLag > (isSlow ? 800 : 500)) reason += "Lag:" + maxQueueLag + "ms ";
+                    _log.info("High load detection -> " + reason + req);
+                }
+            } else if (moderateLoad) {
                 lucky = _context.random().nextInt(3) < 2;
                 dropPercent = 33;
-            } else if (numTunnels < 1000) {
-                lucky = _context.random().nextInt(5) < 3;
-                dropPercent = 40;
+            } else if (!moderateLoad) {
+                lucky = true; // No drop when bandwidth comfortable
+                dropPercent = 0;
             } else {
                 lucky = _context.random().nextInt(2) == 0;
-                dropPercent = 50;
+                dropPercent = 0;
             }
 
             AtomicBoolean decremented = new AtomicBoolean(false);
@@ -1029,7 +1045,7 @@ class BuildHandler implements Runnable {
                 cfg.setSendTunnelId(nextId);
             }
             if (avail > 0) {cfg.setAllocatedBW(avail);}
-            else {cfg.setAllocatedBW(DEFAULT_BW_PER_TUNNEL_ESTIMATE);}
+            else {cfg.setAllocatedBW(RouterThrottleImpl.getMinBandwidthFloorPerTunnel(_context));}
             if (_log.shouldDebug())
                 _log.debug("Tunnel join - Allocated: " + formatBandwidth(cfg.getAllocatedBW()));
             // now "actually" join

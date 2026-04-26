@@ -50,6 +50,12 @@ class BuildExecutor implements Runnable {
     private final ConcurrentHashMap<Long, PooledTunnelCreatorConfig> _recentlyBuildingMap; // indexed by ptcc.getReplyMessageId()
     private volatile boolean _isRunning;
     private boolean _repoll;
+    private volatile int _buildSuccessCount;
+    private volatile int _buildFailureCount;
+    private volatile int _firstHopSuccessCount;
+    private volatile int _firstHopFailureCount;
+    private volatile long _adaptiveTimeout = BuildRequestor.REQUEST_TIMEOUT;
+    private volatile long _adaptiveFirstHopTimeout = BuildRequestor.FIRST_HOP_TIMEOUT;
     /**
      * Get the maximum number of concurrent tunnel builds allowed.
      * Calculated based on CPU cores and configurable multiplier
@@ -83,7 +89,7 @@ class BuildExecutor implements Runnable {
      * @param mgr the tunnel pool manager
      * @param ghostMgr the ghost peer manager for tracking timeouts
      */
-    public BuildExecutor(RouterContext ctx, TunnelPoolManager mgr, GhostPeerManager ghostMgr) {
+public BuildExecutor(RouterContext ctx, TunnelPoolManager mgr, GhostPeerManager ghostMgr) {
         _context = ctx;
         _log = ctx.logManager().getLog(getClass());
         _manager = mgr;
@@ -95,15 +101,16 @@ class BuildExecutor implements Runnable {
         _context.statManager().createRateStat("tunnel.buildFailFirstHop", "OB tunnel build failure frequency (can't contact 1st hop)", "Tunnels", RATES);
         _context.statManager().createRateStat("tunnel.buildReplySlow", "Build reply late, but not too late", "Tunnels", RATES);
         _context.statManager().createRateStat("tunnel.concurrentBuildsLagged", "Concurrent build count before rejecting (job lag)", "Tunnels", RATES); // (period is lag)
-        _context.statManager().createRequiredRateStat("tunnel.buildClientExpire", "No response to our build request", "Tunnels [Participating]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildClientReject", "Response time for rejection (ms)", "Tunnels [Participating]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildClientSuccess", "Response time for success (ms)", "Tunnels [Participating]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildConfigTime", "Time to build a tunnel config (ms)", "Tunnels", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildExploratoryExpire", "No response to our build request", "Tunnels [Exploratory]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildExploratoryReject", "Response time for rejection (ms)", "Tunnels [Exploratory]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildExploratorySuccess", "Response time for success (ms)", "Tunnels [Exploratory]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.buildRequestTime", "Time to build a tunnel request (ms)", "Tunnels [Participating]", RATES);
-        _context.statManager().createRequiredRateStat("tunnel.concurrentBuilds", "How many builds are going at once", "Tunnels", RATES);
+        _context.statManager().createRateStat("tunnel.buildClientExpire", "No response to our build request", "Tunnels [Participating]", RATES);
+        _context.statManager().createRateStat("tunnel.buildClientReject", "Response time for rejection (ms)", "Tunnels [Participating]", RATES);
+        _context.statManager().createRateStat("tunnel.buildClientSuccess", "Response time for success (ms)", "Tunnels [Participating]", RATES);
+        _context.statManager().createRateStat("tunnel.buildConfigTime", "Time to build a tunnel config (ms)", "Tunnels", RATES);
+        _context.statManager().createRateStat("tunnel.buildExploratoryExpire", "No response to our build request", "Tunnels [Exploratory]", RATES);
+        _context.statManager().createRateStat("tunnel.buildExploratoryReject", "Response time for rejection (ms)", "Tunnels [Exploratory]", RATES);
+        _context.statManager().createRateStat("tunnel.buildExploratorySuccess", "Response time for success (ms)", "Tunnels [Exploratory]", RATES);
+        _context.statManager().createRateStat("tunnel.buildRequestTime", "Time to build a tunnel request (ms)", "Tunnels [Participating]", RATES);
+        _context.statManager().createRateStat("tunnel.concurrentBuilds", "How many builds are going at once", "Tunnels", RATES);
+        _context.statManager().createRateStat("tunnel.buildSuccessRate", "Tunnel build success rate (0-100)", "Tunnels", RATES);
 
         StatManager statMgr = _context.statManager(); // Get stat manager, get recognized bandwidth tiers
         String bwTiers = RouterInfo.BW_CAPABILITY_CHARS; // For each bandwidth tier, create tunnel build agree/reject/expire stats
@@ -134,13 +141,91 @@ class BuildExecutor implements Runnable {
     }
 
     /**
+     * Update success/failure counters and calculate adaptive timeout
+     */
+    private void updateBuildStats(boolean success) {
+        if (success) {
+            _buildSuccessCount++;
+        } else {
+            _buildFailureCount++;
+        }
+        // Every 50 builds, recalculate adaptive timeout
+        int total = _buildSuccessCount + _buildFailureCount;
+        if (total >= 50) {
+            calculateAdaptiveTimeoutFromSuccess();
+            // Reset counters periodically to favor recent behavior
+            _buildSuccessCount = Math.max(1, _buildSuccessCount / 2);
+            _buildFailureCount = Math.max(1, _buildFailureCount / 2);
+        }
+    }
+
+    /**
+     * Calculate adaptive timeout based on build success/failure ratio
+     */
+    private void calculateAdaptiveTimeoutFromSuccess() {
+        int total = _buildSuccessCount + _buildFailureCount;
+        if (total < 10) { return; }
+
+        double successRate = (double) _buildSuccessCount / total;
+        double failureRate = 1.0 - successRate;
+
+        // Base timeout from 20s, up to 30s max
+        long baseTimeout = BuildRequestor.REQUEST_TIMEOUT;
+
+        // Increase timeout by 1s for every 5% failure rate above 20%
+        // At 60% failure (40% success) -> add 8s = 28s timeout
+        // At 80% failure (20% success) -> add 12s = 32s (capped at 30s)
+        if (failureRate > 0.20) {
+            long increment = (long) ((failureRate - 0.20) * 100 / 5); // 1s per 5%
+            baseTimeout += increment * 1000;
+        }
+
+        // Also adjust for tunnel length
+        int avgLength = 3; // Assume 3-hop by default
+        baseTimeout += (avgLength - 3) * 5 * 1000;
+
+        // Cap at 30 seconds
+        _adaptiveTimeout = Math.min(baseTimeout, 30 * 1000);
+
+        // Also calculate adaptive first-hop timeout based on first-hop success rate
+        int firstHopTotal = _firstHopSuccessCount + _firstHopFailureCount;
+        if (firstHopTotal >= 10) {
+            double firstHopSuccessRate = (double) _firstHopSuccessCount / firstHopTotal;
+            double firstHopFailureRate = 1.0 - firstHopSuccessRate;
+
+            // Base first-hop timeout from 8s, up to 15s max
+            long baseFirstHop = BuildRequestor.FIRST_HOP_TIMEOUT;
+
+            // Increase by 1s for every 10% first-hop failure above 20%
+            if (firstHopFailureRate > 0.20) {
+                long increment = (long) ((firstHopFailureRate - 0.20) * 100 / 10);
+                baseFirstHop += increment * 1000;
+            }
+
+            _adaptiveFirstHopTimeout = Math.min(baseFirstHop, 15 * 1000);
+
+            if (_log.shouldDebug()) {
+                _log.debug("Adaptive first-hop timeout: " + (_adaptiveFirstHopTimeout / 1000) + "s (success: " +
+                           (int)(firstHopSuccessRate * 100) + "%, failures: " + _firstHopFailureCount +
+                           "/" + firstHopTotal + ")");
+            }
+        }
+
+        if (_log.shouldDebug()) {
+            _log.debug("Adaptive timeout: " + (_adaptiveTimeout / 1000) + "s (success: " +
+                       (int)(successRate * 100) + "%, failures: " + _buildFailureCount +
+                       "/" + total + ")");
+        }
+    }
+
+    /**
      * Calculate adaptive timeout based on tunnel characteristics and network conditions
      *
      * @param cfg the tunnel configuration
      * @return adaptive timeout in milliseconds
      */
     private long calculateAdaptiveTimeout(PooledTunnelCreatorConfig cfg) {
-        long baseTimeout = BuildRequestor.REQUEST_TIMEOUT;
+        long baseTimeout = _adaptiveTimeout;
 
         // Adjust timeout based on tunnel length
         int length = cfg.getLength();
@@ -148,29 +233,16 @@ class BuildExecutor implements Runnable {
             baseTimeout += (length - 3) * 5*1000; // Add 5s per additional hop
         }
 
-        // Adjust based on recent network performance
-        RateStat buildTimeStat = _context.statManager().getRate("tunnel.buildRequestTime");
-        if (buildTimeStat != null) {
-            Rate r = buildTimeStat.getRate(RateConstants.TEN_MINUTES); // Last 10 minutes
-            if (r != null) {
-                double avgBuildTime = r.getAverageValue();
-                if (avgBuildTime > 100) { // If builds are taking longer than 100ms
-                    baseTimeout += (long)(avgBuildTime * 2); // Double the average build time
-                }
-            }
-        }
-
         // Adjust based on system load
         int cpuLoad = SystemVersion.getCPULoadAvg();
         if (cpuLoad > 90) {
-            baseTimeout += 30*1000; // Add 30s under high CPU load
+            baseTimeout += 5*1000; // Add 5s under high CPU load
         } else if (cpuLoad > 80) {
-            baseTimeout += 15*1000; // Add 15s under moderate CPU load
+            baseTimeout += 3*1000; // Add 3s under moderate CPU load
         }
 
-        // Cap the timeout to prevent excessive waits
-        long maxTimeout = BuildRequestor.REQUEST_TIMEOUT * 3; // Triple the base timeout
-        return Math.min(baseTimeout, maxTimeout);
+        // Cap at 30 seconds max
+        return Math.min(baseTimeout, 30*1000);
     }
 
     /**
@@ -605,6 +677,15 @@ class BuildExecutor implements Runnable {
         if (_log.shouldInfo()) {_log.info("Build complete (" + result + ") for " + cfg);}
         cfg.getTunnelPool().buildComplete(cfg, result);
         if (cfg.getLength() > 1) {removeFromBuilding(cfg.getReplyMessageId());}
+        // Update adaptive timeout based on success/failure
+        updateBuildStats(result == Result.SUCCESS);
+
+        // Track first-hop success/failure
+        if (result == Result.SUCCESS) {
+            _firstHopSuccessCount++;
+        } else if (result == Result.TIMEOUT || result == Result.BAD_RESPONSE) {
+            _firstHopFailureCount++;
+        }
         // Only wake up the build thread if it took a reasonable amount of time -
         // this prevents high CPU usage when there is no network connection
         // (via BuildRequestor.TunnelBuildFirstHopFailJob)

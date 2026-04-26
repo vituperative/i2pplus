@@ -333,6 +333,7 @@ public class TunnelDispatcher implements Service {
         _context.statManager().createRequiredRateStat("tunnel.participating InBps", "In (B/s) for Participating tunnels", "Tunnels [Participating]", RATES);
         _context.statManager().createRequiredRateStat("tunnel.participating OutBps", "Out (B/s) for Participating tunnels", "Tunnels [Participating]", RATES);
         _context.statManager().createRateStat("tunnel.participatingMessageDropped", "Dropped participating messages (share limit exceeded)", "Tunnels [Participating]", RATES);
+        _context.statManager().createRateStat("tunnel.participatingInboundMessageDropped", "Dropped inbound participating messages (share limit exceeded)", "Tunnels [Participating]", RATES);
         _context.statManager().createRequiredRateStat("tunnel.participatingMessageCount", "Total 1KB participating messages", "Tunnels [Participating]", RATES);
         // 10m period used for tunnel capacity planning (smoother average than 1m)
         _context.statManager().createRequiredRateStat("tunnel.participatingMessageCountAvgPerTunnel", "Estimated participating messages per tunnel lifetime", "Tunnels [Participating]", new long[] { RateConstants.ONE_MINUTE, RateConstants.TEN_MINUTES });
@@ -701,6 +702,11 @@ public class TunnelDispatcher implements Service {
      * Dispatch a TunnelDataMessage to the appropriate participant or endpoint
      */
     public void dispatch(TunnelDataMessage msg, Hash recvFrom) {
+        byte[] data = msg.getData();
+        if (data != null && shouldDropParticipatingInboundMessage(Location.PARTICIPANT, TunnelDataMessage.MESSAGE_TYPE, data.length, null)) {
+            _context.statManager().addRateData("tunnel.participatingInBps", data.length * 1024 / 1, 0);
+            return;
+        }
         TunnelParticipant participant = _participants.get(msg.getTunnelIdObj());
         if (participant != null) {
             if (_log.shouldDebug())
@@ -919,6 +925,46 @@ int pct = Math.max(0, (int)((1.0f - factor) * 100));
                           "\n* Location: " + loc + ", Type: " + type + ", Length: " + length);
             }
             _context.statManager().addRateData("tunnel.participatingMessageDropped", 1);
+        }
+        return reject;
+    }
+
+    /**
+     * Check if we should drop an inbound participating tunnel message.
+     * Implements symmetric throttling: both inbound and outbound transit traffic
+     * should be throttled equally to prevent inbound traffic from overwhelming
+     * outbound capacity.
+     *
+     * @param loc location in tunnel (IBGP, PARTICIPANT, OBEP)
+     * @param type message type
+     * @param length message size in bytes
+     * @param bwe per-tunnel bandwidth estimator (may be null)
+     * @return true to drop, false to accept
+     */
+    boolean shouldDropParticipatingInboundMessage(Location loc, int type, int length, SyntheticREDQueue bwe) {
+        if (length <= 0) return false;
+
+        float factor = _context.getProperty("router.transitThrottleFactor", 0.95f);
+        int pct = Math.max(0, (int)((1.0f - factor) * 100));
+
+        if (bwe != null && !bwe.offer(length, factor)) {
+            if (_log.shouldWarn()) {
+                _log.warn("Dropping inbound participating message (per-tunnel limit)" +
+                          (pct > 0 ? " -> Approx drop: " + pct + "%" : "") +
+                          "\n* Location: " + loc + ", Type: " + type + ", Length: " + length +
+                          ", BWE: " + bwe);
+            }
+            return true;
+        }
+
+        boolean reject = !_context.bandwidthLimiter().receivedParticipatingMessage(length, factor);
+        if (reject) {
+            if (_log.shouldWarn()) {
+                _log.warn("Dropping inbound participating message (global bandwidth limit)" +
+                          (pct > 0 ? " -> Approx drop: " + pct + "%" : "") +
+                          "\n* Location: " + loc + ", Type: " + type + ", Length: " + length);
+            }
+            _context.statManager().addRateData("tunnel.participatingInboundMessageDropped", 1);
         }
         return reject;
     }

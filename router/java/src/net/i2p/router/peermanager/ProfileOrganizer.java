@@ -69,10 +69,22 @@ public class ProfileOrganizer {
     private static final int MIN_TUNNEL_REQUESTS = 50;
     /** Maximum tunnel test RTT (ms) to be eligible for fast tier */
     private static final long MAX_RTT_FOR_FAST_TIER = 8000;
+    /** Cooldown period (ms) after demotion before peer can be re-promoted */
+    private static final long TUNNEL_DEMOTION_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
 
     public static final String PROP_MAX_PROFILES = "profileOrganizer.maxProfiles";
-    public static final int DEFAULT_MAX_PROFILES = SystemVersion.isSlow() ? 800 : 1200;
-    public static final int ABSOLUTE_MAX_PROFILES = 2000;
+    public static final int DEFAULT_MAX_PROFILES = getDefaultMaxProfiles();
+    public static final int ABSOLUTE_MAX_PROFILES = 8000;
+    public static final int MIN_MAX_PROFILES = 800;
+
+    private static int getDefaultMaxProfiles() {
+        if (SystemVersion.isSlow()) return MIN_MAX_PROFILES;
+        long maxMemory = SystemVersion.getMaxMemory();
+        if (maxMemory >= 4L * 1024 * 1024 * 1024) return 8000;
+        if (maxMemory >= 2L * 1024 * 1024 * 1024) return 5000;
+        if (maxMemory >= 1L * 1024 * 1024 * 1024) return 3000;
+        return 1200;
+    }
 
     private static final long[] RATES = {
         RateConstants.ONE_MINUTE,
@@ -482,7 +494,16 @@ public class ProfileOrganizer {
 
     private static final long MIN_EXPIRE_TIME = 3 * 24 * 60 * 60 * 1000;
     private static final long MAX_EXPIRE_TIME = 4 * 7 * 24 * 60 * 60 * 1000;
-    private static final int ENOUGH_PROFILES = SystemVersion.isSlow() ? 1000 : 4000;
+    private static final int ENOUGH_PROFILES = getEnoughProfiles();
+
+    private static int getEnoughProfiles() {
+        if (SystemVersion.isSlow()) return 1000;
+        long maxMemory = SystemVersion.getMaxMemory();
+        if (maxMemory >= 4L * 1024 * 1024 * 1024) return 8000;
+        if (maxMemory >= 2L * 1024 * 1024 * 1024) return 6000;
+        if (maxMemory >= 1L * 1024 * 1024 * 1024) return 4000;
+        return 2000;
+    }
 
     void reorganize() {
         reorganize(false, false);
@@ -1014,7 +1035,8 @@ public class ProfileOrganizer {
 
     /**
      * Check if peer has low tunnel acceptance ratio (< 40%)
-     * Uses persisted accept/reject counts even with low sample sizes at startup
+     * Uses persisted accept/reject counts even with low sample sizes at startup.
+     * Also checks for recent bandwidth rejections and applies cooldown.
      */
     private boolean isLowTunnelAcceptance(PeerProfile profile) {
         TunnelHistory th = profile.getTunnelHistory();
@@ -1041,7 +1063,22 @@ public class ProfileOrganizer {
             return true;
         }
 
-        if (ratio >= MIN_TUNNEL_ACCEPTANCE_RATIO) return false;
+        if (ratio >= MIN_TUNNEL_ACCEPTANCE_RATIO) {
+            return false;
+        }
+
+        long now = _context.clock().now();
+        long lastBwReject = th.getLastRejectedBandwidth();
+        if (lastBwReject > 0 && (now - lastBwReject) < TUNNEL_DEMOTION_COOLDOWN_MS) {
+            if (_log.shouldDebug()) {
+                long remaining = (TUNNEL_DEMOTION_COOLDOWN_MS - (now - lastBwReject)) / 60000;
+                _log.debug("Demoting peer from high-cap tier (bandwidth cooldown active): " +
+                           profile.getPeer().toBase32().substring(0, 6) +
+                           " ratio: " + String.format("%.2f", ratio * 100) + "% (" + agreed + " accept / " +
+                           rejected + " reject), cooldown: " + remaining + "min remaining");
+            }
+            return true;
+        }
 
         if (_log.shouldDebug()) {
             _log.debug("Demoting peer from high-cap tier due to low tunnel acceptance: " +

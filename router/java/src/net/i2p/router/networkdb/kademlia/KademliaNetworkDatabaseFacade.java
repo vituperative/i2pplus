@@ -2498,8 +2498,9 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
             if (lastAccess == null) continue;
 
             // Only refresh LeaseSets with a registered hostname (not b32 addresses)
+            String hostname = null;
             if (ns != null) {
-                String hostname = ns.reverseLookup(key);
+                hostname = ns.reverseLookup(key);
                 if (hostname == null) {
                     // No hostname registered, this is likely a b32 address - skip it
                     _clientLeaseSetAccessTime.remove(key);
@@ -2510,16 +2511,19 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                 }
             }
 
+            // Use hostname if available, otherwise use truncated b32 for display
+            String displayName = (hostname != null) ? hostname : key.toBase32().substring(0, 8);
+
             if (lastAccess < inactiveThreshold) {
                 _clientLeaseSetAccessTime.remove(key);
                 if (_log.shouldDebug()) {
-                    _log.debug("Removing stale client LeaseSet: " + key.toBase32().substring(0, 8));
+                    _log.debug("Removing stale client LeaseSet: " + displayName);
                 }
             } else if (lastAccess < refreshThreshold) {
                 _clientLeaseSetAccessTime.remove(key);
                 lookupLeaseSetRemotely(key, null);
                 if (_log.shouldDebug()) {
-                    _log.debug("Refreshing client LeaseSet: " + key.toBase32().substring(0, 8));
+                    _log.debug("Refreshing client LeaseSet: " + displayName);
                 }
             }
         }

@@ -944,8 +944,8 @@ int pct = Math.max(0, (int)((1.0f - factor) * 100));
     boolean shouldDropParticipatingInboundMessage(Location loc, int type, int length, SyntheticREDQueue bwe) {
         if (length <= 0) return false;
 
-        float factor = _context.getProperty("router.transitThrottleFactor", 0.95f);
-        int pct = Math.max(0, (int)((1.0f - factor) * 100));
+        float factor = _context.getProperty("router.transitThrottleFactor", 0.0f);
+        int pct = (int)(factor * 100);
 
         if (bwe != null && !bwe.offer(length, factor)) {
             if (_log.shouldWarn()) {

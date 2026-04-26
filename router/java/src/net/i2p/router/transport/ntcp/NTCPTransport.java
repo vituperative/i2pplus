@@ -1255,7 +1255,7 @@ public class NTCPTransport extends TransportImpl {
      * how long from initial connection attempt (accept() or connect()) until
      * the con must be established to avoid premature close()ing
      */
-    public static final int ESTABLISH_TIMEOUT = 15*1000;
+    public static final int ESTABLISH_TIMEOUT = 8*1000;
 
     /** add us to the establishment timeout process */
     void establishing(NTCPConnection con) {_establishing.add(con);}

@@ -129,7 +129,7 @@ public abstract class TransportImpl implements Transport {
     private static final int MAX_CONNECTION_FACTOR = 100;
     // see constructor
     private final boolean REBALANCE_NTCP;
-    private static final int SEND_POOL_CAPACITY = SystemVersion.isSlow() ? 32 : 64;
+    private static final int SEND_POOL_CAPACITY = SystemVersion.isSlow() ? 64 : 128;
 
     /**
      * Initialize the new transport
@@ -487,8 +487,13 @@ public abstract class TransportImpl implements Transport {
             }
             return;
         }
-        try {_sendPool.put(msg);}
-        catch (InterruptedException ie) {
+        try {
+            if (!_sendPool.offer(msg, 200, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                _context.statManager().addRateData("transport.sendPool.full", 1);
+                afterSend(msg, false);
+                return;
+            }
+        } catch (InterruptedException ie) {
             if (_log.shouldError()) {_log.error("Interrupted during send " + msg);}
             return;
         }

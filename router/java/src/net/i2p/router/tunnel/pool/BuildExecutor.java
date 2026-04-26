@@ -184,8 +184,8 @@ public BuildExecutor(RouterContext ctx, TunnelPoolManager mgr, GhostPeerManager 
         int avgLength = 3; // Assume 3-hop by default
         baseTimeout += (avgLength - 3) * 5 * 1000;
 
-        // Cap at 30 seconds
-        _adaptiveTimeout = Math.min(baseTimeout, 30 * 1000);
+         // Cap at 20 seconds
+         _adaptiveTimeout = Math.min(baseTimeout, 20 * 1000);
 
         // Also calculate adaptive first-hop timeout based on first-hop success rate
         int firstHopTotal = _firstHopSuccessCount + _firstHopFailureCount;

@@ -3,6 +3,17 @@
 ## Quick start
 If you just want to give I2P+ a quick try or are using it on a home network, follow these steps:
 
+### Pull from GitHub Container Registry
+
+```bash
+docker pull ghcr.io/i2pplus/i2pplus:latest
+docker run -d -p 7667:7667 -p 4444:4444 ghcr.io/i2pplus/i2pplus:latest
+```
+
+Then open http://127.0.0.1:7667 in your browser.
+
+### Or build locally
+
 1. Install git, docker-io and docker-compose via your package manager
 2. Download the I2P+ git repository with the command: `git clone https://github.com/I2PPlus/i2pplus.git`
 3. Rename `docker/docker-compose.yml` to `docker-compose.yml` in the root directory of your local I2P+ git workspace

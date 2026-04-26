@@ -82,6 +82,11 @@ Run 'ant' with no arguments to see other build options.
 
 ### Docker
 
+```bash
+docker pull ghcr.io/i2pplus/i2pplus:latest
+docker run -d -p 7667:7667 -p 4444:4444 ghcr.io/i2pplus/i2pplus:latest
+```
+
 For more information how to run I2P in Docker, see [docker/README.md](docker/README.md)
 
 ## Contact info

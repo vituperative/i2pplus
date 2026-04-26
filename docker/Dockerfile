@@ -4,8 +4,7 @@ ENV APP_HOME="/i2p"
 
 WORKDIR /tmp/build
 
-RUN apk add gettext tar bzip2 apache-ant openjdk21 git uglify-js
-RUN wget https://repo1.maven.org/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar -O /usr/share/java/ant-contrib.jar
+RUN apk add --no-cache gettext tar bzip2 apache-ant openjdk21 git uglify-js
 
 COPY . .
 
@@ -18,7 +17,7 @@ RUN rm -rf pkg-temp/osid pkg-temp/lib/wrapper pkg-temp/lib/wrapper.*
 FROM alpine:latest
 ENV APP_HOME="/i2p"
 
-RUN apk add openjdk21-jre ttf-opensans
+RUN apk add --no-cache openjdk21-jre ttf-opensans
 WORKDIR ${APP_HOME}
 COPY --from=builder /tmp/build/pkg-temp .
 

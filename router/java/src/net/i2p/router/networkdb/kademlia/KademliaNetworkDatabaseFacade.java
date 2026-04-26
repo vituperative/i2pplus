@@ -44,6 +44,7 @@ import net.i2p.kademlia.RejectTrimmer;
 import net.i2p.router.BanLogger;
 import net.i2p.router.Banlist;
 import net.i2p.router.HashPatternDetector;
+import net.i2p.client.naming.NamingService;
 import net.i2p.router.Job;
 import net.i2p.router.JobImpl;
 import net.i2p.router.NetworkDatabaseFacade;
@@ -2487,11 +2488,27 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
     private void refreshClientLeaseSets() {
         long now = _context.clock().now();
         long inactiveThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL;          // 90s
-        long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
+        long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s;
+
+        // Get naming service to check for registered hostnames
+        NamingService ns = _context.namingService();
 
         for (Hash key : _clientLeaseSetAccessTime.keySet()) {
             Long lastAccess = _clientLeaseSetAccessTime.get(key);
             if (lastAccess == null) continue;
+
+            // Only refresh LeaseSets with a registered hostname (not b32 addresses)
+            if (ns != null) {
+                String hostname = ns.reverseLookup(key);
+                if (hostname == null) {
+                    // No hostname registered, this is likely a b32 address - skip it
+                    _clientLeaseSetAccessTime.remove(key);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Skipping refresh for non-hostname LeaseSet: " + key.toBase32().substring(0, 8));
+                    }
+                    continue;
+                }
+            }
 
             if (lastAccess < inactiveThreshold) {
                 _clientLeaseSetAccessTime.remove(key);

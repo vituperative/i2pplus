@@ -380,7 +380,7 @@ class JobQueueScaler implements Runnable {
         int activeRunners = _jobQueue.getActiveRunnerCount();
         int readyJobs = _jobQueue.getReadyCount();
         long maxLag = _jobQueue.getMaxLag();
-        long avgLag = _jobQueue.getAvgLag();
+        long avgLag = (long) _context.statManager().getRate("jobQueue.jobLag").getRate(RateConstants.ONE_MINUTE).getAverageValue();
         long now = _context.clock().now();
 
         // Record memory usage stat

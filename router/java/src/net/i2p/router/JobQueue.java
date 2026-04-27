@@ -301,17 +301,17 @@ public class JobQueue {
         long now = _context.clock().now();
         long maxLag = 0;
 
-        // Check timed jobs ready queue first (these are ready but not yet picked up)
-        Job j = _timedJobsReady.peek();
-        if (j != null) {
-            JobTiming jt = j.getTiming();
+        // Check timed jobs ready queue
+        for (Job job : _timedJobsReady) {
+            JobTiming jt = job.getTiming();
             if (jt != null) {
-                maxLag = now - jt.getStartAfter();
+                long lag = now - jt.getStartAfter();
+                if (lag > maxLag) maxLag = lag;
             }
         }
 
         // Check high priority jobs
-        j = _highPriorityJobs.peek();
+        Job j = _highPriorityJobs.peek();
         if (j != null) {
             JobTiming jt = j.getTiming();
             if (jt != null) {
@@ -373,12 +373,23 @@ public class JobQueue {
         long totalLag = 0;
         int jobCount = 0;
 
+        // Check timed jobs
+        for (Job job : _timedJobsReady) {
+            JobTiming jt = job.getTiming();
+            if (jt != null) {
+                long lag = now - jt.getStartAfter();
+                if (lag > 0) {
+                    totalLag += lag;
+                    jobCount++;
+                }
+            }
+        }
+
         // Check ready jobs
         for (Job job : _readyJobs) {
             JobTiming jt = job.getTiming();
             if (jt != null) {
-                long startAfter = jt.getStartAfter();
-                long lag = now - startAfter;
+                long lag = now - jt.getStartAfter();
                 if (lag > 0) {
                     totalLag += lag;
                     jobCount++;
@@ -390,8 +401,7 @@ public class JobQueue {
         for (Job job : _highPriorityJobs) {
             JobTiming jt = job.getTiming();
             if (jt != null) {
-                long startAfter = jt.getStartAfter();
-                long lag = now - startAfter;
+                long lag = now - jt.getStartAfter();
                 if (lag > 0) {
                     totalLag += lag;
                     jobCount++;

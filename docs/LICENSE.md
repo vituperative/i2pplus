@@ -141,14 +141,7 @@ THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDI
 
 Launch4j includes the following third-party components:
 
-**Apache Commons BeanUtils** (commons-beanutils.jar) - Apache License 2.0
-**Apache Commons Logging** (commons-logging.jar) - Apache License 2.0
 **XStream** (xstream.jar) - BSD 3-Clause
-**Foxtrot** (foxtrot.jar) - Apache License 2.0
-**JGoodies Forms** (formsrt.jar) - BSD 3-Clause
-**JGoodies Looks** - BSD 3-Clause
-**FlatLaf** (flatlaf.jar) - Apache License 2.0
-**Nuvola Icon Theme** (Nuvola.Icon.Theme.jar) - LGPL 2.1
 
 **MinGW / w32api** (launch4j/bin, launch4j/w32api)
 MinGW base runtime is public domain.
@@ -157,11 +150,11 @@ GCC/GDB/GNU Make: GNU General Public License.
 
 ## GEOIP DATA
 
-Database and Contents Copyright (c) 2018 MaxMind, Inc. This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.
+Database and Contents Copyright (c) DB-IP.com. This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/.
 
 This database incorporates GeoNames (http://www.geonames.org) geographical data, which is made available under the Creative Commons Attribution 3.0 License. To view a copy of this license, visit http://www.creativecommons.org/licenses/by/3.0/us/.
 
-The attribution requirement may be met by including the following in all advertising and documentation mentioning features of or use of this database: "This product includes GeoLite2 data created by MaxMind, available from http://www.maxmind.com/"
+The attribution requirement may be met by including the following in all advertising and documentation mentioning features of or use of this database: "This product includes IP geolocation data created by DB-IP, available from https://db-ip.com/"
 
 ## LAUNCHERS
 
@@ -286,7 +279,7 @@ The following components are in the public domain:
 - Systray (systray.jar)
 - BlockFile: Copyright (c) 2006, Matthew Estes (all rights reserved)
 
-## APACHE JETTY
+## JETTY
 
 This product includes software developed by the Eclipse Foundation (Jetty) under the Apache License 2.0 and Eclipse Public License 1.0.
 
@@ -301,3 +294,54 @@ This product includes software developed at The Apache Software Foundation (http
 ## SPOTBUGS
 
 SpotBugs is licensed under the GNU Lesser General Public License v2.1. Bundled dependencies include ASM (BSD 3-Clause), Apache Commons (Apache 2.0), DocBook XSL (MIT), Dom4j (BSD-style), Error Prone (Apache 2.0), Gson (Apache 2.0), Jaxen (Apache-style), JCIP Annotations (Apache 2.0), JSR 305 (BSD), Log4j (Apache 2.0), Logback (EPL 1.0/LGPL 2.1), Saxon-HE (MPL 2.0), SLF4J (MIT), and XML Resolver (Apache 2.0).
+
+## JAVASCRIPT LIBRARIES
+
+The following third-party JavaScript libraries are bundled:
+
+**jdenticon** (v3.3.0)
+MIT License. https://jdenticon.com
+
+**morphdom**
+MIT License. https://github.com/patrick-steele-idem/morphdom
+
+**iframe-resizer**
+GPL-2.0. https://github.com/davidjbradshaw/iframe-resizer
+
+**snowflakes**
+MIT License. https://github.com/hcodes/snowflakes/
+
+**progressx**
+MIT License. https://github.com/ryadpasha/progressx
+
+**Markdown.Converter**
+MIT License. Based on Showdown.
+
+**lightbox**
+MIT License. Based on jsOnlyLightbox (https://github.com/felixhagspiel/jsOnlyLightbox)
+
+## CUSTOM JAVASCRIPT
+
+The following custom JavaScript scripts were written by dr|z3d for I2P+. Licensed under AGPL-3.0 or later.
+
+**Console**: geomap (based on CartoSVG mercator example), initResizer, updatedEvent, viewprofile, tunnels, tunnelpeercount, translationReport, transitsummary, transit, transitfast, toggleElements, tableSectionToggler, stickySidebar, stats, sortWorker, sectionToggle, searchLS, refreshSidebar, refreshOnClick, refreshLogs, refreshElements, profiles, peers, onVisible, ok, newHosts, netdbLookup, netdb, miniGraph, lsDebug, lsCompact, lazyload, jobs, graphs, graphSingle, formsubmit, fetchWorker, detectPageZoom, convertKBtoMB, configtunnels, configstats, clickToClose, changelog, advconfig
+
+**I2PSnark**: tunnelCounter, toggleVaryTunnelLength, togglePriorities, toggleLinks, toggleDebug, textView, snarkWork, snarkSort, snarkAlert, setFilterQuery, refreshTorrents, pageNav, getImgDimensions, filterBar, convertTooltips, click
+
+**I2PTunnel**: toggleThrottler, refreshIndex, filterTunnels
+
+**ImageGen**: imagegen
+
+**SusiDNS**: togglePanels, toggleAllHosts, refreshStatus, deleteHosts, clearSearch
+
+**SusiMail**: toggleHeaders, sanitizeHTML, refreshInbox, previewMail, notifications, htmlView, folder, deleteMail, compose
+
+## RRD4J (jrobin.jar)
+
+RRD4J is a high performance data logging and graphing system for time series data. Used for router statistics graphs in the console.
+
+Apache License 2.0. https://github.com/rrd4j/rrd4j
+
+## CONSOLE / WEBAPPS THEMES & GRAPHICS
+
+Custom console and webapp themes and graphics authored by dr|z3d. Licensed under AGPL-3.0 or later unless specified otherwise.

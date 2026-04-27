@@ -2190,7 +2190,7 @@
     </exec>
   </target>
 
-  <target name="buildDeb" depends="preppkg-linux, buildJbigi-linux64" description="Build self-contained Debian package">
+  <target name="buildDeb" depends="preppkg-linux" description="Build self-contained Debian package">
     <echo message="Building I2P+ Debian package..."/>
     <exec executable="bash" dir="${basedir}" failonerror="true">
       <arg value="scripts/build-deb.sh"/>

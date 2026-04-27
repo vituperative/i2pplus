@@ -38,6 +38,13 @@ jobs:
           echo "Installer build complete. Current directory contents:"
           ls -al
 
+      - name: Build Debian package with Ant
+        run: |
+          echo "Building Debian package..."
+          ant buildDeb
+          echo "Debian package build complete:"
+          ls -la dist/*.deb
+
       - name: Build I2PSnark standalone with Ant
         run: |
           echo "Building I2PSnark standalone..."
@@ -53,4 +60,5 @@ jobs:
             dist/i2pupdate.zip
             dist/install.jar
             dist/i2psnark-standalone.zip
+            dist/*.deb
           retention-days: 7

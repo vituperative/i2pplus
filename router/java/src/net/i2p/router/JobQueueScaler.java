@@ -56,11 +56,11 @@ class JobQueueScaler implements Runnable {
     private boolean _scalingUpDisabled; // Circuit breaker after repeated failures
 
     // Feedback configuration
-    private static final int FEEDBACK_CHECKS_AFTER_SCALE = 3; // Check 3 times after scaling
-    private static final int MAX_CONSECUTIVE_FAILED_SCALES = 10; // After 10 failed scales, stop trying
-    private static final long EXTENDED_COOLDOWN_MULTIPLIER = 3; // 3x normal cooldown after failed scale
-    private static final double LAG_INCREASE_THRESHOLD = 2.0; // If lag doubled or worse, consider it failed
-    private static final double READY_JOBS_INCREASE_THRESHOLD = 2.0; // If ready jobs doubled or worse, consider it failed
+    private static final int FEEDBACK_CHECKS_AFTER_SCALE = 2; // Check 2 times after scaling (faster response)
+    private static final int MAX_CONSECUTIVE_FAILED_SCALES = 5; // Reduced from 10 - circuit breaker opens sooner
+    private static final long EXTENDED_COOLDOWN_MULTIPLIER = 2; // 2x normal cooldown (reduced from 3x)
+    private static final double LAG_INCREASE_THRESHOLD = 1.5; // Allow 50% lag increase before rollback (was 2.0 = 100%)
+    private static final double READY_JOBS_INCREASE_THRESHOLD = 1.5; // Allow 50% increase before rollback (was 2.0 = 100%)
 
     // RAM-based limits
     private static final long MB = 1024 * 1024;
@@ -423,21 +423,17 @@ class JobQueueScaler implements Runnable {
 
         // Don't scale up if circuit breaker is open
         if (_scalingUpDisabled) {
-            long cooldown = getCooldownPeriod();
-            // Auto-reset circuit breaker when conditions improve OR after cooldown
-            if ((maxLag < 1 && readyJobs == 0) || timeSinceLastScale > cooldown) {
+            // Circuit breaker resets after cooldown expires (no longer requires perfect conditions)
+            // This allows retry even if there's minor backlog
+            if (timeSinceLastScale > getCooldownPeriod()) {
                 _scalingUpDisabled = false;
                 _consecutiveFailedScaleUps = 0;
                 _isInExtendedCooldown = false;
                 if (_log.shouldInfo()) {
-                    _log.info("CIRCUIT BREAKER RESET: Conditions improved or cooldown expired (lag=" + maxLag +
-                              "ms, ready=" + readyJobs + ", cooldown=" + (timeSinceLastScale/1000) + "s)");
+                    _log.info("CIRCUIT BREAKER RESET: Cooldown expired, allowing scale-up attempts");
                 }
             } else {
-                if (_log.shouldInfo()) {
-                    _log.info("Scaling up is disabled due to repeated failed attempts (lag=" + maxLag + "ms, ready=" + readyJobs + ")");
-                }
-                // Only allow scale down
+                // Only allow scale down to reduce resource usage
                 checkScaleDown(activeRunners, readyJobs, maxLag, avgLag, minRunners, inCooldown);
                 return;
             }
@@ -453,12 +449,13 @@ class JobQueueScaler implements Runnable {
             // Check both queue lag AND active job duration
             // When all runners are busy with slow jobs, queue lag is 0 but active job duration is high
             boolean highLag = maxLag > lagThreshold;
+            boolean highAvgLag = avgLag >= lagThreshold;
             boolean highBacklog = readyJobs > 0 && jobsRatio > ratioThreshold;
             boolean criticalLag = maxLag > lagThreshold * 10; // 10x threshold = critical
             boolean slowActiveJobs = activeJobMaxDuration > lagThreshold * 50; // Jobs running >50ms (very slow)
             boolean criticalSlowJobs = activeJobMaxDuration > lagThreshold * 100; // Jobs running >100ms (critical)
 
-            if (highBacklog || highLag || slowActiveJobs) {
+            if (highBacklog || highLag || highAvgLag || slowActiveJobs) {
                 _consecutiveScaleUpChecks++;
                 if (_consecutiveScaleUpChecks >= SUSTAINED_CHECKS_REQUIRED || criticalLag || criticalSlowJobs) {
                     shouldScaleUp = true;
@@ -479,11 +476,11 @@ class JobQueueScaler implements Runnable {
         // Execute scaling
         if (shouldScaleUp) {
             // Calculate how many runners to add based on lag severity
-            int scaleUpStep = DEFAULT_SCALE_UP_STEP;
+            int scaleUpStep = Math.max(DEFAULT_SCALE_UP_STEP, 2); // Minimum 2 runners
             int lagThreshold = getScaleUpLagThreshold();
             if (maxLag > lagThreshold * 5) {
-                // High lag: add more runners at once (up to 4)
-                scaleUpStep = Math.min(4, (int) (maxLag / lagThreshold));
+                // High lag: add more runners at once (up to 6)
+                scaleUpStep = Math.min(6, (int) (maxLag / lagThreshold / 2));
             }
 
             int targetRunners = Math.min(activeRunners + scaleUpStep, maxRunners);
@@ -502,7 +499,7 @@ class JobQueueScaler implements Runnable {
      */
     private void checkScaleDown(int activeRunners, int readyJobs, long maxLag, long avgLag,
                                 int minRunners, boolean inCooldown) {
-        if (!inCooldown && activeRunners > minRunners) {
+        if (!inCooldown && activeRunners > minRunners && _preScaleSnapshot == null) {
             int lagThreshold = getScaleDownLagThreshold();
 
             // Check for sustained low load - require 0 ready jobs and very low lag

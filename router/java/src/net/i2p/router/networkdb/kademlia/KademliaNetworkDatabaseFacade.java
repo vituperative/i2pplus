@@ -60,6 +60,8 @@ import net.i2p.util.Log;
 import net.i2p.util.SimpleTimer;
 import net.i2p.util.VersionComparator;
 
+import java.util.Comparator;
+
 /**
  * Kademlia based version of network database.
  * <p>
@@ -711,13 +713,16 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         LeaseSet ls = (LeaseSet) ds;
         if (ls.isCurrent(Router.CLOCK_FUDGE_FACTOR)) {
             if (isClientDb()) {
-                // Only track LeaseSets with registered hostnames (services we access)
-                // Don't track our own published LeaseSets or tunnel participants
                 NamingService ns = _context.namingService();
                 if (ns != null) {
                     String hostname = ns.reverseLookup(key);
                     if (hostname != null) {
-                        _clientLeaseSetAccessTime.put(key, _context.clock().now());
+                        // Only update once per refresh interval to avoid flooding
+                        long now = _context.clock().now();
+                        Long lastUpdate = _clientLeaseSetAccessTime.get(key);
+                        if (lastUpdate == null || now - lastUpdate > LOCAL_LEASESET_REFRESH_INTERVAL) {
+                            _clientLeaseSetAccessTime.put(key, now);
+                        }
                     }
                 }
             }
@@ -2493,45 +2498,44 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
      * 1. Re-fetch LeaseSets accessed between 90s-135s ago
      * 2. Remove LeaseSets not accessed in 90s
      */
-    private void refreshClientLeaseSets() {
+private void refreshClientLeaseSets() {
         long now = _context.clock().now();
         long inactiveThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL;          // 90s
-        long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s;
+        long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
 
-        // Get naming service to check for registered hostnames
+        // Limit size to prevent unbounded growth
+        final int MAX_ENTRIES = 1024;
+        if (_clientLeaseSetAccessTime.size() > MAX_ENTRIES) {
+            int toRemove = MAX_ENTRIES / 4;
+            _clientLeaseSetAccessTime.entrySet().stream()
+                .sorted(Comparator.comparingLong(e -> e.getValue()))
+                .limit(toRemove)
+                .forEach(e -> _clientLeaseSetAccessTime.remove(e.getKey()));
+        }
+
         NamingService ns = _context.namingService();
+        if (ns == null) return;
 
         for (Hash key : _clientLeaseSetAccessTime.keySet()) {
             Long lastAccess = _clientLeaseSetAccessTime.get(key);
             if (lastAccess == null) continue;
 
-            // Only refresh LeaseSets with a registered hostname (not b32 addresses)
-            String hostname = null;
-            if (ns != null) {
-                hostname = ns.reverseLookup(key);
-                if (hostname == null) {
-                    // No hostname registered, this is likely a b32 address - skip it
-                    _clientLeaseSetAccessTime.remove(key);
-                    if (_log.shouldDebug()) {
-                        _log.debug("Skipping refresh for non-hostname LeaseSet: " + key.toBase32().substring(0, 8));
-                    }
-                    continue;
-                }
+            String hostname = ns.reverseLookup(key);
+            if (hostname == null) {
+                _clientLeaseSetAccessTime.remove(key);
+                continue;
             }
-
-            // Use hostname if available, otherwise use truncated b32 for display
-            String displayName = (hostname != null) ? hostname : key.toBase32().substring(0, 8);
 
             if (lastAccess < inactiveThreshold) {
                 _clientLeaseSetAccessTime.remove(key);
                 if (_log.shouldDebug()) {
-                    _log.debug("Removing stale client LeaseSet: " + displayName);
+                    _log.debug("Removing stale client LeaseSet: " + hostname);
                 }
             } else if (lastAccess < refreshThreshold) {
                 _clientLeaseSetAccessTime.remove(key);
                 lookupLeaseSetRemotely(key, null);
                 if (_log.shouldDebug()) {
-                    _log.debug("Refreshing client LeaseSet: " + displayName);
+                    _log.debug("Refreshing client LeaseSet: " + hostname);
                 }
             }
         }

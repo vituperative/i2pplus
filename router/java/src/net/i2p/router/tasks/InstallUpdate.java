@@ -242,15 +242,19 @@ public class InstallUpdate {
             String line;
             while ( (line = in.readLine()) != null) {
                 String fl = line.trim();
-                if (fl.contains("..") || fl.startsWith("#") || fl.length() == 0)
-                    continue;
-                File df = new File(fl);
-                if (df.isAbsolute())
-                    continue;
-                df = new File(context.getBaseDir(), fl);
-                if (df.exists() && df.isFile()) {
-                    if (df.delete())
-                        System.out.println("INFO: File [" + fl + "] deleted");
+                if (fl.length() == 0 || fl.startsWith("#")) continue;
+                if (fl.contains("..")) continue;
+                System.out.println("INFO: Processing delete list entry: " + fl);
+                File df = new File(context.getBaseDir(), fl);
+                if (df.exists()) {
+                    boolean deleted = false;
+                    if (df.isFile()) {
+                        deleted = df.delete();
+                    } else if (df.isDirectory()) {
+                        deleted = deleteDir(df);
+                    }
+                    if (deleted)
+                        System.out.println("INFO: " + (df.isDirectory() ? "Directory [" : "File [") + fl + "] deleted");
                 }
             }
         } catch (IOException ioe) {
@@ -260,6 +264,21 @@ public class InstallUpdate {
                 //System.out.println("INFO: File [" + DELETE_FILE + "] deleted");
             }
         }
+    }
+
+    /** recursive directory delete */
+    private static boolean deleteDir(File dir) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    deleteDir(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        return dir.delete();
     }
 }
 

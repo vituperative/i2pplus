@@ -1929,17 +1929,17 @@
   <!-- This is the target called by distro/debian/rules -->
   <target name="preppkg-unix" depends="preppkg-base, prep-script-translation">
     <parallel>
-      <copy quiet="true" file="installer/resources/unix/runplain.sh" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eepget" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eephead" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/i2ping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/hostping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/graceful_update" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/i2prouter" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/osid" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/postinstall.sh" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/runplain.sh" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eepget" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eephead" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/i2ping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/hostping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/graceful_update" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/i2prouter" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/osid" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/postinstall.sh" todir="pkg-temp/"/>
       <copy quiet="true" todir="pkg-temp/man/">
-        <fileset dir="installer/resources/man/"/>
+        <fileset dir="installer/resources/platform-specific/unix/man/"/>
       </copy>
     </parallel>
     <chmod perm="+x" type="file" verbose="true">
@@ -1981,14 +1981,14 @@
   <target name="preppkg-osx" depends="preppkg-unix">
     <parallel>
       <copy quiet="true" todir="pkg-temp/Start I2P Router.app">
-        <fileset dir="installer/resources/macos/Start I2P Router.app"/>
+        <fileset dir="installer/resources/platform-specific/macos/Start I2P Router.app"/>
       </copy>
       <copy quiet="true" todir="pkg-temp/lib/wrapper/macosx/">
         <fileset dir="installer/lib/wrapper/macosx/" excludes="*.txt README.md"/>
       </copy>
-      <copy quiet="true" file="installer/resources/macos/net.i2p.router.plist.template" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/macos/install_i2p_service_osx.command" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/macos/uninstall_i2p_service_osx.command" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/macos/net.i2p.router.plist.template" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/macos/install_i2p_service_osx.command" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/macos/uninstall_i2p_service_osx.command" todir="pkg-temp/"/>
     </parallel>
   </target>
 
@@ -2000,17 +2000,17 @@
   <target name="preppkg-windows" depends="preppkg-base, preplicenses-windows, buildUtilityJar, buildexe">
     <parallel>
       <copy quiet="true" file="build/i2p.exe" todir="pkg-temp/" failonerror="false"/>
-      <copy quiet="true" file="installer/resources/windows/eepget.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/eephead.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/i2prouter.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/fixperms.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/install_i2p_service_winnt.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/set_config_dir_for_nt_service.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/uninstall_i2p_service_winnt.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/StartI2P+Service.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/StopI2P+Service.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/EnableI2P+Service.bat" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/DisableI2P+Service.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/eepget.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/eephead.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/i2prouter.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/fixperms.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/install_i2p_service_winnt.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/set_config_dir_for_nt_service.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/uninstall_i2p_service_winnt.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/StartI2P+Service.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/StopI2P+Service.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/EnableI2P+Service.bat" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/DisableI2P+Service.bat" todir="pkg-temp/"/>
       <copy quiet="true" file="build/utility.jar" todir="pkg-temp"/>
       <copy quiet="true" todir="pkg-temp/lib/wrapper/win32/">
         <fileset dir="installer/lib/wrapper/win32/" excludes="*.txt README.md"/>
@@ -2093,11 +2093,11 @@
 
       <!-- Proxy script, windows icons etc -->
       <copy quiet="true" file="apps/proxyscript/i2pProxy.pac" todir="pkg-temp/scripts/"/>
-      <copy quiet="true" file="installer/resources/windows/startconsole.html" todir="pkg-temp/docs/"/>
-      <copy quiet="true" file="installer/resources/windows/start.ico" todir="pkg-temp/docs/"/>
-      <copy quiet="true" file="installer/resources/windows/stop.ico" todir="pkg-temp/docs/"/>
-      <copy quiet="true" file="installer/resources/windows/console.ico" todir="pkg-temp/docs/"/>
-      <copy quiet="true" file="installer/resources/windows/uninstall.ico" todir="pkg-temp/docs/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/startconsole.html" todir="pkg-temp/docs/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/start.ico" todir="pkg-temp/docs/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/stop.ico" todir="pkg-temp/docs/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/console.ico" todir="pkg-temp/docs/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/uninstall.ico" todir="pkg-temp/docs/"/>
 
       <!-- Eepsite stuff here -->
       <copy quiet="true" todir="pkg-temp/eepsite/">
@@ -2106,7 +2106,7 @@
       <copy quiet="true" todir="pkg-temp/eepsite-jetty9.3">
         <fileset dir="installer/resources/eepsite-jetty9.3"/>
       </copy>
-      <copy quiet="true" file="installer/resources/themes/console/light/images/favicon.svg" tofile="pkg-temp/eepsite/docroot/favicon.svg"/>
+      <copy quiet="true" file="installer/resources/console/themes/console/light/images/favicon.svg" tofile="pkg-temp/eepsite/docroot/favicon.svg"/>
     </parallel>
   </target>
 
@@ -2358,6 +2358,7 @@
 
   <!-- does NOT include launch4j licenses for Windows builds -->
   <target name="preplicenses" depends="preplicenses-unlesspkg">
+    <copy quiet="true" file="docs/LICENSE.md" tofile="pkg-temp/docs/LICENSE.md"/>
     <copy quiet="true" file="docs/LICENSE.md" tofile="pkg-temp/licenses/LICENSE.md"/>
     <copy quiet="true" file="apps/imagegen/identicon/README.md" tofile="pkg-temp/licenses/LICENSE-Identicon.txt"/>
     <copy quiet="true" file="apps/desktopgui/LICENSE" tofile="pkg-temp/licenses/LICENSE-DesktopGUI.txt"/>
@@ -2373,7 +2374,7 @@
 
   <target name="prepthemeupdates">
     <copy quiet="true" todir="pkg-temp/docs/themes/">
-      <fileset dir="installer/resources/themes/">
+      <fileset dir="installer/resources/console/">
         <exclude name="**/*.*~"/>
       </fileset>
     </copy>
@@ -2483,17 +2484,17 @@
   <!-- readme and proxy error page files -->
   <target name="prepConsoleDocUpdates">
     <copy quiet="true" todir="pkg-temp/docs/readme/">
-      <fileset dir="installer/resources/readme/" includes="readme*.html"/>
+      <fileset dir="installer/resources/console/readme/" includes="readme*.html"/>
     </copy>
     <copy quiet="true" todir="pkg-temp/docs/proxy/">
-      <fileset dir="installer/resources/proxy/" includes="*.ht"/>
+      <fileset dir="installer/resources/console/proxy/" includes="*.ht"/>
     </copy>
   </target>
 
   <!-- readme and proxy error page files -->
   <target name="prepProxyDocs">
     <copy quiet="true" todir="pkg-temp/docs/proxy">
-      <fileset dir="installer/resources/proxy/" includes="*.ht"/>
+      <fileset dir="installer/resources/console/proxy/" includes="*.ht"/>
     </copy>
   </target>
 
@@ -2640,7 +2641,7 @@
     </exec>
   </target>
 
-  <target name="prepupdate" depends="build2, prepupdateSmall, prepConsoleDocUpdates, prepCertificates, prep-script-translation, truncatehistory">
+  <target name="prepupdate" depends="build2, prepupdateSmall, preplicenses, prepConsoleDocUpdates, prepCertificates, prep-script-translation, truncatehistory">
     <parallel>
       <copy quiet="true" file="build/sam.jar" todir="pkg-temp/lib/"/>
       <copy quiet="true" file="build/i2psnark.jar" todir="pkg-temp/lib"/>
@@ -2655,12 +2656,12 @@
       <copy quiet="true" file="installer/resources/deletelist.txt" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/resources/blocklist/blocklist.txt" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/resources/blocklist/blocklist_tor.txt" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/i2ping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/hostping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eepget" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eephead" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/graceful_update" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/windows/fixperms2.bat" todir="pkg-temp/scripts/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/i2ping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/hostping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eepget" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eephead" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/graceful_update" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/windows/fixperms2.bat" todir="pkg-temp/scripts/"/>
     </parallel>
   </target>
 
@@ -2722,10 +2723,10 @@
       <copy quiet="true" file="installer/resources/deletelist.txt" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/resources/blocklist/blocklist.txt" todir="pkg-temp/"/>
       <copy quiet="true" file="installer/resources/blocklist/blocklist_tor.txt" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/i2ping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/hostping" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eepget" todir="pkg-temp/"/>
-      <copy quiet="true" file="installer/resources/unix/eephead" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/i2ping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/hostping" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eepget" todir="pkg-temp/"/>
+      <copy quiet="true" file="installer/resources/platform-specific/unix/eephead" todir="pkg-temp/"/>
     </parallel>
   </target>
 
@@ -4766,22 +4767,22 @@
     <!-- config.txt is in installer/resources/portable -->
     <mkdir dir="pkg-temp/docs"/>
     <copy quiet="true" file="installer/resources/initialNews/initialNews.xml" tofile="pkg-temp/docs/news.xml" overwrite="true"/>
-    <copy quiet="true" file="installer/resources/readme/readme.html" tofile="pkg-temp/docs/readme/readme.html"/>
-    <copy quiet="true" file="installer/resources/windows/startconsole.html" todir="pkg-temp/docs/"/>
-    <copy quiet="true" file="installer/resources/windows/start.ico" todir="pkg-temp/docs/"/>
-    <copy quiet="true" file="installer/resources/windows/stop.ico" todir="pkg-temp/docs/"/>
-    <copy quiet="true" file="installer/resources/windows/console.ico" todir="pkg-temp/docs/"/>
+    <copy quiet="true" file="installer/resources/console/readme/readme.html" tofile="pkg-temp/docs/readme/readme.html"/>
+    <copy quiet="true" file="installer/resources/platform-specific/windows/startconsole.html" todir="pkg-temp/docs/"/>
+    <copy quiet="true" file="installer/resources/platform-specific/windows/start.ico" todir="pkg-temp/docs/"/>
+    <copy quiet="true" file="installer/resources/platform-specific/windows/stop.ico" todir="pkg-temp/docs/"/>
+    <copy quiet="true" file="installer/resources/platform-specific/windows/console.ico" todir="pkg-temp/docs/"/>
     <!-- HTTP Header files, english only, if you need a different lang do it in a seperate target -->
     <copy quiet="true" todir="pkg-temp/docs/proxy/">
-      <fileset dir="installer/resources/proxy/" includes="**-header.ht"/>
+      <fileset dir="installer/resources/console/proxy/" includes="**-header.ht"/>
     </copy>
     <!-- Theme light only -->
     <copy quiet="true" todir="pkg-temp/docs/themes/console/light/" overwrite="true">
-      <fileset dir="installer/resources/themes/console/light/" includes="**.css"/>
+      <fileset dir="installer/resources/console/themes/light/" includes="**.css"/>
     </copy>
-    <copy quiet="true" file="installer/resources/themes/console/light/console_big.css" todir="portable/docs/themes/console/light/"/>
+    <copy quiet="true" file="installer/resources/console/themes/light/console_big.css" todir="portable/docs/themes/console/light/"/>
     <copy quiet="true" todir="pkg-temp/docs/themes/console/images/">
-      <fileset dir="installer/resources/themes/console/images/"/>
+      <fileset dir="installer/resources/console/themes/console/images/"/>
     </copy>
     <mkdir dir="pkg-temp/webapps"/>
     <copy quiet="true" todir="pkg-temp/webapps/">

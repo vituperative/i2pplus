@@ -4,34 +4,52 @@ Files that get bundled into the installed I2P package. These are the scripts, co
 
 ## Contents
 
-| Directory               | Description                                              |
-| ----------------------- | -------------------------------------------------------- |
-| `unix/bash-completion/` | Shell completion scripts                                 |
-| `blocklist/`            | IP blocklist files and update scripts                    |
-| `certificates/`         | SSL/TLS certificates                                     |
-| `eepsite/`              | Jetty configuration for the local eepsite                |
-| `eepsite-jetty9.3/`     | Jetty 9.3 variant of eepsite config                      |
-| `geoip/`                | GeoIP database files                                     |
-| `initialNews/`          | First-run news content                                   |
-| `locale/`               | Compiled translation bundles                             |
-| `locale-man/`           | Manual page translations                                 |
-| `macos/`                | macOS-specific scripts (launchd, service install)        |
-| `man/`                  | Unix manual pages                                        |
-| `package-lists/`        | Jetty package configuration                              |
-| `portable/`             | Portable installation support                            |
-| `proxy/`                | HTTP proxy configuration                                 |
-| `readme/`               | First-run readme content                                 |
-| `small/`                | Minimal installation variant                             |
-| `themes/`               | Router console and i2psnark UI themes                    |
-| `unix/`                 | Unix/Linux scripts (i2prouter, systemd, service install) |
-| `windows/`              | Windows batch scripts and service helpers                |
+| Directory              | Description                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `platform-specific/`   | Platform-specific resources (see below)                  |
+| `blocklist/`           | IP blocklist files and update scripts                    |
+| `certificates/`        | SSL/TLS certificates                                     |
+| `console/`             | Router console resources (themes, proxy, readme)         |
+| `eepsite/`             | Jetty configuration for the local eepsite                |
+| `eepsite-jetty9.3/`    | Jetty 9.3 variant of eepsite config                      |
+| `geoip/`               | GeoIP database files                                     |
+| `initialNews/`         | First-run news content                                   |
+| `locale/`              | Compiled translation bundles                             |
+| `package-lists/`       | Jetty package configuration                              |
+| `portable/`            | Portable installation support                            |
+| `small/`               | Minimal installation variant                             |
+
+## Platform-Specific Resources
+
+Platform-specific resources are organized under `platform-specific/`:
+
+| Directory                                 | Description                              |
+| ----------------------------------------- | ---------------------------------------- |
+| `platform-specific/windows/`              | Windows batch scripts, icons, service    |
+| `platform-specific/macos/`                | macOS scripts (launchd, service install) |
+| `platform-specific/unix/`                 | Unix/Linux scripts (i2prouter, systemd)  |
+| `platform-specific/unix/man/`             | Unix manual pages                        |
+| `platform-specific/unix/locale-man/`      | Manual page translations                 |
+| `platform-specific/unix/bash-completion/` | Shell completion scripts                 |
+
+## Console Resources
+
+Console-specific resources are organized under `console/`:
+
+| Directory                       | Description                                     |
+| ------------------------------- | ----------------------------------------------- |
+| `console/themes/`               | Router console and i2psnark UI themes           |
+| `console/themes/console/`       | Console themes (classic, dark, light, midnight) |
+| `console/themes/snark/`         | i2psnark themes                                 |
+| `console/themes/susimail/`      | Susimail themes                                 |
+| `console/proxy/`                | HTTP proxy error message templates              |
+| `console/readme/`               | First-run readme content                        |
 
 ## Key Files
 
-- `unix/i2prouter` - Main router startup script (template)
-- `unix/i2prouter.service` - Systemd service unit (template)
-- `unix/install_i2p_service_unix` - Unix service installer
-- `unix/runplain.sh` - Plain Java launcher (no wrapper)
-- `unix/graceful_update` - Graceful update script
+- `platform-specific/unix/i2prouter` - Main router startup script (template)
+- `platform-specific/unix/i2prouter.service` - Systemd service unit (template)
+- `platform-specific/unix/runplain.sh` - Plain Java launcher (no wrapper)
+- `platform-specific/unix/graceful_update` - Graceful update script
 - `clients.config` - Client configuration
 - `router.testnet.config` - Test network configuration

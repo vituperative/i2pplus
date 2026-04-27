@@ -114,7 +114,7 @@
     <res id="HTMLHelloPanel.info" src="installer/resources/welcome.html"/>
     <res id="shortcutSpec.xml" src="installer/lib/izpack/resources/shortcutSpec.xml"/>
     <res id="XInfoPanel.info" src="installer/lib/izpack/resources/start-i2p.txt"/>
-    <res id="HTMLInfoPanel.winservice" src="installer/resources/windows_service_help.html"/>
+    <res id="HTMLInfoPanel.winservice" src="installer/resources/platform-specific/windows/windows_service_help.html"/>
     <res id="CustomLangPack.xml_eng" src="installer/resources/CustomLangPack.xml_eng"/>
   </resources>
   <variables>

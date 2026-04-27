@@ -86,7 +86,7 @@ command -v ${HOST}-gcc >/dev/null || { echo "Need ${HOST}-gcc"; exit 1; }
 cp wrapper_win.c wrapper_win.c.orig 2>/dev/null || true
 cp wrapper.c wrapper.c.orig 2>/dev/null || true
 
-ICON_SRC="${WRAPPER_DIR}/../../resources/windows/console.ico"
+ICON_SRC="${WRAPPER_DIR}/../../resources/platform-specific/windows/console.ico"
 if [ -f "${ICON_SRC}" ]; then
     cp "${ICON_SRC}" wrapper.ico
 fi

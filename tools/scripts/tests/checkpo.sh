@@ -23,10 +23,9 @@ DIRS="
   apps/susimail/locale \
   apps/desktopgui/locale \
   installer/resources/locale/po \
-  installer/resources/locale-man \
-  debian/po"
+  installer/resources/platform-specific/unix/locale-man \
 
-FILES="installer/resources/locale-man/man.pot"
+FILES="installer/resources/platform-specific/unix/locale-man/man.pot"
 
 PASS=0
 FAIL=0

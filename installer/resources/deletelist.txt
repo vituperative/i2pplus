@@ -134,3 +134,5 @@ certificates/ssl/webpack.de.crt
 eepsite-jetty9/resources/*
 eepsite-jetty9/resources/
 lib/jfreesvg.jar
+# old licenses folder - replaced by docs/LICENSE.md
+licenses/

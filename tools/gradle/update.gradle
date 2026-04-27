@@ -81,13 +81,13 @@ task prepUpdate(type: Copy) {
         String more = '\n\n----------------\n\nEARLIER HISTORY IS AVAILABLE IN THE SOURCE PACKAGE'
         ant.concat(more, append: 'true', destfile: 'pkg-temp/history.txt')
     }
-    from 'LICENSE.txt'
-    into('licenses') { from 'licenses' }
+    from 'docs/LICENSE.md'
+    into('docs') { from 'docs/LICENSE.md' }
     from 'installer/resources/blocklist.txt'
     from 'installer/resources/deletelist.txt'
     into('certificates') { from 'installer/resources/certificates' }
     into('locale') { from 'installer/resources/locale' }
-    into('man') { from 'installer/resources/man' }
+    into('man') { from 'installer/resources/platform-specific/unix/man' }
 }
 
 task updaterRouter(type: Zip) {

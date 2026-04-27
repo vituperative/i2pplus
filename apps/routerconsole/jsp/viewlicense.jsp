@@ -13,7 +13,7 @@
     response.addHeader("Cache-Control", "private, no-cache, max-age=86400");
 
     java.io.File base = net.i2p.I2PAppContext.getGlobalContext().getBaseDir();
-    String name = "licenses/LICENSE.md";
+    String name = "docs/LICENSE.md";
     java.io.File file = new java.io.File(base, name);
 
     if (!file.exists()) {

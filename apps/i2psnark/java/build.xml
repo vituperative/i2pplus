@@ -299,15 +299,15 @@
     <parallel>
       <mkdir dir="build/standalone-resources/.res/themes/snark"/>
       <copy quiet="true" todir="build/standalone-resources/.res/themes/snark">
-        <fileset dir="../../../installer/resources/themes/snark/"/>
+        <fileset dir="../../../installer/resources/console/themes/snark/"/>
       </copy>
-      <copy file="../../../installer/resources/themes/console/classic/global.css" todir="build/standalone-resources/.res/themes/snark/classic" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/dark/chromescroll.css" todir="build/standalone-resources/.res/themes/snark/dark" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/dark/global.css" todir="build/standalone-resources/.res/themes/snark/dark" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/light/global.css" todir="build/standalone-resources/.res/themes/snark/light" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/midnight/chromescroll.css" todir="build/standalone-resources/.res/themes/snark/midnight" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/midnight/global.css" todir="build/standalone-resources/.res/themes/snark/midnight" quiet="true"/>
-      <copy file="../../../installer/resources/themes/console/midnight/images/tile.css" todir="build/standalone-resources/.res/themes/snark/midnight/images" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/classic/global.css" todir="build/standalone-resources/.res/themes/snark/classic" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/dark/chromescroll.css" todir="build/standalone-resources/.res/themes/snark/dark" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/dark/global.css" todir="build/standalone-resources/.res/themes/snark/dark" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/light/global.css" todir="build/standalone-resources/.res/themes/snark/light" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/midnight/chromescroll.css" todir="build/standalone-resources/.res/themes/snark/midnight" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/midnight/global.css" todir="build/standalone-resources/.res/themes/snark/midnight" quiet="true"/>
+      <copy file="../../../installer/resources/console/themes/console/midnight/images/tile.css" todir="build/standalone-resources/.res/themes/snark/midnight/images" quiet="true"/>
     </parallel>
     <parallel>
       <replace file="build/standalone-resources/.res/themes/snark/classic/global.css" summary="true" token="/themes/console/classic" value="/i2psnark/.res/themes/snark/classic"/>
@@ -320,15 +320,15 @@
       <replace file="build/standalone-resources/.res/themes/snark/midnight/snark.css" summary="true" token="/themes/console/midnight" value="/i2psnark/.res/themes/snark/midnight"/>
       <mkdir dir="build/standalone-resources/.res/themes/snark/fonts"/>
       <copy quiet="true" todir="build/standalone-resources/.res/themes/snark/fonts">
-        <fileset dir="../../../installer/resources/themes/fonts/"/>
+        <fileset dir="../../../installer/resources/console/themes/fonts/"/>
       </copy>
       <!-- Images and other resources pulled from the console themes/fonts dirs -->
-      <copy quiet="true" file="../../../installer/resources/themes/console/images/newtab.svg"
+      <copy quiet="true" file="../../../installer/resources/console/themes/console/images/newtab.svg"
             todir="build/standalone-resources/.res/icons"/>
-      <copy quiet="true" file="../../../installer/resources/themes/console/dark/images/camotile2.png"
+      <copy quiet="true" file="../../../installer/resources/console/themes/console/dark/images/camotile2.png"
             todir="build/standalone-resources/.res/themes/snark/dark/images"/>
       <copy quiet="true" todir="build/standalone-resources/.res/themes/fonts">
-        <fileset dir="../../../installer/resources/themes/fonts/" includes="**/*"/>
+        <fileset dir="../../../installer/resources/console/themes/fonts/" includes="**/*"/>
       </copy>
       <mkdir dir="build/standalone-resources/.res/js"/>
       <copy file="../../routerconsole/jsp/js/onVisible.js" todir="build/standalone-resources/.res/js"/>

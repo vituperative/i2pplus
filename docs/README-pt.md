@@ -42,6 +42,7 @@ Para obter o branch de desenvolvimento do controle de código fonte: https://git
 - As ferramentas xgettext, msgfmt e msgmerge instaladas do pacote GNU gettext
   http://www.gnu.org/software/gettext/
 - O ambiente de compilação deve usar uma localização UTF-8.
+- Para compilação de pacotes Debian: pacotes `dpkg-deb` e `fakeroot` (através do seu gerenciador de pacotes)
 
 ### Processo de compilação com Ant
 
@@ -78,6 +79,20 @@ você pode compilar um zip de instalação completo que pode ser extraído e exe
 
 Execute 'ant' sem argumentos para ver outras opções de compilação.
 
+Para criar um pacote Debian autônomo para Debian/Ubuntu sem dependências externas de Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Isso cria um pacote `.deb` autônomo que inclui as bibliotecas Jetty e Tomcat agrupadas, sem dependências externas.
+
+
+Para criar um AppImage para Linux:
+```bash
+ant buildAppImage
+```
+
+Veja [tools/appimage/README.md](tools/appimage/README.md) para detalhes.
 
 
 Para mais informações sobre como executar o I2P no Docker, veja [docker/README.md](docker/README.md)

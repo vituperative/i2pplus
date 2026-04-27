@@ -41,6 +41,7 @@ API: https://i2pplus.github.io/javadoc/
 - Установлены инструменты xgettext, msgfmt и msgmerge из пакета GNU gettext
   http://www.gnu.org/software/gettext/
 - Среда сборки должна использовать локаль UTF-8.
+- Для сборки Debian-пакетов: пакеты `dpkg-deb` и `fakeroot` (через ваш пакетный менеджер)
 
 ### Процесс сборки Ant
 
@@ -68,6 +69,20 @@ API: https://i2pplus.github.io/javadoc/
      ant updater
 
 Запустите 'ant' без аргументов, чтобы увидеть другие варианты сборки.
+
+Для создания AppImage для Linux:
+```bash
+ant buildAppImage
+```
+
+См. [tools/appimage/README.md](tools/appimage/README.md) для подробностей.
+
+Для создания автономного Debian-пакета для Debian/Ubuntu без внешних зависимостей Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Это создает автономный `.deb`-пакет, который включает объединенные библиотеки Jetty и Tomcat без внешних зависимостей.
 
 ## Контактная информация
 

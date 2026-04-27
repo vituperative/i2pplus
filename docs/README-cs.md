@@ -41,6 +41,7 @@ Chcete-li získat vývojovou větev ze správy zdrojového kódu: https://github
 - Nástroje xgettext, msgfmt a msgmerge nainstalované z balíčku GNU gettext
   http://www.gnu.org/software/gettext/
 - Buildovací prostředí musí používat UTF-8 locale.
+- Pro sestavování Debian balíčků: balíčky `dpkg-deb` a `fakeroot` (přes správce balíčků)
 
 ### Buildovací proces Ant
 
@@ -77,6 +78,20 @@ můžete sestavit úplný instalační zip, který lze rozbalit a spustit na mí
 
 Spusťte 'ant' bez argumentů pro zobrazení dalších možností sestavení.
 
+Pro vytvoření samostatného Debian balíčku pro Debian/Ubuntu bez externích závislostí Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Toto vytvoří samostatný `.deb` balíček, který obsahuje sdružené knihovny Jetty a Tomcat bez externích závislostí.
+
+
+Pro vytvoření AppImage pro Linux:
+```bash
+ant buildAppImage
+```
+
+Podrobnosti viz [tools/appimage/README.md](tools/appimage/README.md).
 
 
 Další informace o spouštění I2P v Docker naleznete v [docker/README.md](docker/README.md)

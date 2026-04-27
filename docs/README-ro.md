@@ -41,6 +41,7 @@ Pentru a obține branch-ul de dezvoltare din controlul sursă: https://github.co
 - Instrumente xgettext, msgfmt, și msgmerge instalate din pachetul GNU gettext
   http://www.gnu.org/software/gettext/
 - Mediul de build trebuie să folosească o locație UTF-8.
+- Pentru construirea pachetelor Debian: pachetele `dpkg-deb` și `fakeroot` (prin managerul de pachete)
 
 ### Procesul de build Ant
 
@@ -77,6 +78,20 @@ puteți construi un zip de instalare complet care poate fi extras și executat p
 
 Rulați 'ant' fără argumente pentru a vedea alte opțiuni de build.
 
+Pentru a crea un pachet Debian autonom pentru Debian/Ubuntu fără dependențe externe Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Aceasta creează un pachet `.deb` autonom care include bibliotecile Jetty și Tomcat grupate, fără dependențe externe.
+
+
+Pentru a construi un AppImage pentru Linux:
+```bash
+ant buildAppImage
+```
+
+Consultaţi [tools/appimage/README.md](tools/appimage/README.md) pentru detalii.
 
 
 Pentru mai multe informații despre cum să rulați I2P în Docker, consultați [docker/README.md](docker/README.md)

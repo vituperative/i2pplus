@@ -41,6 +41,7 @@ Per ottenere il branch di sviluppo dal controllo sorgente: https://github.com/I2
 - Strumenti xgettext, msgfmt e msgmerge installati dal pacchetto GNU gettext
   http://www.gnu.org/software/gettext/
 - L'ambiente di build deve usare una locale UTF-8.
+- Per build di pacchetti Debian: pacchetti `dpkg-deb` e `fakeroot` (tramite il gestore pacchetti)
 
 ### Processo di build Ant
 
@@ -77,6 +78,20 @@ puoi buildare un file zip di installazione completo che può essere estratto e e
 
 Esegui 'ant' senza argomenti per vedere altre opzioni di build.
 
+Per creare un pacchetto Debian autonomo per Debian/Ubuntu senza dipendenze esterne Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Questo crea un pacchetto `.deb` autonomo che include le librerie Jetty e Tomcat incluse senza dipendenze esterne.
+
+
+Per creare un AppImage per Linux:
+```bash
+ant buildAppImage
+```
+
+Vedi [tools/appimage/README.md](tools/appimage/README.md) per i dettagli.
 
 
 Per maggiori informazioni su come eseguire I2P in Docker, vedi [docker/README.md](docker/README.md)

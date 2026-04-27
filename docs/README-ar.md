@@ -42,6 +42,7 @@ https://geti2p.net/how
 - يجب تثبيت أدوات xgettext و msgfmt و msgmerge من حزمة GNU gettext
   http://www.gnu.org/software/gettext/
 - يجب أن يستخدم بيئة البناء موقع UTF-8.
+- لبناء حزم Debian: حزم `dpkg-deb` و `fakeroot` (عبر مدير الحزم الخاص بك)
 
 ### عملية البناء باستخدام Ant
 
@@ -78,6 +79,20 @@ https://geti2p.net/how
 
 قم بتشغيل 'ant' بدون وسيطات لرؤية خيارات البناء الأخرى.
 
+لإنشاء حزمة Debian مستقلة لـ Debian/Ubuntu بدون تبعيات Jetty/Tomcat الخارجية:
+```bash
+ant buildDeb
+```
+
+يؤدي هذا إلى إنشاء حزمة `.deb` مستقلة تتضمن مكتبات Jetty و Tomcat المجمعة بدون تبعيات خارجية.
+
+
+لإنشاء AppImage لنظام Linux:
+```bash
+ant buildAppImage
+```
+
+انظر [tools/appimage/README.md](tools/appimage/README.md) للتفاصيل.
 
 
 لمزيد من المعلومات حول كيفية تشغيل I2P في Docker، انظر [docker/README.md](docker/README.md)

@@ -35,6 +35,7 @@ API：https://i2pplus.github.io/javadoc/
 -从GNU gettext包安装的xgettext，msgfmt和msgmerge工具
   http://www.gnu.org/software/gettext/
 -构建环境必须使用UTF-8语言环境。
+-构建Debian软件包需要：`dpkg-deb`和`fakeroot`软件包（通过您的软件包管理器）
 
 ### Ant构建过程
 
@@ -57,6 +58,22 @@ API：https://i2pplus.github.io/javadoc/
     ant installer5-windows
 
 不带任何参数运行“ ant”以查看其他构建选项。
+
+
+构建 Linux 的 AppImage：
+```bash
+ant buildAppImage
+```
+
+详情请参阅 [tools/appimage/README.md](tools/appimage/README.md)。
+
+构建 Debian/Ubuntu 的自包含 Debian 包，无需外部 Jetty/Tomcat 依赖：
+```bash
+ant buildDeb
+```
+
+这会创建一个包含捆绑 Jetty 和 Tomcat 库的自包含 `.deb` 包，无需系统依赖。
+
 
 ## 联系信息
 

@@ -41,6 +41,7 @@ API: https://i2pplus.github.io/javadoc/
 - ติดตั้งเครื่องมือ xgettext, msgfmt, และ msgmerge จาก GNU gettext package
   http://www.gnu.org/software/gettext/
 - สภาพแวดล้อมการ build ต้องใช้ UTF-8 locale
+- สำหรับการสร้างแพ็กเกจ Debian: แพ็กเกจ `dpkg-deb` และ `fakeroot` (ผ่านตัวจัดการแพ็กเกจของคุณ)
 
 ### กระบวนการ build ด้วย Ant
 
@@ -76,6 +77,20 @@ API: https://i2pplus.github.io/javadoc/
 
 รัน 'ant' โดยไม่มีอาร์กิวเมนต์เพื่อดูตัวเลือกการ build อื่นๆ
 
+เพื่อสร้างแพ็กเกจ Debian อิสระสำหรับ Debian/Ubuntu โดยไม่มีการพึ่งพา Jetty/Tomcat ภายนอก:
+```bash
+ant buildDeb
+```
+
+สิ่งนี้สร้างแพ็กเกจ `.deb` อิสระที่รวมไลบรารี Jetty และ Tomcat เข้าด้วยกัน โดยไม่มีการพึ่งพาภายนอก
+
+
+เพื่อสร้าง AppImage สำหรับ Linux:
+```bash
+ant buildAppImage
+```
+
+ดู [tools/appimage/README.md](tools/appimage/README.md) สำหรับรายละเอียด
 
 
 สำหรับข้อมูลเพิ่มเติมเกี่ยวกับวิธีรัน I2P ใน Docker ให้ดู [docker/README.md](docker/README.md)

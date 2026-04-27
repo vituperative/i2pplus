@@ -41,6 +41,7 @@ Untuk mendapatkan cabang pengembangan dari kontrol sumber: https://github.com/I2
 - Alat xgettext, msgfmt, dan msgmerge terinstal dari paket GNU gettext
   http://www.gnu.org/software/gettext/
 - Lingkungan build harus menggunakan locale UTF-8.
+- Untuk build paket Debian: paket `dpkg-deb` dan `fakeroot` (melalui package manager Anda)
 
 ### Proses Build dengan Ant
 
@@ -77,6 +78,20 @@ Anda dapat membuat zip instalasi lengkap yang dapat diekstrak dan dijalankan di 
 
 Jalankan 'ant' tanpa argumen untuk melihat opsi build lainnya.
 
+Untuk membuat paket Debian mandiri untuk Debian/Ubuntu tanpa dependensi eksternal Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Ini membuat paket `.deb` mandiri yang menyertakan pustaka Jetty dan Tomcat yang dibundel tanpa dependensi eksternal.
+
+
+Untuk membuat AppImage untuk Linux:
+```bash
+ant buildAppImage
+```
+
+Lihat [tools/appimage/README.md](tools/appimage/README.md) untuk detailnya.
 
 
 Untuk informasi lebih lanjut tentang cara menjalankan I2P di Docker, lihat [docker/README.md](docker/README.md)

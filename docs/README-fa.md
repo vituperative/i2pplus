@@ -40,6 +40,7 @@ API: https://i2pplus.github.io/javadoc/
 - ابزارهای xgettext, msgfmt, و msgmerge نصب شده از بسته GNU gettext
   http://www.gnu.org/software/gettext/
 - محیط ساخت باید از یک محلی UTF-8 استفاده کند.
+- برای ساخت بسته‌های Debian: بسته‌های `dpkg-deb` و `fakeroot` (از طریق مدیر بسته خود)
 
 ### فرآیند ساخت Ant
 
@@ -75,6 +76,22 @@ API: https://i2pplus.github.io/javadoc/
      ant zip-windows
 
 'ant' را بدون آرگومان اجرا کنید تا گزینه‌های ساخت دیگر را ببینید.
+
+برای ایجاد بسته Debian مستقل برای Debian/Ubuntu بدون وابستگی‌های خارجی Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+این یک بسته `.deb` مستقل ایجاد می‌کند که شامل کتابخانه‌های بسته‌بندی شده Jetty و Tomcat بدون وابستگی‌های خارجی است.
+
+
+برای ساخت AppImage برای لینوکس:
+```bash
+ant buildAppImage
+```
+
+برای جزئیات به [tools/appimage/README.md](tools/appimage/README.md) مراجعه کنید.
+
 
 برای اطلاعات بیشتر در مورد نحوه اجرای I2P در Docker، به [Docker.md](../docker/Docker.md) مراجعه کنید
 

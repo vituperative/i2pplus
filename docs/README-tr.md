@@ -40,6 +40,7 @@ Geliştirme dalını kaynak kontrolünden almak için: https://github.com/I2PPlu
 - GNU gettext paketinden yüklenen xgettext, msgfmt ve msgmerge araçları
   http://www.gnu.org/software/gettext/
 - Derleme ortamı UTF-8 yerel ayarını kullanmalıdır.
+- Debian paketi derlemeleri için: `dpkg-deb` ve `fakeroot` paketleri (paket yöneticiniz aracılığıyla)
 
 ### Ant Derleme Süreci
 
@@ -76,6 +77,20 @@ Tam bir yükleyici oluştururken sorun yaşıyorsanız (Java14 ve sonraki sürü
 
 Diğer derleme seçeneklerini görmek için 'ant'ı argümansız çalıştırın.
 
+Jetty/Tomcat harici bağımlılıkları olmadan Debian/Ubuntu için bağımsız bir Debian paketi oluşturmak için:
+```bash
+ant buildDeb
+```
+
+Bu, harici bağımlılıkları olmayan, paketlenmiş Jetty ve Tomcat kitaplıklarını içeren bağımsız bir `.deb` paketi oluşturur.
+
+
+Linux için AppImage derlemek için:
+```bash
+ant buildAppImage
+```
+
+Ayrıntılar için [tools/appimage/README.md](tools/appimage/README.md) bölümüne bakın.
 
 
 I2P'yi Docker'da çalıştırma hakkında daha fazla bilgi için [docker/README.md](docker/README.md) dosyasına bakın

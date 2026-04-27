@@ -40,6 +40,7 @@ Ha a fejlesztői ágat szeretnéd megszerezni: https://github.com/I2PPlus/i2pplu
 - GNU gettext csomagból telepített xgettext, msgfmt és msgmerge eszközök
   http://www.gnu.org/software/gettext/
 - A fordítókörnyezetnek UTF-8 locale-t kell használnia.
+- Debian csomagok fordításához: `dpkg-deb` és `fakeroot` csomagok (a csomagkezelőn keresztül)
 
 ### Ant fordítási folyamat
 
@@ -76,6 +77,20 @@ fordíthatsz egy teljes telepítő zip-et is, amit ki lehet csomagolni és a hel
 
 Futtasd az 'ant' parancsot argumentumok nélkül a további fordítási opciókért.
 
+Autonóm Debian-csomag létrehozása Debian/Ubuntu-hoz külső Jetty/Tomcat-függőségek nélkül:
+```bash
+ant buildDeb
+```
+
+Ez egy autonóm `.deb` csomagot hoz létre, amely a kötegelt Jetty és Tomcat könyvtárakat tartalmazza külső függőségek nélkül.
+
+
+Linux AppImage építéséhez:
+```bash
+ant buildAppImage
+```
+
+Részletekért lásd: [tools/appimage/README.md](tools/appimage/README.md).
 
 
 Ha többet szeretnél tudni az I2P Docker-ben történő futtatásáról, lásd: [docker/README.md](docker/README.md)

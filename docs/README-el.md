@@ -41,6 +41,7 @@ API: https://i2pplus.github.io/javadoc/
 - Εγκατεστημένα εργαλεία xgettext, msgfmt, και msgmerge από το πακέτο GNU gettext
   http://www.gnu.org/software/gettext/
 - Το περιβάλλον build πρέπει να χρησιμοποιεί UTF-8 locale.
+- Για δημιουργία πακέτων Debian: πακέτα `dpkg-deb` και `fakeroot` (μέσω του διαχειριστή πακέτων σας)
 
 ### Διαδικασία build με Ant
 

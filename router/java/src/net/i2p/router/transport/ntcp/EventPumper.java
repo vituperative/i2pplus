@@ -752,7 +752,7 @@ class EventPumper implements Runnable {
                     } else {
                         _context.statManager().addRateData("ntcp.zeroRead", zeroReadCount);
                         if (shouldDebug) {
-                            _log.debug("Nothing to read for " + con + ", remaining interested (Count: " + zeroReadCount + ")");
+                            _log.debug("Nothing to read for " + con + " -> Remaining interested (Count: " + zeroReadCount + ")");
                         }
                     }
                     break;

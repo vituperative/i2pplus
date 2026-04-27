@@ -41,6 +41,7 @@ Para obtener la rama de desarrollo del control de código fuente: https://github
 - Las herramientas xgettext, msgfmt y msgmerge instaladas del paquete GNU gettext
   http://www.gnu.org/software/gettext/
 - El entorno de construcción debe usar una configuración regional UTF-8.
+- Para construcciones de paquetes Debian: paquetes `dpkg-deb` y `fakeroot` (a través de tu gestor de paquetes)
 
 ### Proceso de construcción con Ant
 
@@ -77,6 +78,20 @@ puedes construir un zip de instalación completa que puede ser extraído y ejecu
 
 Ejecuta 'ant' sin argumentos para ver otras opciones de construcción.
 
+Para crear un paquete Debian independiente para Debian/Ubuntu sin dependencias externas de Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Esto crea un paquete `.deb` independiente que incluye las bibliotecas Jetty y Tomcat agrupadas, sin ninguna dependencia externa.
+
+
+Para crear un AppImage para Linux:
+```bash
+ant buildAppImage
+```
+
+Ver [tools/appimage/README.md](tools/appimage/README.md) para más detalles.
 
 
 Para más información sobre cómo ejecutar I2P en Docker, consulta [docker/README.md](docker/README.md)

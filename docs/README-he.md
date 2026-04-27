@@ -41,6 +41,7 @@ API: https://i2pplus.github.io/javadoc/
 - התקן את הכלים xgettext, msgfmt, ו-msgmerge מחבילת GNU gettext
   http://www.gnu.org/software/gettext/
 - סביבת הבנייה חייבת להשתמש במיקום UTF-8.
+- לבניית חבילות Debian: חבילות `dpkg-deb` ו-`fakeroot` (דרך מנהל החבילות שלך)
 
 ### תהליך הבנייה עם Ant
 
@@ -77,6 +78,20 @@ API: https://i2pplus.github.io/javadoc/
 
 הרץ 'ant' ללא ארגומנטים כדי לראות אפשרויות בנייה נוספות.
 
+כדי ליצור חבילת Debian עצמאית עבור Debian/Ubuntu ללא תלויות חיצוניות Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+זה יוצר חבילת `.deb` עצמאית הכוללת את ספריות Jetty ו-Tomcat המקובצות ללא תלויות חיצוניות.
+
+
+כדי לבנות AppImage עבור Linux:
+```bash
+ant buildAppImage
+```
+
+ראה [tools/appimage/README.md](tools/appimage/README.md) לפרטים.
 
 
 למידע נוסף על הפעלת I2P ב-Docker, עיין ב-[docker/README.md](docker/README.md)

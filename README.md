@@ -44,6 +44,7 @@ To get development branch from source control: https://github.com/I2PPlus/i2pplu
 - The xgettext, msgfmt, and msgmerge tools installed from the GNU gettext package
   via your package manager or http://www.gnu.org/software/gettext/
 - Build environment must use a UTF-8 locale.
+- For Debian package builds: `dpkg-deb` and `fakeroot` packages (via your package manager)
 
 ### Ant build process
 
@@ -86,6 +87,13 @@ ant buildAppImage
 ```
 
 See [tools/appimage/README.md](tools/appimage/README.md) for details.
+
+To build a self-contained Debian package for Debian/Ubuntu without external Jetty/Tomcat dependencies:
+```bash
+ant buildDeb
+```
+
+This creates a self-contained `.deb` package that includes bundled Jetty and Tomcat libraries. Requires only OpenJDK runtime (installed automatically via package manager).
 
 To run in Docker, see [docker/README.md](docker/README.md)
 

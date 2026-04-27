@@ -41,6 +41,7 @@ Um den Entwicklungszweig aus der Quellcodeverwaltung zu erhalten: https://github
 - Die xgettext-, msgfmt- und msgmerge-Tools aus dem GNU gettext-Paket installiert
   http://www.gnu.org/software/gettext/
 - Die Build-Umgebung muss ein UTF-8-Gebiet verwenden.
+- Für Debian-Paket-Builds: `dpkg-deb`- und `fakeroot`-Pakete (über Ihren Paketmanager)
 
 ### Ant-Build-Prozess
 
@@ -77,6 +78,20 @@ können Sie ein vollständiges Installations-zip erstellen, das extrahiert und a
 
 Führen Sie 'ant' ohne Argumente aus, um andere Build-Optionen zu sehen.
 
+Um ein eigenständiges Debian-Paket für Debian/Ubuntu ohne externe Jetty/Tomcat-Abhängigkeiten zu erstellen:
+```bash
+ant buildDeb
+```
+
+Dies erstellt ein eigenständiges `.deb`-Paket, das die gebündelten Jetty- und Tomcat-Bibliotheken ohne externe Abhängigkeiten enthält.
+
+
+Um ein AppImage für Linux zu erstellen:
+```bash
+ant buildAppImage
+```
+
+Siehe [tools/appimage/README.md](tools/appimage/README.md) für Details.
 
 
 Weitere Informationen zum Ausführen von I2P in Docker finden Sie unter [docker/README.md](docker/README.md)

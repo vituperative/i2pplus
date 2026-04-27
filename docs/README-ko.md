@@ -40,6 +40,7 @@ API: https://i2pplus.github.io/javadoc/
 - GNU gettext 패키지에서 설치된 xgettext, msgfmt, msgmerge 도구
   http://www.gnu.org/software/gettext/
 - 빌드 환경은 UTF-8 로케일을 사용해야 합니다.
+- Debian 패키지 빌드용: `dpkg-deb` 및 `fakeroot` 패키지 (패키지 관리자를 통해)
 
 ### Ant 빌드 프로세스
 
@@ -76,6 +77,20 @@ IzPack5로 빌드하려면 다음에서 다운로드: http://izpack.org/download
 
 다른 빌드 옵션을 보려면 인자 없이 'ant'를 실행하세요.
 
+Jetty/Tomcat 외부 종속성 없이 Debian/Ubuntu용 독립 실행형 Debian 패키지를 생성하려면:
+```bash
+ant buildDeb
+```
+
+이렇게 하면 외부 종속성 없이 번들된 Jetty 및 Tomcat 라이브러리가 포함된 독립 실행형 `.deb` 패키지가 생성됩니다.
+
+
+Linux용 AppImage를 빌드하려면:
+```bash
+ant buildAppImage
+```
+
+세부사항은 [tools/appimage/README.md](tools/appimage/README.md)를 참조하세요.
 
 
 Docker에서 I2P를 실행하는 방법에 대한 자세한 내용은 [docker/README.md](docker/README.md)를 참조하세요

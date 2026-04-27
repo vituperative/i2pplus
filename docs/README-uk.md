@@ -41,6 +41,7 @@ API: https://i2pplus.github.io/javadoc/
 - Інструменти xgettext, msgfmt та msgmerge встановлені з пакету GNU gettext
   http://www.gnu.org/software/gettext/
 - Середовище збірки повинно використовувати локаль UTF-8.
+- Для збирання Debian-пакетів: пакети `dpkg-deb` та `fakeroot` (через ваш менеджер пакетів)
 
 ### Процес збірки з Ant
 
@@ -77,6 +78,20 @@ API: https://i2pplus.github.io/javadoc/
 
 Запустіть 'ant' без аргументів, щоб побачити інші параметри збірки.
 
+Для створення автономного Debian-пакета для Debian/Ubuntu без зовнішніх залежностей Jetty/Tomcat:
+```bash
+ant buildDeb
+```
+
+Це створює автономний `.deb`-пакет, який включає об'єднані бібліотеки Jetty та Tomcat без зовнішніх залежностей.
+
+
+Для створення AppImage для Linux:
+```bash
+ant buildAppImage
+```
+
+Див. [tools/appimage/README.md](tools/appimage/README.md) для деталей.
 
 
 Для отримання додаткової інформації про запуск I2P в Docker див. [docker/README.md](docker/README.md)

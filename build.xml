@@ -142,6 +142,7 @@
     <echo message=""/>
     <echo message=" === Distribution &amp; Packaging ==="/>
     <echo message="  buildAppImage                                Build AppImage for Linux &#10140; ./dist/I2P+_{version}.appimage"/>
+    <echo message="  buildDeb                                     Build self-contained Debian package &#10140; ./dist/i2p*.deb"/>
     <echo message="  bumpBuildTime                                Update core/java/src/net/i2p/time/BuildTime.java with today's date"/>
     <echo message="  bump                                         Increment build (minor version) by 1"/>
     <echo message="  createThemesZip                              Create zip with all console and webapp themes and resources &#10140; ./dist/themes.zip"/>
@@ -2186,6 +2187,14 @@
       <arg value="tools/appimage/build-appimage.sh"/>
       <arg value="${full.version}"/>
       <arg value="${appimagetool.update}"/>
+    </exec>
+  </target>
+
+  <target name="buildDeb" depends="preppkg-linux, buildJbigi-linux64" description="Build self-contained Debian package">
+    <echo message="Building I2P+ Debian package..."/>
+    <exec executable="bash" dir="${basedir}" failonerror="true">
+      <arg value="scripts/build-deb.sh"/>
+      <arg value="${full.version}"/>
     </exec>
   </target>
 

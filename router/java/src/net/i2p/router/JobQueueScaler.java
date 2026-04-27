@@ -77,6 +77,7 @@ class JobQueueScaler implements Runnable {
     private static final int DEFAULT_SCALE_UP_STEP = 1; // Add 1 at a time (very conservative to avoid disruption)
     private static final int DEFAULT_SCALE_DOWN_STEP = 1;
     private static final int SUSTAINED_CHECKS_REQUIRED = 3; // 3 checks (need sustained evidence for sub-μs targets)
+    private static final int SUSTAINED_CHECKS_REQUIRED_DOWN = 15; // Require more sustained evidence to scale down
 
     // Property names
     private static final String PROP_DYNAMIC_SCALING = "router.dynamicJobScaling";
@@ -506,7 +507,7 @@ class JobQueueScaler implements Runnable {
             if (readyJobs == 0 && maxLag < lagThreshold && avgLag < lagThreshold) {
                 _consecutiveScaleDownChecks++;
                 // Require sustained evidence for scale-down
-                if (_consecutiveScaleDownChecks >= SUSTAINED_CHECKS_REQUIRED) {
+                if (_consecutiveScaleDownChecks >= SUSTAINED_CHECKS_REQUIRED_DOWN) {
                     int runnersToRemove = Math.min(DEFAULT_SCALE_DOWN_STEP, activeRunners - minRunners);
                     if (runnersToRemove > 0) {
                         scaleDown(runnersToRemove, readyJobs, maxLag);

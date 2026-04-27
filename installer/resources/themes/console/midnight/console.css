@@ -293,7 +293,7 @@ button.download.control:active{background:var(--download) no-repeat center cente
 #sb_notice.hide,#sb_notice.hide+hr,#sb_updatesection.hide,#sb_updatesection.hide+hr{display:none}
 .sb_notice+.sb_notice{margin-top:10px}
 .sb_notice a{padding:0}
-#sb_warning{margin-left:-10px;margin-bottom:7px;margin-right:-10px;border-bottom:var(--border)}
+#sb_warning{margin-left:-10px;margin-bottom:4px!important;margin-right:-10px;border-bottom:var(--border)}
 #sb_warning a:not(:hover):not(:focus):not(:active){color:#900}
 #sb_warning+.sb_notice{margin-top:12px}
 #sb_warning+hr{margin-top:6px}

@@ -1909,7 +1909,8 @@ public class CommSystemFacadeImpl extends CommSystemFacade {
         }
 
         String country = _geoIP.get(ip);
-        if (ri != null && country == null || country.equals("xx")) {
+        if (ri == null || country == null) {return "xx";}
+        if (ri != null && country.equals("xx")) {
             if (_log.shouldDebug()) {
                 try {
                     InetAddress address = InetAddress.getByAddress(ip);

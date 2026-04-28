@@ -1,11 +1,13 @@
 package net.i2p.router.networkdb.kademlia;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import net.i2p.data.Hash;
 import net.i2p.data.i2np.I2NPMessage;
 import net.i2p.data.router.RouterInfo;
 import net.i2p.router.CommSystemFacade.Status;
+import net.i2p.router.Job;
 import net.i2p.router.JobImpl;
 import net.i2p.router.Router;
 import net.i2p.router.RouterContext;
@@ -25,6 +27,7 @@ import net.i2p.util.SystemVersion;
  */
 class StartExplorersJob extends JobImpl {
     private static final int MAX_PER_RUN = 256;
+    private static final int MAX_EXPLORE_JOBS = 16;
     private static final int MIN_RERUN_DELAY_MS = 90 * 1000;
     private static final int MAX_RERUN_DELAY_MS = 15 * 60 * 1000;
     private static final int STARTUP_TIME = 2 * 60 * 60 * 1000; // 2 hours
@@ -99,7 +102,28 @@ class StartExplorersJob extends JobImpl {
             _log.info("Exploring " + numExplorations + " buckets during this run");
         }
 
-        Set<Hash> keysToExplore = selectKeysToExplore(numExplorations);
+        // Don't flood the queue - cap at MAX_EXPLORE_JOBS concurrent
+        java.util.List<Job> activeJobs = new java.util.ArrayList<Job>(8);
+        java.util.List<Job> readyJobs = new java.util.ArrayList<Job>(64);
+        java.util.List<Job> timedJobs = new java.util.ArrayList<Job>(64);
+        java.util.List<Job> justFinishedJobs = new java.util.ArrayList<Job>(8);
+        ctx.jobQueue().getJobs(readyJobs, timedJobs, activeJobs, justFinishedJobs);
+        int exploring = 0;
+        for (Job j : activeJobs) {
+            if (j.getName().contains("Explore Kademlia NetDb")) {
+                exploring++;
+            }
+        }
+        if (exploring >= MAX_EXPLORE_JOBS) {
+            if (_log.shouldInfo()) {
+                _log.info("Skipping exploration - " + exploring + " jobs already running (max " + MAX_EXPLORE_JOBS + ")");
+            }
+            scheduleNextRun(ctx, lag, msgDelay, highLoad);
+            return;
+        }
+        int toQueue = Math.min(numExplorations, MAX_EXPLORE_JOBS - exploring);
+
+        Set<Hash> keysToExplore = selectKeysToExplore(toQueue);
         _facade.removeFromExploreKeys(keysToExplore);
 
         final int floodfillCount = ctx.peerManager().countPeersByCapability(FloodfillNetworkDatabaseFacade.CAPABILITY_FLOODFILL);
@@ -160,8 +184,14 @@ class StartExplorersJob extends JobImpl {
                 return Integer.parseInt(exploreBucketsProp);
             } catch (NumberFormatException nfe) {
                 _log.warn("Invalid value for exploreBuckets: " + exploreBucketsProp);
-                // fallback to dynamic calculation
             }
+        }
+
+        // Reduce explorations when lag is high to avoid flooding the queue
+        if (lag > 2000) {
+            num /= 4;
+        } else if (lag > 1000) {
+            num /= 2;
         }
 
         if (datastoreSize < MIN_ROUTERS) {

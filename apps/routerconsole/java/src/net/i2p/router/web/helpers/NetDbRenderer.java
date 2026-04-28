@@ -412,33 +412,36 @@ class NetDbRenderer {
      */
     private void paginate(StringBuilder buf, StringBuilder ubuf, int page, int pageSize, boolean morePages, int sz) {
         int totalPages = (int) Math.ceil((double) sz / pageSize);
-        if (sz > 1) {
+        if (sz > 5) {
             String results = "<span id=results" + (sz > pageSize ? " class=more" : "") + ">" + sz + " " + _t("results") + "</span>\n";
-            buf.append("<div id=pagenav hidden>\n").append(results);
+            buf.append("<div id=pagenav>\n").append(results);
             if (sz > pageSize) {
-                int current = page + 1;
-                if (page == 0) {page++;}
-                if (current > 1) {
-                    buf.append("<a href=\"/netdb?pg=").append(page).append("&amp;ps=").append(pageSize).append(ubuf)
-                       .append("\" title=\"").append(_t("Previous Page")).append("\"><span id=prevPage class=pageLink>‹</span></a>");
-                }  else {
-                    buf.append("<span id=prevPage class=\"pageLink disabled\">‹</span>" );
-                }
-                for (int i = 1; i <= totalPages; i++) {
-                    if (i <= totalPages) {
-                        buf.append(" <a href=\"/netdb?pg=").append(i).append("&amp;ps=").append(pageSize).append(ubuf).append("\"")
-                           .append(i == current ? " id=currentPage" : "").append(">")
-                           .append("<span class=pageLink>").append(i).append("</span></a> ");
+                buf.append("<span class=navbuttons>");
+                if (sz > pageSize) {
+                    int current = page + 1;
+                    if (page == 0) {page++;}
+                    if (current > 1) {
+                        buf.append("<a href=\"/netdb?pg=").append(page).append("&amp;ps=").append(pageSize).append(ubuf)
+                           .append("\" title=\"").append(_t("Previous Page")).append("\"><span id=prevPage class=pageLink>‹</span></a>");
+                    } else {
+                        buf.append("<span id=prevPage class=\"pageLink disabled\">‹</span>" );
+                    }
+                    for (int i = 1; i <= totalPages; i++) {
+                        if (i <= totalPages) {
+                            buf.append(" <a href=\"/netdb?pg=").append(i).append("&amp;ps=").append(pageSize).append(ubuf).append("\"")
+                               .append(i == current ? " id=currentPage" : "").append(">")
+                               .append("<span class=pageLink>").append(i).append("</span></a> ");
+                        }
+                    }
+                    if (current < totalPages) {
+                        buf.append("<a href=\"/netdb?pg=").append(page + 2).append("&amp;ps=").append(pageSize).append(ubuf)
+                           .append("\" title=\"").append(_t("Next Page")).append("\">").append("<span id=nextPage class=pageLink>›</span></a>\n");
+                    } else {
+                        buf.append("<span id=nextPage class=\"pageLink disabled\">›</span>\n");
                     }
                 }
-                if (current < totalPages) {
-                    buf.append("<a href=\"/netdb?pg=").append(page + 2).append("&amp;ps=").append(pageSize).append(ubuf)
-                       .append("\" title=\"").append(_t("Next Page")).append("\">").append("<span id=nextPage class=pageLink>›</span></a>\n");
-                } else {
-                    buf.append("<span id=nextPage class=\"pageLink disabled\">›</span>\n");
-                }
+                buf.append("</span></div>\n");
             }
-            buf.append("</div>\n");
         }
     }
 

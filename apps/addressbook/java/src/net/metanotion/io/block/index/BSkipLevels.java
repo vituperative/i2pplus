@@ -61,7 +61,7 @@ import net.metanotion.util.skiplist.SkipSpan;
  * @param <V> the type of mapped values
  */
 public class BSkipLevels<K extends Comparable<? super K>, V> extends SkipLevels<K, V> {
-	private static final long MAGIC = 0x42534c6576656c73l;  // "BSLevels"
+	private static final long MAGIC = 0x42534c6576656c73L;  // "BSLevels"
 	/** Fixed header length in bytes */
 	static final int HEADER_LEN = 16;
 	/** Page number of this level */

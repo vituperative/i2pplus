@@ -57,7 +57,7 @@ import net.metanotion.util.skiplist.*;
  * @param <V> type of mapped values
  */
 public class BSkipList<K extends Comparable<? super K>, V> extends SkipList<K, V> implements Closeable {
-	private static final long MAGIC = 0x536b69704c697374l;  // "SkipList"
+	private static final long MAGIC = 0x536b69704c697374L;  // "SkipList"
 	/** Page number of the first span */
 	public int firstSpanPage = 0;
 	/** Page number of the first level */

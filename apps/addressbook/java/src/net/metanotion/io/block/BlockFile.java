@@ -92,7 +92,7 @@ public class BlockFile implements Closeable {
 	/** Page number for the metaindex */
 	public static final int METAINDEX_PAGE = 2;
 	/** 2**32 pages of 1024 bytes each, more or less */
-	private static final long MAX_LEN = (2l << (32 + 10)) - 1;
+	private static final long MAX_LEN = (2L << (32 + 10)) - 1;
 
 	/** new BlockFile length, containing a superblock page and a metaindex page. */
 	private long fileLen = PAGESIZE * 2;

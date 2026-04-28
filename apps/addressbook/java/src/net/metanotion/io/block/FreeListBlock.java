@@ -53,8 +53,8 @@ import net.metanotion.io.RandomAccessInterface;
  * </pre>
  */
 class FreeListBlock {
-	private static final long MAGIC = 0x2366724c69737423l;  // "#frList#"
-	private static final long MAGIC_FREE = 0x7e2146524545217el;  // "~!FREE!~"
+private static final long MAGIC = 0x2366724c69737423L;  // "#frList#"
+ 	private static final long MAGIC_FREE = 0x7e2146524545217eL;  // "~!FREE!~"
 	private static final int HEADER_LEN = 16;
 	private static final int MAX_SIZE = (BlockFile.PAGESIZE - HEADER_LEN) / 4;
 

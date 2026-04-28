@@ -3885,8 +3885,8 @@ public class SnarkManager implements CompleteListener, ClientApp, DisconnectList
                             "/i2psnark/" + linkify(snark));
                 }
             }
+            updateStatus(snark);
         }
-        updateStatus(snark);
     }
 
     /** A Snark.CompleteListener method. */

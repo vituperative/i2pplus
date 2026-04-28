@@ -105,6 +105,11 @@ class IdleTunnelMonitor implements SimpleTimer.TimedEvent {
         long detectionPeriod = _context.getProperty(PROP_DETECTION_PERIOD, DEFAULT_DETECTION_PERIOD);
         int minMessages = _context.getProperty(PROP_MIN_MESSAGES, DEFAULT_MIN_MESSAGES);
 
+        // Disable if detectionPeriod <= 0
+        if (detectionPeriod <= 0) {
+            return;
+        }
+
         // Collect all participating tunnels
         List<HopConfig> allTunnels = dispatcher.listParticipatingTunnels();
 

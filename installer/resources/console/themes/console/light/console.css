@@ -1097,8 +1097,11 @@ h3#scheduledjobs+ol li::before{background:var(--timer) no-repeat 6px center/12px
 #jobs .sectionToggle:hover::after{background:var(--dropdown_hover)}
 #jobs #schedjobs{margin-top:0;display:table!important}
 #jobs #schedjobs ul{margin-top:1px}
+#jobs #qtotals{margin-top:-2px}
+#jobs #finishedjobs.expanded+.jobqueue{margin-bottom:-2px}
 #jobs #qtotals:not(.expanded){margin-bottom:4px}
 #jobs #qtotals:not(.expanded)+#schedjobs{display:none!important}
+#jobs #scheduledjobs:not(.expanded){margin-bottom:10px}
 
 /* jobs */
 #schedjobs th:last-child{text-align:center}

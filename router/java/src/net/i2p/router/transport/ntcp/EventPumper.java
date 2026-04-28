@@ -639,7 +639,7 @@ class EventPumper implements Runnable {
         try {
             boolean connected = chan.finishConnect();
             if (_log.shouldDebug())
-                _log.debug("Processing connect for " + con + ": connected? " + connected);
+                _log.debug("Processing connect for " + con + " (" + (connected ? "Connected" :  "Disconnected") + ")");
             if (connected) {
                 if (shouldSetKeepAlive(chan))
                     chan.socket().setKeepAlive(true);

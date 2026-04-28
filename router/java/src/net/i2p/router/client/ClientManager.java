@@ -530,7 +530,7 @@ class ClientManager {
         if (runner != null)  {runner.requestLeaseSet(dest, ls, REQUEST_LEASESET_TIMEOUT, null, null);}
         else {
             if (_log.shouldWarn()) {
-                _log.warn("Cannot request LeaseSet -? No client runner found for [" + dest.toBase32().substring(0,8) +
+                _log.warn("Cannot request LeaseSet -> No ClientRunner found for [" + dest.toBase32().substring(0,8) +
                           "] - disconnected?");
             }
         }

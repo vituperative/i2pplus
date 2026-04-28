@@ -423,7 +423,7 @@ public class EditBean extends IndexBean {
 
     /** @return true if proxy authentication is enabled @since 0.8.2 */
     public boolean getProxyAuth(int tunnel) {
-        return _helper.getProxyAuth(tunnel) != "false";
+        return !_helper.getProxyAuth(tunnel).equals("false");
     }
     /** @return true if outproxy authentication is enabled @since 0.8.3 */
     public boolean getOutproxyAuth(int tunnel) {

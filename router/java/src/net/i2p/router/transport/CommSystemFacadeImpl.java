@@ -1202,7 +1202,7 @@ public class CommSystemFacadeImpl extends CommSystemFacade {
                         hostName = InetAddress.getByName(ipAddress).getCanonicalHostName();
                         // Update cache immediately with DNS result
                         rdnsCache.put(ipAddress, new CacheEntry(ipAddress, hostName, System.currentTimeMillis()));
-                        
+
                         // Check if we should do WHOIS lookup (non-blocking)
                         if ((hostName.equals(ipAddress) || _t("unknown").equals(hostName)) && enableWhoisLookups()) {
                             String countryCode = getCountryFromIPAddress(ipAddress);
@@ -1909,7 +1909,7 @@ public class CommSystemFacadeImpl extends CommSystemFacade {
         }
 
         String country = _geoIP.get(ip);
-        if (ri != null && country == null || country == "xx") {
+        if (ri != null && country == null || country.equals("xx")) {
             if (_log.shouldDebug()) {
                 try {
                     InetAddress address = InetAddress.getByAddress(ip);

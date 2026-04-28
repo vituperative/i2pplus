@@ -778,7 +778,7 @@ class InboundEstablishState extends EstablishBase implements NTCP2Payload.Payloa
             _handshakeState.writeMessage(tmp, 0, tmp, off, OPTIONS2_SIZE);
         } catch (GeneralSecurityException gse) {
             // buffer length error
-            boolean gseNotNull = gse.getMessage() != null && gse.getMessage() != "null";
+            boolean gseNotNull = gse.getMessage() != null && !gse.getMessage().equals("null");
             if (!_log.shouldWarn()) {
                 _log.error("[NTCP] BAD Outbound Establishment handshake message #2 -> " + gse.getMessage());
             }

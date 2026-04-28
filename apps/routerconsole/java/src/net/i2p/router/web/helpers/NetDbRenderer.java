@@ -329,11 +329,9 @@ class NetDbRenderer {
                                               .collect(Collectors.toList()));
         }
 
-        // Pagination UI
-        if (totalSize > pageSize) {
-            paginate(buf, urlParameters, page, pageSize, toIndex < totalSize, totalSize);
-            out.append(buf);
-        }
+        // Pagination / results UI
+        paginate(buf, urlParameters, page, pageSize, toIndex < totalSize, totalSize);
+        out.append(buf);
 
         if (sybil != null) {
             SybilRenderer.renderSybilHTML(out, _context, sybilHashes, sybil);
@@ -412,7 +410,7 @@ class NetDbRenderer {
      */
     private void paginate(StringBuilder buf, StringBuilder ubuf, int page, int pageSize, boolean morePages, int sz) {
         int totalPages = (int) Math.ceil((double) sz / pageSize);
-        if (sz > 5) {
+        if (sz > 4) {
             String results = "<span id=results" + (sz > pageSize ? " class=more" : "") + ">" + sz + " " + _t("results") + "</span>\n";
             buf.append("<div id=pagenav>\n").append(results);
             if (sz > pageSize) {

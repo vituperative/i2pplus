@@ -119,7 +119,7 @@ public class JobQueueHelper extends HelperBase {
                 }
             }
         }
-        buf.append("<div class=tablewrap id=active><h3 id=activejobs")
+        buf.append("<div class=tablewrap id=active>\n<h3 id=activejobs")
            .append(inactive ? " class=nojobs" : "").append(">")
            .append(_t("Active jobs")).append(": ").append(activeJobs.size())
            .append(lagStr)
@@ -165,7 +165,7 @@ public class JobQueueHelper extends HelperBase {
             String runtimeStr = " <span id=totalRuntime class=jobCounter style=float:right>" +
                                 _t("Duration: {0}", DataHelper.formatDuration2(totalRuntime)) +
                                 "</span>";
-            buf.append("<div class=tablewrap id=finished><h3 id=finishedjobs>")
+            buf.append("<div class=tablewrap id=finished>\n<h3 id=finishedjobs>")
                .append(_t("Just finished jobs")).append(": ").append(justFinishedJobs.size()).append(runtimeStr)
                .append("</h3>\n<ol class=jobqueue>\n");
 
@@ -258,7 +258,7 @@ public class JobQueueHelper extends HelperBase {
 
         boolean hasJobs = readyJobs.size() > 0;
         String droppedStr = " <span id=dropped class=jobCounter style=float:right>" + _t("Dropped: {0}", droppedCount) + "</span>";
-        buf.append("<div class=tablewrap id=ready><h3 id=readyjobs")
+        buf.append("<div class=tablewrap id=ready>\n<h3 id=readyjobs")
            .append(!hasJobs ? " class=nojobs" : "").append(">")
            .append(_t("Ready / waiting jobs")).append(": ").append(readyJobs.size())
            .append(droppedStr)
@@ -374,8 +374,8 @@ public class JobQueueHelper extends HelperBase {
         int activeRunners = _context.jobQueue().getActiveRunnerCount();
         int maxRunners = _context.jobQueue().getMaxRunnerCount();
         String maxDelayStr = " <span id=longest class=jobCounter style=float:right>" +
-                             _t("Max wait: {0}", DataHelper.formatDuration2(maxScheduledDelay));
-        scheduledBuf.append("<div class=tablewrap id=scheduled><h3 id=scheduledjobs>")
+                             _t("Max wait: {0}", DataHelper.formatDuration2(maxScheduledDelay) + "</span>");
+        scheduledBuf.append("<div class=tablewrap id=scheduled>\n<h3 id=scheduledjobs>")
            .append(_t("Scheduled jobs")).append(": ")
            .append(displayedJobCount).append(" / ").append(eligibleScheduledCount)
            .append(maxDelayStr)
@@ -414,15 +414,17 @@ public class JobQueueHelper extends HelperBase {
         // Update header with actual counts (simple string replacement safe here since we control the format)
         String headerPlaceholder = displayedJobCount + " / " + eligibleScheduledCount;
         scheduledBuf.replace(0, scheduledBuf.indexOf("</h3>") + 5,
-            "<div class=tablewrap id=scheduled><h3 id=scheduledjobs>" + _t("Scheduled jobs") + ": " +
+            "<div class=tablewrap id=scheduled>\n<h3 id=scheduledjobs>" + _t("Scheduled jobs") + ": " +
             headerPlaceholder + maxDelayStr + "</h3>\n");
 
         if (eligibleScheduledCount <= 0) {
+            buf.append("</div>");
             buf.setLength(0);
             return;
         } else {
             buf.append(scheduledBuf);
             getJobCounts(buf, totalQueueCounter, eligibleScheduledCount);
+            buf.append("</div>");
             out.append(buf);
             buf.setLength(0);
         }
@@ -443,7 +445,7 @@ public class JobQueueHelper extends HelperBase {
         int maxRunners = _context.jobQueue().getMaxRunnerCount();
         String runnerStr = " <span id=runners class=jobCounter style=float:right>" + _t("Runners: {0} / {1}", activeRunners, maxRunners) + "</span>";
 
-        buf.append("<div class=tablewrap id=totals><h3 id=qtotals>").append(_t("Queue Totals"))
+        buf.append("<div class=tablewrap id=totals>\n<h3 id=qtotals>").append(_t("Queue Totals"))
            .append(": ").append(totalJobs).append(runnerStr).append("</h3><table id=schedjobs>\n<tr><td>\n<ul>\n");
 
         final String TEST_TUNNEL_EN = "Test Local Tunnel";
@@ -460,7 +462,7 @@ public class JobQueueHelper extends HelperBase {
             }
             buf.append("</span></span></li>\n");
         }
-        buf.append("</ul></td></tr></table>\n");
+        buf.append("</ul></td></tr></table>\n</div>\n");
     }
 
     /**

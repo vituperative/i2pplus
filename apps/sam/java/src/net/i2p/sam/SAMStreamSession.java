@@ -624,7 +624,7 @@ class SAMStreamSession implements SAMMessageSess {
     {
         if (_log.shouldDebug())
             _log.debug ( "Protocol v1 does not support a receive limit for streams" );
-	return false ;
+	return false;
     }
 
     /**
@@ -696,7 +696,7 @@ class SAMStreamSession implements SAMMessageSess {
                 if (stillRunning) {
                     stillRunning = false;
                 }
-                runningLock.notifyAll() ;
+                runningLock.notifyAll();
             }
         }
 
@@ -793,7 +793,7 @@ class SAMStreamSession implements SAMMessageSess {
     }
 
     protected StreamSender newStreamSender ( I2PSocket s, int id ) throws IOException {
-      return new V1StreamSender ( s, id ) ;
+      return new V1StreamSender ( s, id );
     }
 
     private class V1StreamSender extends StreamSender

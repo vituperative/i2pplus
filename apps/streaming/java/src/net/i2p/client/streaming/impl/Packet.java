@@ -99,9 +99,9 @@ class Packet {
      * synchronize packet)
      *
      */
-    public static final long STREAM_ID_UNKNOWN = 0l;
+    public static final long STREAM_ID_UNKNOWN = 0L;
 
-    public static final long MAX_STREAM_ID = 0xffffffffl;
+    public static final long MAX_STREAM_ID = 0xFFFFFFFFL;
 
     /**
      * This packet is creating a new socket connection (if the receiveStreamId

@@ -79,7 +79,7 @@ public class DnsMessage {
         BADALG(21),
         BADTRUNC(22),
         BADCOOKIE(23),
-        ;
+       ;
 
         /**
          * Reverse lookup table for response codes.
@@ -144,7 +144,7 @@ public class DnsMessage {
         UNASSIGNED3,
         NOTIFY,
         UPDATE,
-        ;
+       ;
 
         /**
          * Lookup table for for opcode resolution.

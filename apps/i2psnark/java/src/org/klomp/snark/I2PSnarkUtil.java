@@ -360,7 +360,7 @@ public class I2PSnarkUtil implements DisconnectListener {
     public String getAPITarget() {
         return _apiTarget;
     }
-    ;
+   ;
 
     /**
      * @since 0.9.67
@@ -368,7 +368,7 @@ public class I2PSnarkUtil implements DisconnectListener {
     public String getAPIKey() {
         return _apiKey;
     }
-    ;
+   ;
 
     /**
      * @since 0.9.67

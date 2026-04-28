@@ -432,7 +432,7 @@ public class PackerImpl  extends TLGlobals implements Pack200.Packer {
                 // (5078608) : discount the resource files completely from segmenting
                 long inflen = (inFile.isMetaInfFile())
                                ? 0L
-                               : inFile.getInputLength() ;
+                               : inFile.getInputLength();
                 if ((segmentSize += inflen) > segmentLimit) {
                     segmentSize -= inflen;
                     // Estimate number of remaining segments:

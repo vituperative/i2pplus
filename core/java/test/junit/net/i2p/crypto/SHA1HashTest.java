@@ -79,14 +79,14 @@ public class SHA1HashTest extends TestCase {
             for (int i = BLOCKSIZE; --i >= 0; ) input[i] = (byte) i;
 
             for (int retry = 0; retry < RETRIES; retry++) {
-                for (int i = ITERATIONS; --i >= 0; ) ;
+                for (int i = ITERATIONS; --i >= 0; );
                 for (int i = ITERATIONS; --i >= 0; ) hash.engineUpdate(input, 0, BLOCKSIZE);
             }
             hash.engineReset();
 
             MessageDigest md = MessageDigest.getInstance("SHA");
             for (int retry = 0; retry < RETRIES; retry++) {
-                for (int i = ITERATIONS; --i >= 0; ) ;
+                for (int i = ITERATIONS; --i >= 0; );
                 for (int i = ITERATIONS; --i >= 0; ) md.update(input, 0, BLOCKSIZE);
             }
             md.reset();

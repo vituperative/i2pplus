@@ -553,7 +553,7 @@ public abstract class Pack200 {
          * @param out an OutputStream
          * @throws    IOException if an error is encountered.
          */
-        void pack(JarFile in, OutputStream out) throws IOException ;
+        void pack(JarFile in, OutputStream out) throws IOException;
 
         /**
          * Takes a JarInputStream and converts it into a Pack200 archive.
@@ -569,7 +569,7 @@ public abstract class Pack200 {
          * @param out an OutputStream
          * @throws    IOException if an error is encountered.
          */
-        void pack(JarInputStream in, OutputStream out) throws IOException ;
+        void pack(JarInputStream in, OutputStream out) throws IOException;
     }
 
     /**

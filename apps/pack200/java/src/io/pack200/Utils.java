@@ -272,14 +272,14 @@ class Utils {
     static String zeString(ZipEntry ze) {
         int store = (ze.getCompressedSize() > 0) ?
             (int)( (1.0 - ((double)ze.getCompressedSize()/(double)ze.getSize()))*100 )
-            : 0 ;
+            : 0;
         // Follow unzip -lv output
         return ze.getSize() + "\t" + ze.getMethod()
             + "\t" + ze.getCompressedSize() + "\t"
             + store + "%\t"
             + new Date(ze.getTime()) + "\t"
             + Long.toHexString(ze.getCrc()) + "\t"
-            + ze.getName() ;
+            + ze.getName();
     }
 
 

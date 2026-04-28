@@ -44,7 +44,7 @@ public class Edns {
     public enum OptionCode {
         UNKNOWN(-1, UnknownEdnsOption.class),
         NSID(3, Nsid.class),
-        ;
+       ;
 
         private static Map<Integer, OptionCode> INVERSE_LUT = new HashMap<>(OptionCode.values().length);
 

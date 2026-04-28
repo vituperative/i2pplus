@@ -123,7 +123,7 @@ public final class Record<D extends Data> {
         CAA(257),
         TA(32768),
         DLV(32769, DLV.class),
-        ;
+       ;
 
         /**
          * The value of this DNS record type.

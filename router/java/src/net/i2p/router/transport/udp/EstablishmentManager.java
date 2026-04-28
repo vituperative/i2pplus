@@ -148,7 +148,7 @@ class EstablishmentManager {
     /** Max queued msgs per peer while peer connection is queued */
     private static final int MAX_QUEUED_PER_PEER = SystemVersion.isSlow() ? 64 : 256;
 
-    private static final long MAX_NONCE = 0xFFFFFFFFl;
+    private static final long MAX_NONCE = 0xFFFFFFFFL;
 
     /**
      * Kill any outbound that takes more than this.
@@ -1289,7 +1289,7 @@ class EstablishmentManager {
     }
 
     /** the relay tag is a 4-byte field in the protocol */
-    public static final long MAX_TAG_VALUE = 0xFFFFFFFFl;
+    public static final long MAX_TAG_VALUE = 0xFFFFFFFFL;
 
     /**
      *  This handles both initial send and retransmission of Session Created,

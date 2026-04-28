@@ -40,11 +40,11 @@ public class XI2PLocationFilter extends HandlerWrapper {
         if (_log.shouldInfo())
             _log.info("Checking X-I2P-Location header prefix: " + xi2plocation);
         if (X_I2P_Location != null)
-            return ;
+            return;
         if (xi2plocation == null)
-            return ;
+            return;
         if (xi2plocation.equals(""))
-            return ;
+            return;
         X_I2P_Location = xi2plocation;
         if (_log.shouldInfo())
             _log.info("Caching X-I2P-Location header prefix: " + X_I2P_Location);

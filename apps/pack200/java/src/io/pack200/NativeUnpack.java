@@ -218,7 +218,7 @@ class NativeUnpack {
                             + (((long)intParts[1] << 32) >>> 32);
 
                 long   mtime = (modtime != Constants.NO_MODTIME ) ?
-                                modtime : intParts[2] ;
+                                modtime : intParts[2];
                 boolean deflateHint = (intParts[3] != 0);
                 ByteBuffer data0 = (ByteBuffer) parts[2];
                 ByteBuffer data1 = (ByteBuffer) parts[3];

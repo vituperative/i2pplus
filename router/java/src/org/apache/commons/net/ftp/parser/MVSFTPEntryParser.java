@@ -101,7 +101,7 @@ public class MVSFTPEntryParser extends ConfigurableFTPFileEntryParserImpl {
             "(\\S+)\\s+" + // number of spool files
             "(\\S+)\\s+" + // Text "Spool" ignored
             "(\\S+)\\s*" // Text "Files" ignored
-    ;
+   ;
 
     /**
      * JES INTERFACE LEVEL 2 parser Matches these entries:
@@ -145,7 +145,7 @@ public class MVSFTPEntryParser extends ConfigurableFTPFileEntryParserImpl {
             "(\\S+)\\s+" + // job status (OUTPUT,INPUT,ACTIVE) ignored
             "(\\S+)\\s+" + // job class ignored
             "(\\S+).*" // rest ignored
-    ;
+   ;
 
     private int isType = UNKNOWN_LIST_TYPE;
 

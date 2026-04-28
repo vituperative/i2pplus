@@ -1367,11 +1367,11 @@ class Package {
         }
 
         public boolean lessThan(Version that) {
-            return compareTo(that) < 0 ;
+            return compareTo(that) < 0;
         }
 
         public boolean greaterThan(Version that) {
-            return compareTo(that) > 0 ;
+            return compareTo(that) > 0;
         }
     }
 }

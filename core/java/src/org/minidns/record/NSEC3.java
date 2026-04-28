@@ -48,7 +48,7 @@ public class NSEC3 extends Data {
     public enum HashAlgorithm {
         RESERVED(0, "Reserved"),
         SHA1(1, "SHA-1"),
-        ;
+       ;
 
         HashAlgorithm(int value, String description) {
             if (value < 0 || value > 255) {

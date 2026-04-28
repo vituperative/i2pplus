@@ -67,5 +67,5 @@ interface SAMMessageSess extends Closeable {
      * @return the Destination or null
      * @since 0.9.69
      */
-    public Destination lookupDest(String name) throws I2PSessionException ;
+    public Destination lookupDest(String name) throws I2PSessionException;
 }

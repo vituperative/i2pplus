@@ -32,7 +32,7 @@ public class TLSA extends Data {
         serviceCertificateConstraint((byte) 1),
         trustAnchorAssertion((byte) 2),
         domainIssuedCertificate((byte) 3),
-        ;
+       ;
 
         public final byte byteValue;
 
@@ -47,7 +47,7 @@ public class TLSA extends Data {
     public enum Selector {
         fullCertificate((byte) 0),
         subjectPublicKeyInfo((byte) 1),
-        ;
+       ;
 
         public final byte byteValue;
 
@@ -63,7 +63,7 @@ public class TLSA extends Data {
         noHash((byte) 0),
         sha256((byte) 1),
         sha512((byte) 2),
-        ;
+       ;
 
         public final byte byteValue;
 

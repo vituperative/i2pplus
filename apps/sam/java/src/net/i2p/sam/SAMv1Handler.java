@@ -119,7 +119,7 @@ class SAMv1Handler extends SAMHandler implements SAMRawReceiver, SAMDatagramRece
                     break;
                 }
 
-                SocketChannel clientSocketChannel = getClientSocket() ;
+                SocketChannel clientSocketChannel = getClientSocket();
                 if (clientSocketChannel == null) {
                     _log.info("Connection closed by client");
                     break;
@@ -326,7 +326,7 @@ class SAMv1Handler extends SAMHandler implements SAMRawReceiver, SAMDatagramRece
   private SAMStreamSession newSAMStreamSession(String destKeystream, String direction, Properties props )
     throws IOException, DataFormatException, SAMException
   {
-    return new SAMStreamSession(destKeystream, direction, props, this) ;
+    return new SAMStreamSession(destKeystream, direction, props, this);
   }
 
     /* Parse and execute a DEST message*/
@@ -374,7 +374,7 @@ class SAMv1Handler extends SAMHandler implements SAMRawReceiver, SAMDatagramRece
                 return writeString("NAMING REPLY RESULT=KEY_NOT_FOUND NAME=\"\" MESSAGE=\"Must specify NAME\"\n");
             }
 
-            Destination dest = null ;
+            Destination dest = null;
             if (name.equals("ME")) {
                 if (rawSession != null) {
                     dest = rawSession.getDestination();
@@ -735,10 +735,10 @@ class SAMv1Handler extends SAMHandler implements SAMRawReceiver, SAMDatagramRece
                 notifyStreamOutgoingConnection ( id, "I2P_ERROR", null );
             }
         } catch (IOException e) {
-            return false ;
+            return false;
         }
 
-        return true ;
+        return true;
     }
 
   protected boolean execStreamClose(Properties props) {

@@ -60,7 +60,7 @@ public class WebAppStarter {
     private static final Set<String> BUILTINS = new HashSet<String>(8);
 
     static {
-        //_log = ContextHelper.getContext(null).logManager().getLog(WebAppStarter.class); ;
+        //_log = ContextHelper.getContext(null).logManager().getLog(WebAppStarter.class);;
         // see DefaultServlet javadocs
         String pfx = "org.eclipse.jetty.servlet.Default.";
 //        INIT_PARAMS.put(pfx + "cacheControl", "no-cache, private, max-age=2628000");

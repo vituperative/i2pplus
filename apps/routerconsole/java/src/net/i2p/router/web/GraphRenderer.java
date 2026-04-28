@@ -3,7 +3,6 @@ package net.i2p.router.web;
 import static net.i2p.router.web.GraphConstants.*;
 
 import eu.bengreen.data.utility.LargestTriangleThreeBucketsTime;
-import net.i2p.stat.RateConstants;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -21,6 +20,7 @@ import net.i2p.I2PAppContext;
 import net.i2p.data.DataHelper;
 import net.i2p.router.RouterContext;
 import net.i2p.router.util.EventLog;
+import net.i2p.stat.RateConstants;
 import net.i2p.util.Log;
 import net.i2p.util.SystemVersion;
 import org.rrd4j.core.RrdException;
@@ -66,7 +66,7 @@ class GraphRenderer {
     private static final Color AXIS_COLOR_DARK = new Color(244, 244, 190, 200);
     private static final Color AXIS_COLOR_MIDNIGHT = new Color(201, 206, 255, 200);
     private static final Color FRAME_COLOR = new Color(0, 0, 0, 0);
-    private static final Color FRAME_COLOR_DARK = new Color(0 , 0, 0, 0);
+    private static final Color FRAME_COLOR_DARK = new Color(0, 0, 0, 0);
     private static final Color AREA_COLOR = new Color(100, 160, 200, 200);
     private static final Color AREA_COLOR_DARK = new Color(0, 72, 8, 220);
     private static final Color AREA_COLOR_MIDNIGHT = new Color(0, 72, 160, 200);
@@ -89,7 +89,8 @@ class GraphRenderer {
     private static final int SIZE_LEGEND = 11;
     private static final int SIZE_TITLE = 12;
     private static final long[] RATES = RateConstants.BASIC_RATES;
-    private static final Stroke GRID_STROKE = new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, new float[] {1, 1}, 0);
+    private static final Stroke GRID_STROKE =
+            new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1, new float[] {1, 1}, 0);
 
     GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
     String[] sysfonts = e.getAvailableFontFamilyNames();
@@ -116,17 +117,40 @@ class GraphRenderer {
         throw new UnsupportedOperationException();
     }
 
-    public void render(OutputStream out) throws IOException { render(out, DEFAULT_X, DEFAULT_Y,
-                                                                     false, false, false, false, -1, 0, false); }
+    public void render(OutputStream out) throws IOException {
+        render(out, DEFAULT_X, DEFAULT_Y, false, false, false, false, -1, 0, false);
+    }
 
     /**
      *  Single graph.
      *
      *  @param endp number of periods before now
      */
-    public void render(OutputStream out, int width, int height, boolean hideLegend, boolean hideGrid, boolean hideTitle,
-                       boolean showEvents, int periodCount, int endp, boolean showCredit) throws IOException {
-        render(out, width, height, hideLegend, hideGrid, hideTitle, showEvents, periodCount, endp, showCredit, null, null);
+    public void render(
+            OutputStream out,
+            int width,
+            int height,
+            boolean hideLegend,
+            boolean hideGrid,
+            boolean hideTitle,
+            boolean showEvents,
+            int periodCount,
+            int endp,
+            boolean showCredit)
+            throws IOException {
+        render(
+                out,
+                width,
+                height,
+                hideLegend,
+                hideGrid,
+                hideTitle,
+                showEvents,
+                periodCount,
+                endp,
+                showCredit,
+                null,
+                null);
     }
 
     /**
@@ -136,31 +160,52 @@ class GraphRenderer {
      *  @param titleOverride If non-null, overrides the title
      *  @since 0.9.6 consolidated from GraphGenerator for bw.combined
      */
-    public void render(OutputStream out, int width, int height, boolean hideLegend, boolean hideGrid, boolean hideTitle,
-                       boolean showEvents, int periodCount, int endp, boolean showCredit, GraphListener lsnr2,
-                       String titleOverride) throws IOException {
+    public void render(
+            OutputStream out,
+            int width,
+            int height,
+            boolean hideLegend,
+            boolean hideGrid,
+            boolean hideTitle,
+            boolean showEvents,
+            int periodCount,
+            int endp,
+            boolean showCredit,
+            GraphListener lsnr2,
+            String titleOverride)
+            throws IOException {
         long begin = System.currentTimeMillis();
         // prevent NaNs if we are skewed ahead of system time
-        long end = Math.min(_listener.now(), begin - 75*1000);
+        long end = Math.min(_listener.now(), begin - 75 * 1000);
         long period = _listener.getRate().getPeriod();
-        if (endp > 0) {end -= period * endp;}
-        if (periodCount <= 0 || periodCount > _listener.getRows()) {periodCount = _listener.getRows();}
+        if (endp > 0) {
+            end -= period * endp;
+        }
+        if (periodCount <= 0 || periodCount > _listener.getRows()) {
+            periodCount = _listener.getRows();
+        }
         long start = end - (period * periodCount);
         ImageOutputStream ios = null;
         String theme = _context.getProperty(PROP_THEME_NAME, DEFAULT_THEME);
 
         try {
-            RrdGraphDef def = new RrdGraphDef(start/1000, end/1000);
-            if (periodCount >= 10080) {def.setDownsampler(new LargestTriangleThreeBucketsTime(100));} // 1 week
-            else if (periodCount >= 2880) {def.setDownsampler(new LargestTriangleThreeBucketsTime(200));} // 2 days
-            else if (periodCount >= 1440) {def.setDownsampler(new LargestTriangleThreeBucketsTime(500));} // 1 day
+            RrdGraphDef def = new RrdGraphDef(start / 1000, end / 1000);
+            if (periodCount >= 10080) {
+                def.setDownsampler(new LargestTriangleThreeBucketsTime(100));
+            } // 1 week
+            else if (periodCount >= 2880) {
+                def.setDownsampler(new LargestTriangleThreeBucketsTime(200));
+            } // 2 days
+            else if (periodCount >= 1440) {
+                def.setDownsampler(new LargestTriangleThreeBucketsTime(500));
+            } // 1 day
             // sidebar minigraph
-            if ((width == 250 && height == 50 && hideTitle && hideLegend && hideGrid) ||
-                (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid)) {
+            if ((width == 250 && height == 50 && hideTitle && hideLegend && hideGrid)
+                    || (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid)) {
                 def.setColor(ElementsNames.xaxis, TRANSPARENT);
                 def.setColor(ElementsNames.yaxis, TRANSPARENT);
                 def.setColor(ElementsNames.frame, TRANSPARENT);
-            // Override defaults (dark themes)
+                // Override defaults (dark themes)
             } else if (theme.equals("midnight")) {
                 def.setColor(ElementsNames.font, FONT_COLOR_MIDNIGHT);
                 def.setColor(ElementsNames.xaxis, AXIS_COLOR_MIDNIGHT);
@@ -171,15 +216,17 @@ class GraphRenderer {
                 def.setColor(ElementsNames.yaxis, AXIS_COLOR_DARK);
             }
             if (theme.equals("midnight") || theme.equals("dark")) {
-                    def.setColor(ElementsNames.back, BACK_COLOR_DARK);
-                    def.setColor(ElementsNames.canvas,TRANSPARENT);
-            } else {def.setColor(ElementsNames.back, BACK_COLOR);}
+                def.setColor(ElementsNames.back, BACK_COLOR_DARK);
+                def.setColor(ElementsNames.canvas, TRANSPARENT);
+            } else {
+                def.setColor(ElementsNames.back, BACK_COLOR);
+            }
             if (theme.equals("midnight") || theme.equals("dark")) {
                 def.setColor(ElementsNames.shadea, TRANSPARENT);
                 def.setColor(ElementsNames.shadeb, TRANSPARENT);
                 if (theme.equals("dark")) {
-                  def.setColor(ElementsNames.grid, GRID_COLOR_DARK2);
-                  def.setColor(ElementsNames.mgrid, MGRID_COLOR_DARK);
+                    def.setColor(ElementsNames.grid, GRID_COLOR_DARK2);
+                    def.setColor(ElementsNames.mgrid, MGRID_COLOR_DARK);
                 } else if (theme.equals("midnight")) {
                     def.setColor(ElementsNames.grid, GRID_COLOR_MIDNIGHT);
                     def.setColor(ElementsNames.mgrid, MGRID_COLOR_MIDNIGHT);
@@ -198,13 +245,19 @@ class GraphRenderer {
 
             if (width < 400 || height < 200 || periodCount < 120) {
                 def.setColor(ElementsNames.grid, GRID_COLOR_HIDDEN);
-                if (theme.equals("midnight")) {def.setColor(ElementsNames.mgrid, GRID_COLOR_MIDNIGHT);}
-                else if (theme.equals("dark")) {def.setColor(ElementsNames.mgrid, GRID_COLOR_DARK);}
-                else {def.setColor(ElementsNames.mgrid, GRID_COLOR);}
+                if (theme.equals("midnight")) {
+                    def.setColor(ElementsNames.mgrid, GRID_COLOR_MIDNIGHT);
+                } else if (theme.equals("dark")) {
+                    def.setColor(ElementsNames.mgrid, GRID_COLOR_DARK);
+                } else {
+                    def.setColor(ElementsNames.mgrid, GRID_COLOR);
+                }
             }
 
             String lang = Messages.getLanguage(_context);
-            if (lang == null) {lang = "en";}
+            if (lang == null) {
+                lang = "en";
+            }
 
             // improve text legibility
             int smallSize = SIZE_MONO;
@@ -222,10 +275,15 @@ class GraphRenderer {
 
             /* CJK support */
             if ("zh".equals(Messages.getLanguage(_context))) {
-                if (fontlist.contains("Noto Sans SC")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans SC";}
-                else if (fontlist.contains("Noto Sans CJK SC")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK SC";}
-                else if (fontlist.contains("Source Han Sans SC")) {DEFAULT_TITLE_FONT_NAME = "Source Han Sans SC";}
-                else {DEFAULT_TITLE_FONT_NAME = "Dialog";}
+                if (fontlist.contains("Noto Sans SC")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans SC";
+                } else if (fontlist.contains("Noto Sans CJK SC")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK SC";
+                } else if (fontlist.contains("Source Han Sans SC")) {
+                    DEFAULT_TITLE_FONT_NAME = "Source Han Sans SC";
+                } else {
+                    DEFAULT_TITLE_FONT_NAME = "Dialog";
+                }
                 if (fontlist.contains("Noto Sans Mono SC")) {
                     DEFAULT_FONT_NAME = "Noto Sans Mono SC";
                     DEFAULT_LEGEND_FONT_NAME = "Noto Sans Mono SC";
@@ -237,10 +295,15 @@ class GraphRenderer {
                     DEFAULT_LEGEND_FONT_NAME = "Monospaced";
                 }
             } else if ("jp".equals(Messages.getLanguage(_context))) {
-                if (fontlist.contains("Noto Sans JP")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans JP";}
-                else if (fontlist.contains("Noto Sans CJK JP")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK JP";}
-                else if (fontlist.contains("Source Han Sans JP")) {DEFAULT_TITLE_FONT_NAME = "Source Han Sans JP";}
-                else {DEFAULT_TITLE_FONT_NAME = "Dialog";}
+                if (fontlist.contains("Noto Sans JP")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans JP";
+                } else if (fontlist.contains("Noto Sans CJK JP")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK JP";
+                } else if (fontlist.contains("Source Han Sans JP")) {
+                    DEFAULT_TITLE_FONT_NAME = "Source Han Sans JP";
+                } else {
+                    DEFAULT_TITLE_FONT_NAME = "Dialog";
+                }
                 if (fontlist.contains("Noto Sans Mono JP")) {
                     DEFAULT_FONT_NAME = "Noto Sans Mono JP";
                     DEFAULT_LEGEND_FONT_NAME = "Noto Sans Mono JP";
@@ -252,10 +315,15 @@ class GraphRenderer {
                     DEFAULT_LEGEND_FONT_NAME = "Monospaced";
                 }
             } else if ("ko".equals(Messages.getLanguage(_context))) {
-                if (fontlist.contains("Noto Sans KO")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans KO";}
-                else if (fontlist.contains("Noto Sans CJK KO")) {DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK KO";}
-                else if (fontlist.contains("Source Han Sans KO")) {DEFAULT_TITLE_FONT_NAME = "Source Han Sans KO";}
-                else {DEFAULT_TITLE_FONT_NAME = "Dialog";}
+                if (fontlist.contains("Noto Sans KO")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans KO";
+                } else if (fontlist.contains("Noto Sans CJK KO")) {
+                    DEFAULT_TITLE_FONT_NAME = "Noto Sans CJK KO";
+                } else if (fontlist.contains("Source Han Sans KO")) {
+                    DEFAULT_TITLE_FONT_NAME = "Source Han Sans KO";
+                } else {
+                    DEFAULT_TITLE_FONT_NAME = "Dialog";
+                }
                 if (fontlist.contains("Noto Sans Mono KO")) {
                     DEFAULT_FONT_NAME = "Noto Sans Mono KO";
                     DEFAULT_LEGEND_FONT_NAME = "Noto Sans Mono KO";
@@ -288,78 +356,148 @@ class GraphRenderer {
 
             String name = _listener.getRate().getRateStat().getName();
             String graphTitle = name;
-            if (name.startsWith("tunnel.participatingTunnels")) {graphTitle = graphTitle.replaceAll("tunnel.participatingTunnels", "[Transit] Tunnel Count");}
-            if (name.startsWith("tunnel.participatingMessage")) {graphTitle = graphTitle.replaceAll("tunnel.participatingMessage", "[Transit] Message");}
-            else if (name.startsWith("tunnel.participating")) {graphTitle = graphTitle.replaceAll("tunnel.participating", "[Transit]");}
-            else if (name.startsWith("Tunnel.participating")) {graphTitle = graphTitle.replaceAll("Tunnel.participating", "[Transit]");}
-            if (name.startsWith("router.")) {graphTitle = graphTitle.replaceAll("router.", "[Router] ");}
-            if (name.startsWith("bw.")) {graphTitle = graphTitle.replaceAll("bw.", "[Router] ");}
-            if (name.startsWith("Bandwidth usage")) {graphTitle = graphTitle.replaceAll("Bandwidth usage", "[Router] Bandwidth Usage");}
-            if (name.startsWith("tunnel.buildRatio.exploratory.")) {graphTitle = graphTitle.replaceAll("tunnel.buildRatio.exploratory.", "[Exploratory] Build Ratio");}
-            if (name.startsWith("tunnel.buildExploratory")) {graphTitle = graphTitle.replaceAll("tunnel.buildExploratory", "[Exploratory] Build");}
-            if (name.startsWith("tunnel.buildClient")) {graphTitle = graphTitle.replaceAll("tunnel.buildClient", "[Tunnel] BuildClient");}
-            else if (name.startsWith("tunnel.build")) {graphTitle = graphTitle.replaceAll("tunnel.build", "[Tunnel] Build");}
-            else if (name.startsWith("tunnel.")) {graphTitle = graphTitle.replaceAll("tunnel.", "[Tunnel] ");}
-            if (name.contains("MessageCountAvg")) {graphTitle = graphTitle.replaceAll("MessageCountAvg", "Messsage Count Average");}
-            if (name.startsWith("netDb.")) {graphTitle = graphTitle.replaceAll("netDb.", "[NetDb] ");}
-            if (name.startsWith("jobQueue.")) {graphTitle = graphTitle.replaceAll("jobQueue.", "[JobQueue] ");}
-            if (name.startsWith("udp.")) {graphTitle = graphTitle.replaceAll("udp.", "[UDP] ");}
-            if (name.startsWith("ntcp.")) {graphTitle = graphTitle.replaceAll("ntcp.", "[NTCP] ");}
-            if (name.startsWith("transport.")) {graphTitle = graphTitle.replaceAll("transport.", "[Transport] ");}
-            if (name.startsWith("client.")) {graphTitle = graphTitle.replaceAll("client.", "[Client] ");}
-            if (name.startsWith("peer.")) {graphTitle = graphTitle.replaceAll("peer.", "[Peer] ");}
-            if (name.startsWith("prng.")) {graphTitle = graphTitle.replaceAll("prng.", "[Crypto] pnrg.");}
-            if (name.startsWith("crypto.")) {graphTitle = graphTitle.replaceAll("crypto.", "[Crypto] ");}
-            if (name.startsWith("bwLimiter.")) {graphTitle = graphTitle.replaceAll("bwLimiter.", "[BWLimiter] ");}
-            if (name.startsWith("pbq.")) {graphTitle = graphTitle.replaceAll("pbq.", "[Router] PBQ.");}
-            if (name.startsWith("codel.")) {graphTitle = graphTitle.replaceAll("codel.", "[Router] CODEL.");}
-            if (name.startsWith("SDSCache.")) {graphTitle = graphTitle.replaceAll("SDSCache.", "[Router] SDSCache.");}
-            if (name.startsWith("byteCache.memory.")) {graphTitle = graphTitle.replaceAll("byteCache.memory.", "[Router] ByteCache:");}
-            if (name.startsWith("stream.")) {graphTitle = graphTitle.replaceAll("stream.", "[Stream] ");}
-            if (name.equals("clock.skew")) {graphTitle = graphTitle.replaceAll("clock.skew", "[Router] Clock Skew");}
-            if (name.endsWith("InBps")) {graphTitle = graphTitle.replaceAll("InBps", "Inbound B/s");}
-            if (name.endsWith("OutBps")) {graphTitle = graphTitle.replaceAll("OutBps", "Outbound B/s");}
-            if (name.endsWith("Bps")) {graphTitle = graphTitle.replaceAll("Bps", "B/s");}
+            if (name.startsWith("tunnel.participatingTunnels")) {
+                graphTitle = graphTitle.replaceAll("tunnel.participatingTunnels", "[Transit] Tunnel Count");
+            }
+            if (name.startsWith("tunnel.participatingMessage")) {
+                graphTitle = graphTitle.replaceAll("tunnel.participatingMessage", "[Transit] Message");
+            } else if (name.startsWith("tunnel.participating")) {
+                graphTitle = graphTitle.replaceAll("tunnel.participating", "[Transit]");
+            } else if (name.startsWith("Tunnel.participating")) {
+                graphTitle = graphTitle.replaceAll("Tunnel.participating", "[Transit]");
+            }
+            if (name.startsWith("router.")) {
+                graphTitle = graphTitle.replaceAll("router.", "[Router] ");
+            }
+            if (name.startsWith("bw.")) {
+                graphTitle = graphTitle.replaceAll("bw.", "[Router] ");
+            }
+            if (name.startsWith("Bandwidth usage")) {
+                graphTitle = graphTitle.replaceAll("Bandwidth usage", "[Router] Bandwidth Usage");
+            }
+            if (name.startsWith("tunnel.buildRatio.exploratory.")) {
+                graphTitle = graphTitle.replaceAll("tunnel.buildRatio.exploratory.", "[Exploratory] Build Ratio");
+            }
+            if (name.startsWith("tunnel.buildExploratory")) {
+                graphTitle = graphTitle.replaceAll("tunnel.buildExploratory", "[Exploratory] Build");
+            }
+            if (name.startsWith("tunnel.buildClient")) {
+                graphTitle = graphTitle.replaceAll("tunnel.buildClient", "[Tunnel] BuildClient");
+            } else if (name.startsWith("tunnel.build")) {
+                graphTitle = graphTitle.replaceAll("tunnel.build", "[Tunnel] Build");
+            } else if (name.startsWith("tunnel.")) {
+                graphTitle = graphTitle.replaceAll("tunnel.", "[Tunnel] ");
+            }
+            if (name.contains("MessageCountAvg")) {
+                graphTitle = graphTitle.replaceAll("MessageCountAvg", "Messsage Count Average");
+            }
+            if (name.startsWith("netDb.")) {
+                graphTitle = graphTitle.replaceAll("netDb.", "[NetDb] ");
+            }
+            if (name.startsWith("jobQueue.")) {
+                graphTitle = graphTitle.replaceAll("jobQueue.", "[JobQueue] ");
+            }
+            if (name.startsWith("udp.")) {
+                graphTitle = graphTitle.replaceAll("udp.", "[UDP] ");
+            }
+            if (name.startsWith("ntcp.")) {
+                graphTitle = graphTitle.replaceAll("ntcp.", "[NTCP] ");
+            }
+            if (name.startsWith("transport.")) {
+                graphTitle = graphTitle.replaceAll("transport.", "[Transport] ");
+            }
+            if (name.startsWith("client.")) {
+                graphTitle = graphTitle.replaceAll("client.", "[Client] ");
+            }
+            if (name.startsWith("peer.")) {
+                graphTitle = graphTitle.replaceAll("peer.", "[Peer] ");
+            }
+            if (name.startsWith("prng.")) {
+                graphTitle = graphTitle.replaceAll("prng.", "[Crypto] pnrg.");
+            }
+            if (name.startsWith("crypto.")) {
+                graphTitle = graphTitle.replaceAll("crypto.", "[Crypto] ");
+            }
+            if (name.startsWith("bwLimiter.")) {
+                graphTitle = graphTitle.replaceAll("bwLimiter.", "[BWLimiter] ");
+            }
+            if (name.startsWith("pbq.")) {
+                graphTitle = graphTitle.replaceAll("pbq.", "[Router] PBQ.");
+            }
+            if (name.startsWith("codel.")) {
+                graphTitle = graphTitle.replaceAll("codel.", "[Router] CODEL.");
+            }
+            if (name.startsWith("SDSCache.")) {
+                graphTitle = graphTitle.replaceAll("SDSCache.", "[Router] SDSCache.");
+            }
+            if (name.startsWith("byteCache.memory.")) {
+                graphTitle = graphTitle.replaceAll("byteCache.memory.", "[Router] ByteCache:");
+            }
+            if (name.startsWith("stream.")) {
+                graphTitle = graphTitle.replaceAll("stream.", "[Stream] ");
+            }
+            if (name.equals("clock.skew")) {
+                graphTitle = graphTitle.replaceAll("clock.skew", "[Router] Clock Skew");
+            }
+            if (name.endsWith("InBps")) {
+                graphTitle = graphTitle.replaceAll("InBps", "Inbound B/s");
+            }
+            if (name.endsWith("OutBps")) {
+                graphTitle = graphTitle.replaceAll("OutBps", "Outbound B/s");
+            }
+            if (name.endsWith("Bps")) {
+                graphTitle = graphTitle.replaceAll("Bps", "B/s");
+            }
 
             boolean singleDecimalPlace = true;
             boolean noDecimalPlace = false;
             graphTitle = CSSHelper.StringFormatter.capitalizeWord(graphTitle);
-            graphTitle = graphTitle.replace("[Tunnel] Tunnel", "[Tunnel]")
-                                   .replace("Tunnel.participating", "[Transit]")
-                                   .replace("[Tunnel] Participating Tunnels", "[Transit] Tunnel Count")
-                                   .replace("Cpu", "CPU")
-                                   .replace("CPULoad", "CPU Load")
-                                   .replace(" Avg", " Average")
-                                   .replace("[Tunnel]Build", "[Tunnel] Build");
+            graphTitle = graphTitle
+                    .replace("[Tunnel] Tunnel", "[Tunnel]")
+                    .replace("Tunnel.participating", "[Transit]")
+                    .replace("[Tunnel] Participating Tunnels", "[Transit] Tunnel Count")
+                    .replace("Cpu", "CPU")
+                    .replace("CPULoad", "CPU Load")
+                    .replace(" Avg", " Average")
+                    .replace("[Tunnel]Build", "[Tunnel] Build");
 
             // heuristic to set K=1024
-            if ((name.toLowerCase().indexOf("size") >= 0 || name.toLowerCase().indexOf("memory") >= 0 ||
-                name.toLowerCase().indexOf("b/s") >= 0 || name.toLowerCase().indexOf("bps") >= 0 ||
-                name.toLowerCase().indexOf("bandwidth") >= 0 || name.toLowerCase().indexOf("bytecache") >= 0)
-                && !showEvents) {
+            if ((name.toLowerCase().indexOf("size") >= 0
+                            || name.toLowerCase().indexOf("memory") >= 0
+                            || name.toLowerCase().indexOf("b/s") >= 0
+                            || name.toLowerCase().indexOf("bps") >= 0
+                            || name.toLowerCase().indexOf("bandwidth") >= 0
+                            || name.toLowerCase().indexOf("bytecache") >= 0)
+                    && !showEvents) {
                 def.setBase(1024);
                 singleDecimalPlace = false;
             }
 
-            if (titleOverride != null) {def.setTitle(titleOverride);}
-            else if (!hideTitle) {
+            if (titleOverride != null) {
+                def.setTitle(titleOverride);
+            } else if (!hideTitle) {
                 String title;
                 String p;
 
                 // we want the formatting and translation of formatDuration2(), except not zh, and not the &nbsp;
-                if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {p = DataHelper.formatDuration(period);}
-                else {p = DataHelper.formatDuration2(period).replace("&nbsp;", " ");}
-                if (showEvents) {title = graphTitle + ' ' + _t("events in {0}", p);}
+                if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {
+                    p = DataHelper.formatDuration(period);
+                } else {
+                    p = DataHelper.formatDuration2(period).replace("&nbsp;", " ");
+                }
+                if (showEvents) {
+                    title = graphTitle + ' ' + _t("events in {0}", p);
+                }
                 title = graphTitle.replaceAll("(?<=[a-z])([A-Z])", " $1");
                 title = title.substring(0, 1).toUpperCase() + title.substring(1);
                 title = title.replace("[Tunnel] [Tunnel]", "[Tunnel]")
-                             .replace("Uild Success Avg", "Build Success Average")
-                             .replace(" Avg", "Average")
-                             .replace(".drop", " Drop")
-                             .replace(".delay", " Delay")
-                             .replace("Participating", "Transit")
-                             .replace("RILookup", "RouterInfo Lookup")
-                             .replace(" Per Second", "/s");
+                        .replace("Uild Success Avg", "Build Success Average")
+                        .replace(" Avg", "Average")
+                        .replace(".drop", " Drop")
+                        .replace(".delay", " Delay")
+                        .replace("Participating", "Transit")
+                        .replace("RILookup", "RouterInfo Lookup")
+                        .replace(" Per Second", "/s");
                 def.setTitle(title);
             }
             String path = _listener.getData().getPath();
@@ -376,16 +514,26 @@ class GraphRenderer {
                 descr = _t(_listener.getRate().getRateStat().getDescription());
             }
             def.datasource(plotName, path, plotName, GraphListener.CF, _listener.getBackendFactory());
-            if (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid) {def.area(plotName, AREA_COLOR_NEUTRAL);}
-            else if (theme.equals("dark")) {
-                if (descr.length() > 0) {def.area(plotName, AREA_COLOR_DARK, descr + "\\l");}
-                else {def.area(plotName, AREA_COLOR_DARK);}
+            if (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid) {
+                def.area(plotName, AREA_COLOR_NEUTRAL);
+            } else if (theme.equals("dark")) {
+                if (descr.length() > 0) {
+                    def.area(plotName, AREA_COLOR_DARK, descr + "\\l");
+                } else {
+                    def.area(plotName, AREA_COLOR_DARK);
+                }
             } else if (theme.equals("midnight")) {
-                if (descr.length() > 0) {def.area(plotName, AREA_COLOR_MIDNIGHT, descr + "\\l");}
-                else {def.area(plotName, AREA_COLOR_MIDNIGHT);}
+                if (descr.length() > 0) {
+                    def.area(plotName, AREA_COLOR_MIDNIGHT, descr + "\\l");
+                } else {
+                    def.area(plotName, AREA_COLOR_MIDNIGHT);
+                }
             } else {
-                if (descr.length() > 0) {def.area(plotName, AREA_COLOR, descr + "\\l");}
-                else {def.area(plotName, AREA_COLOR);}
+                if (descr.length() > 0) {
+                    def.area(plotName, AREA_COLOR, descr + "\\l");
+                } else {
+                    def.area(plotName, AREA_COLOR);
+                }
             }
 
             String numberFormat = noDecimalPlace ? "%.0f%s" : singleDecimalPlace ? "%.1f%s" : "%.2f%s";
@@ -413,11 +561,18 @@ class GraphRenderer {
                 def.datasource(plotName2, path2, plotName2, GraphListener.CF, lsnr2.getBackendFactory());
                 int linewidth = 2;
                 // sidebar graph
-                if (width == 250 && height == 50 && hideTitle && hideLegend && hideGrid) {linewidth = 3;}
-                else if (periodCount >= 720 || (periodCount >= 480 && width <= 600)) {linewidth = 1;}
-                if (theme.equals("midnight")) {def.line(plotName2, LINE_COLOR_MIDNIGHT, descr2 + "\\l", linewidth);}
-                else if (theme.equals("dark")) {def.line(plotName2, LINE_COLOR_DARK, descr2 + "\\l", linewidth);}
-                else {def.line(plotName2, LINE_COLOR, descr2 + "\\l", linewidth);}
+                if (width == 250 && height == 50 && hideTitle && hideLegend && hideGrid) {
+                    linewidth = 3;
+                } else if (periodCount >= 720 || (periodCount >= 480 && width <= 600)) {
+                    linewidth = 1;
+                }
+                if (theme.equals("midnight")) {
+                    def.line(plotName2, LINE_COLOR_MIDNIGHT, descr2 + "\\l", linewidth);
+                } else if (theme.equals("dark")) {
+                    def.line(plotName2, LINE_COLOR_DARK, descr2 + "\\l", linewidth);
+                } else {
+                    def.line(plotName2, LINE_COLOR, descr2 + "\\l", linewidth);
+                }
 
                 if (!hideLegend) {
                     Variable var = new Variable.MAX();
@@ -437,31 +592,44 @@ class GraphRenderer {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM HH:mm");
             int count = 0;
-            Color RESTART_COLOR = theme.equals("midnight") || theme.equals("dark") ? RESTART_BAR_COLOR_DARK : RESTART_BAR_COLOR;
+            Color RESTART_COLOR =
+                    theme.equals("midnight") || theme.equals("dark") ? RESTART_BAR_COLOR_DARK : RESTART_BAR_COLOR;
 
             if (!hideLegend) {
                 // '07 Jul 21:09' with month name in the system locale
                 // TODO: Fix Arabic time display
-                Map<Long, String> events = ((RouterContext)_context).router().eventLog().getEvents(EventLog.STARTED, start);
+                Map<Long, String> events =
+                        ((RouterContext) _context).router().eventLog().getEvents(EventLog.STARTED, start);
                 String prev = null;
                 String now = null;
                 for (Map.Entry<Long, String> event : events.entrySet()) {
                     long started = event.getKey().longValue();
-                    if (started >= end) {break;}
+                    if (started >= end) {
+                        break;
+                    }
                     String legend;
-                    if (count < 1) {legend = _t("Router restarted") + "\\l";}
-                    else {legend = null;}
+                    if (count < 1) {
+                        legend = _t("Router restarted") + "\\l";
+                    } else {
+                        legend = null;
+                    }
                     def.vrule(started / 1000, RESTART_COLOR, legend, 1.0f);
-                    count ++;
+                    count++;
                 }
                 def.comment(sdf.format(new Date(start)) + " — " + sdf.format(new Date(end)) + " UTC\\r");
             }
-            if (!showCredit) {def.setShowSignature(false);}
-            else if (hideLegend) {
-                if (height > 65) {def.setSignature("    " + sdf.format(new Date(end)) + " UTC");}
-                else {def.setSignature(sdf.format(new Date(end)) + " UTC");}
+            if (!showCredit) {
+                def.setShowSignature(false);
+            } else if (hideLegend) {
+                if (height > 65) {
+                    def.setSignature("    " + sdf.format(new Date(end)) + " UTC");
+                } else {
+                    def.setSignature(sdf.format(new Date(end)) + " UTC");
+                }
             }
-            if (hideLegend) {def.setNoLegend(true);}
+            if (hideLegend) {
+                def.setNoLegend(true);
+            }
             if (hideGrid) {
                 def.setDrawXGrid(false);
                 def.setDrawYGrid(false);
@@ -481,8 +649,8 @@ class GraphRenderer {
             }
 
             // render unembellished graph if we're on the sidebar or snark
-            if ((width == 250 && height == 50 && hideTitle && hideLegend && hideGrid) ||
-                (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid)) {
+            if ((width == 250 && height == 50 && hideTitle && hideLegend && hideGrid)
+                    || (width == 2000 && height == 160 && hideTitle && hideLegend && hideGrid)) {
                 def.setOnlyGraph(true);
                 def.setColor(RrdGraphDef.COLOR_CANVAS, TRANSPARENT);
                 def.setColor(RrdGraphDef.COLOR_BACK, TRANSPARENT);
@@ -491,7 +659,9 @@ class GraphRenderer {
             RrdGraphInfo info = graph.getRrdGraphInfo();
             int totalWidth = info.getWidth();
             int totalHeight = info.getHeight();
-            try {graph = new RrdGraph(def, new SVGImageWorker(totalWidth + 8, totalHeight));} // svg
+            try {
+                graph = new RrdGraph(def, new SVGImageWorker(totalWidth + 8, totalHeight));
+            } // svg
             catch (NullPointerException npe) {
                 _log.error("Error rendering graph", npe);
                 GraphGenerator.setDisabled(_context);
@@ -509,7 +679,9 @@ class GraphRenderer {
             throw new IOException("Error plotting: " + re.getLocalizedMessage());
         } catch (IOException ioe) {
             // typically org.mortbay.jetty.EofException extends java.io.EOFException
-            if (_log.shouldWarn()) {_log.warn("Error rendering", ioe);}
+            if (_log.shouldWarn()) {
+                _log.warn("Error rendering", ioe);
+            }
             throw ioe;
         } catch (OutOfMemoryError oom) {
             _log.error("Error rendering", oom);
@@ -517,8 +689,10 @@ class GraphRenderer {
         } finally {
             // this does not close the underlying stream
             if (ios != null) {
-                try {ios.close();}
-                catch (IOException ioe) {}
+                try {
+                    ios.close();
+                } catch (IOException ioe) {
+                }
             }
         }
     }
@@ -527,7 +701,9 @@ class GraphRenderer {
     private String _t(String s) {
         // the RRD font doesn't have zh chars, at least on my system
         // Works on 1.5.9 except on windows
-        if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {return s;}
+        if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {
+            return s;
+        }
         return Messages.getString(s, _context);
     }
 
@@ -537,8 +713,9 @@ class GraphRenderer {
     private String _t(String s, String o) {
         // the RRD font doesn't have zh chars, at least on my system
         // Works on 1.5.9 except on windows
-        if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {return s.replace("{0}", o);}
+        if (IS_WIN && "zh".equals(Messages.getLanguage(_context))) {
+            return s.replace("{0}", o);
+        }
         return Messages.getString(s, o, _context);
     }
-
 }

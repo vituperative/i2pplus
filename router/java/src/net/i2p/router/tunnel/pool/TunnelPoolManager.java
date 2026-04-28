@@ -922,12 +922,12 @@ public class TunnelPoolManager implements TunnelManagerFacade {
                     if (_log.shouldDebug()) {
                         _log.debug("Scheduling early expiry for slow tunnel: " + cfg.getReceiveTunnelId(0));
                     }
-                } else {
-                    // Fallback to direct removal for non-PooledTunnelCreatorConfig
-                    try {
-                        pool.removeTunnel(info);
-                    } catch (Exception e) {
-                        _log.warn("Exception removing slow tunnel " + info, e);
+                } else if (info instanceof TunnelCreatorConfig) {
+                    // Try graceful early expiry for any tunnel config, not just PooledTunnelCreatorConfig
+                    TunnelCreatorConfig cfg = (TunnelCreatorConfig) info;
+                    cfg.setExpiration(now + pruneDelay);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Scheduling early expiry for slow tunnel: " + cfg.getReceiveTunnelId(0));
                     }
                 }
             }

@@ -113,6 +113,9 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
 
     private static final long LOCAL_LEASESET_REFRESH_INTERVAL = 90 * 1000;  // 90 seconds
 
+    /** Singleton job to refresh client LeaseSets - only one instance exists */
+    private volatile RefreshClientLeaseSetsJob _refreshClientLeaseSetsJob;
+
     /**
      * Map of remote destination Hash to last access time for LeaseSets we're using as a client.
      * Used to refresh remote LeaseSets we're actively accessing and remove after 90s inactivity.
@@ -449,10 +452,11 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         _context.jobQueue().addJob(_elj); // expire old leases
 
         // Periodically refresh client LeaseSets we're using and remove stale ones
+        // Use singleton pattern to prevent duplicate jobs in queue
         if (isClientDb()) {
-            RefreshClientLeaseSetsJob job = new RefreshClientLeaseSetsJob(_context, this);
-            job.getTiming().setStartAfter(now + LOCAL_LEASESET_REFRESH_INTERVAL);
-            _context.jobQueue().addJob(job);
+            _refreshClientLeaseSetsJob = new RefreshClientLeaseSetsJob(_context, this);
+            _refreshClientLeaseSetsJob.getTiming().setStartAfter(now + LOCAL_LEASESET_REFRESH_INTERVAL);
+            _context.jobQueue().addJob(_refreshClientLeaseSetsJob);
         }
 
         // expire some routers
@@ -2497,8 +2501,11 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
      * Only applies to client NetDB (not main NetDB).
      * 1. Re-fetch LeaseSets accessed between 90s-135s ago
      * 2. Remove LeaseSets not accessed in 90s
+     * 3. If LeaseSet expires in < 60s, refresh proactively
      */
-private void refreshClientLeaseSets() {
+    private static final long PROACTIVE_REFRESH_THRESHOLD = 60 * 1000;  // Refresh if < 60s to expiry
+
+    private void refreshClientLeaseSets() {
         long now = _context.clock().now();
         long inactiveThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL;          // 90s
         long refreshThreshold = now - LOCAL_LEASESET_REFRESH_INTERVAL * 3 / 2;   // 135s
@@ -2524,6 +2531,24 @@ private void refreshClientLeaseSets() {
             if (hostname == null) {
                 _clientLeaseSetAccessTime.remove(key);
                 continue;
+            }
+
+            // Check if LeaseSet is expiring soon - proactive refresh before expiry
+            // Use raw lookup to get LeaseSet even if expired
+            DatabaseEntry ds = _ds.get(key);
+            if (ds != null && ds.isLeaseSet()) {
+                LeaseSet ls = (LeaseSet) ds;
+                long expires = ls.getLatestLeaseDate();
+                long timeToExpiry = expires - now;
+                if (timeToExpiry > 0 && timeToExpiry < PROACTIVE_REFRESH_THRESHOLD) {
+                    // Proactive refresh - LeaseSet expiring soon
+                    _clientLeaseSetAccessTime.put(key, now);
+                    lookupLeaseSetRemotely(key, null);
+                    if (_log.shouldDebug()) {
+                        _log.debug("Proactive refresh for " + hostname + " (expires in " + (timeToExpiry/1000) + "s)");
+                    }
+                    continue;
+                }
             }
 
             if (lastAccess < inactiveThreshold) {

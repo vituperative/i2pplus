@@ -1478,15 +1478,15 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
 
         if (banInvalidNTCPAddresses(routerInfo, now, caps, routerId)) {return "Invalid NTCP address";}
         if (_context.banlist().isBanlisted(h)) {return null;}
-        if (checkXG(routerInfo, caps, routerId, h)) {return null;}
-        if (checkLU(routerInfo, caps, routerId, h)) {return null;}
+        if (checkXG(routerInfo, caps, routerId, h)) {return "XG Router";}
+        if (checkLU(routerInfo, caps, routerId, h)) {return "LU Router";}
 
         long uptime = _context.router().getUptime();
         boolean upLongEnough = isUptimeLongEnough(uptime);
         long adjustedExpiration = computeAdjustedExpiration(existing);
         boolean dontFail = uptime < DONT_FAIL_PERIOD;
 
-        if (checkCountryBlocking(routerInfo, caps, routerId, h)) {return null;}
+        if (checkCountryBlocking(routerInfo, caps, routerId, h)) {return "Country blocked";}
 
         String futureBanReason = checkFutureRouterInfo(routerInfo, now, caps, routerId, h, isUs);
         if (futureBanReason != null) {return futureBanReason;}
@@ -1701,9 +1701,11 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
         if (isLowTier && isUnreachable) {
             if (!_context.banlist().isBanlisted(h)) {
                 String ipPort = getRouterIPPort(routerInfo);
-                _log.warn("Banning Router [" + routerId + "] -> LU Router");
-                _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
-                _context.banlist().banlistRouter(h, "LU Router", null, null, _context.clock().now() + 60*60*1000);
+                String version = routerInfo.getVersion();
+                String reason = version != null ? "LU Router (" + version + ")" : "LU Router";
+                _log.warn("Banning Router [" + routerId + "] -> " + reason);
+                _banLogger.logBan(h, ipPort, reason, 60*60*1000L);
+                _context.banlist().banlistRouter(h, reason, null, null, _context.clock().now() + 60*60*1000);
             }
             return true;
         }
@@ -1731,11 +1733,13 @@ _context.commSystem().forceDisconnect(h, "Blocked country: " + country);
                 if (_context.banlist().isBanlisted(h)) continue;
                 String routerId = h.toBase64().substring(0, 6);
                 String ipPort = getRouterIPPort(ri);
+                String version = ri.getVersion();
+                String reason = version != null ? "LU Router (" + version + ")" : "LU Router";
                 if (_log.shouldWarn()) {
-                    _log.warn("Removing existing LU Router from netDb: " + routerId);
+                    _log.warn("Removing existing LU Router from netDb: " + routerId + " - " + reason);
                 }
-                _banLogger.logBan(h, ipPort, "LU Router", 60*60*1000L);
-                _context.banlist().banlistRouter(h, "LU Router", null, null, _context.clock().now() + 60*60*1000);
+                _banLogger.logBan(h, ipPort, reason, 60*60*1000L);
+                _context.banlist().banlistRouter(h, reason, null, null, _context.clock().now() + 60*60*1000);
                 _ds.remove(h);
                 _kb.remove(h);
                 removed++;

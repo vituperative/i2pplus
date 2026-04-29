@@ -135,13 +135,11 @@ public class Banlist {
     }
 
     private class Cleanup extends JobImpl {
-        private List<Hash> _toUnbanlist;
         /**
          *  @param ctx the router context
          */
         public Cleanup(RouterContext ctx) {
             super(ctx);
-            _toUnbanlist = new ArrayList<Hash>(4);
             getTiming().setStartAfter(ctx.clock().now() + BANLIST_CLEANER_START_DELAY);
         }
 
@@ -151,18 +149,18 @@ public class Banlist {
          *  Removes expired ban entries and updates message history.
          */
         public void runJob() {
-            _toUnbanlist.clear();
+            List<Hash> toUnbanlist = new ArrayList<Hash>(4);
             long now = getContext().clock().now();
             try {
                 for (Iterator<Map.Entry<Hash, Entry>> iter = _entries.entrySet().iterator(); iter.hasNext(); ) {
                     Map.Entry<Hash, Entry> e = iter.next();
                     if (e.getValue().expireOn <= now) {
                         iter.remove();
-                        _toUnbanlist.add(e.getKey());
+                        toUnbanlist.add(e.getKey());
                     }
                 }
             } catch (IllegalStateException ise) {} // next time...
-            for (Hash peer : _toUnbanlist) {
+            for (Hash peer : toUnbanlist) {
                 _context.messageHistory().unbanlist(peer);
                 if (_log.shouldInfo()) {
                     _log.info("Removing expired ban from [" + peer.toBase64().substring(0,6) + "]");

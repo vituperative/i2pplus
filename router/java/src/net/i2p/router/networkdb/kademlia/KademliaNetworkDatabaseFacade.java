@@ -1471,13 +1471,13 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         String routerId = getRouterId(routerInfo);
         String caps = routerInfo.getCapabilities() != null ? routerInfo.getCapabilities().toUpperCase() : "";
         Hash h = routerInfo.getIdentity().getHash();
-        if (h == null) {return null;}
+        if (h == null) {_context.banlist().banlistRouterForever(Hash.FAKE_HASH, "Null RouterInfo hash"); return "Null RouterInfo hash";}
         boolean isUs = h.equals(_context.routerHash());
         //int existing = _kb.size();
         int existing = getStoredRouterInfoCount();
 
         if (banInvalidNTCPAddresses(routerInfo, now, caps, routerId)) {return "Invalid NTCP address";}
-        if (_context.banlist().isBanlisted(h)) {return null;}
+        if (_context.banlist().isBanlisted(h)) {return "Router is banlisted";}
         if (checkXG(routerInfo, caps, routerId, h)) {return "XG Router";}
         if (checkLU(routerInfo, caps, routerId, h)) {return "LU Router";}
 

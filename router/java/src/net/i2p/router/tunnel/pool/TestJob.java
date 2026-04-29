@@ -277,7 +277,7 @@ public class TestJob extends JobImpl {
      * Must be called when a test job completes or is cancelled.
      */
     private static void decrementTotalJobs() {
-        TOTAL_TEST_JOBS.updateAndGet(v -> Math.max(0, v - 1));
+        TOTAL_TEST_JOBS.decrementAndGet();
     }
 
     /**
@@ -499,8 +499,10 @@ public class TestJob extends JobImpl {
             maxTests = isExploratory ? 3 : 6; // Prioritize client tests under high load
         } else if (maxLag > 1000 || avgLag > 20) {
             maxTests = isExploratory ? 4 : 8; // Slightly favor client tests under moderate load
+        } else if (maxLag > 100 || avgLag > 1) {
+            maxTests = isExploratory ? 8 : 16; // Low lag - relax limits
         } else {
-            maxTests = SystemVersion.isSlow() ? MAX_CONCURRENT_TESTS : MAX_CONCURRENT_TESTS * 3 / 2; // Normal operation
+            maxTests = isExploratory ? 12 : 24; // Very low lag (<1ms avg) - maximum tests
         }
 
         int current;

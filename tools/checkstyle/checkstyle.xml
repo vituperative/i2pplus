@@ -120,7 +120,7 @@
 
     <!-- Imports -->
     <!-- <module name="AvoidStarImport"/> NOISY -->
-    <module name="RedundantImport"/>
+    <!-- <module name="RedundantImport"/> -->
     <!-- <module name="UnusedImports"/> -->
 
     <!-- Whitespace -->

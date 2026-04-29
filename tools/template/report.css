@@ -174,6 +174,7 @@ h3 .badge {
 .tabletitle .badge {
   float: right;
   min-width: 64px;
+  margin-right: -4px;
 }
 
 /* ---- Summary Tables ---- */
@@ -441,6 +442,10 @@ tr[data-detail] {
   float: left;
 }
 
+.offense .ln {
+  margin-right: 8px;
+}
+
 .snippet .code-line,
 .snippet .offense {
   text-align: left;
@@ -449,6 +454,7 @@ tr[data-detail] {
   margin: 1px -10px 1px -2px;
   padding-right: 10px;
   border-left: 2px solid #0000;
+  min-height: 20px;
 }
 
 .snippet .offense {

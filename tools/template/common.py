@@ -15,7 +15,7 @@ PROJECT_ROOT = os.path.join(TEMPLATE_DIR, "..", "..")
 # ── Config ────────────────────────────────────────────────────────────────────
 
 _DEFAULTS = {
-    "favicon": "installer/resources/themes/console/images/plus.svg",
+    "favicon": "installer/resources/console/themes/console/images/plus.svg",
     "report_prefix": "I2P+",
 }
 

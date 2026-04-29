@@ -336,7 +336,7 @@ class BuildHandler implements Runnable {
                         if (_log.shouldWarn()) {
                             _log.warn("Banning [" + peer.toBase64().substring(0,6) + "] for 4h -> No Bandwidth Tier in RouterInfo");
                         }
-                        String reason = " <b> -> </b> No Bandwidth Tier in RouterInfo";
+                        String reason = "No Bandwidth Tier in RouterInfo";
                         _context.commSystem().mayDisconnect(peer);
                         _banLogger.logBan(peer, getIPPortFromHash(peer), "No Bandwidth Tier in RouterInfo", 4*60*60*1000);
                         _context.banlist().banlistRouter(peer, reason, null, null, 4*60*60*1000);
@@ -761,7 +761,7 @@ class BuildHandler implements Runnable {
             if (from != null) {
                 _context.commSystem().mayDisconnect(from);
                 _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (IBGW+OBEP)", bantime);
-                _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (IBGW+OBEP)", null, null, System.currentTimeMillis() + bantime);
+                _context.banlist().banlistRouter(from, "Hostile Tunnel Request (IBGW+OBEP)", null, null, System.currentTimeMillis() + bantime);
                 if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (Inbound Gateway & Outbound Endpoint)");}
             } else if (shouldLog) {_log.warn("Dropping HOSTILE Tunnel Request from UNKNOWN -> IBGW+OBEP");}
             return;
@@ -771,7 +771,7 @@ class BuildHandler implements Runnable {
             if (from != null) {
                 _context.commSystem().mayDisconnect(from);
                 _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (BAD Tunnel ID)", bantime);
-                _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (BAD Tunnel ID)", null, null, System.currentTimeMillis() + bantime);
+                _context.banlist().banlistRouter(from, "Hostile Tunnel Request (BAD Tunnel ID)", null, null, System.currentTimeMillis() + bantime);
                 if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (BAD TunnelID)");}
             } else if (shouldLog) {_log.warn("Dropping HOSTILE Tunnel Request from UNKNOWN -> BAD Tunnel ID");}
             return;
@@ -785,7 +785,7 @@ class BuildHandler implements Runnable {
             if (from != null) {
                 _context.commSystem().mayDisconnect(from);
                 _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (double hop)", bantime);
-                _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (double hop)", null, null, System.currentTimeMillis() + bantime);
+                _context.banlist().banlistRouter(from, "Hostile Tunnel Request (double hop)", null, null, System.currentTimeMillis() + bantime);
                 _log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (We are 2 hops in a row!)");
             } else if (shouldLog) {_log.warn("Dropping HOSTILE Tunnel Request from UNKNOWN -> We are the next hop");}
             return;
@@ -799,7 +799,7 @@ class BuildHandler implements Runnable {
                 if (from != null) {
                     _context.commSystem().mayDisconnect(from);
                     _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (previous hop)", bantime);
-                    _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (previous hop)", null, null, System.currentTimeMillis() + bantime);
+                    _context.banlist().banlistRouter(from, "Hostile Tunnel Request (previous hop)", null, null, System.currentTimeMillis() + bantime);
                     if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (We are the previous hop!)");}
                 } else if (shouldLog) {_log.warn("Dropping HOSTILE Tunnel Request from UNKNOWN -> We are the previous hop");}
                 return;
@@ -814,7 +814,7 @@ class BuildHandler implements Runnable {
                 if (from != null) {
                     _context.commSystem().mayDisconnect(from);
                     _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (duplicate hops)", bantime);
-                    _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (duplicate hops)", null, null, System.currentTimeMillis() + bantime);
+                    _context.banlist().banlistRouter(from, "Hostile Tunnel Request (duplicate hops)", null, null, System.currentTimeMillis() + bantime);
                     if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (duplicate hops in chain)");}
                 } else if (shouldLog) {_log.warn("Dropping HOSTILE Tunnel Request from UNKNOWN -> Previous and next hop are the same");}
                 return;
@@ -846,7 +846,7 @@ class BuildHandler implements Runnable {
             if (from != null) {
                 _context.commSystem().mayDisconnect(from);
                 _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (possible replay attack)", bantime);
-                _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (possible replay attack)", null, null, System.currentTimeMillis() + bantime);
+                _context.banlist().banlistRouter(from, "Hostile Tunnel Request (possible replay attack)", null, null, System.currentTimeMillis() + bantime);
                 if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (too old, replay attack?)");}
             }
             return;
@@ -859,7 +859,7 @@ class BuildHandler implements Runnable {
             if (from != null) {
                 _context.commSystem().mayDisconnect(from);
                 _banLogger.logBan(from, getIPPortFromHash(from), "Hostile Tunnel Request (too far in future)", bantime);
-                _context.banlist().banlistRouter(from, " <b> -> </b> Hostile Tunnel Request (too far in future)", null, null, System.currentTimeMillis() + bantime);
+                _context.banlist().banlistRouter(from, "Hostile Tunnel Request (too far in future)", null, null, System.currentTimeMillis() + bantime);
                 if (shouldLog) {_log.warn("Banning [" + fromPeer + "] for " + period + "m -> Hostile Tunnel Request (too far in future)");}
             }
             return;

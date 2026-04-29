@@ -252,14 +252,16 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                     if (b != null && b.length == Hash.HASH_LENGTH) {
                         Hash h = Hash.create(b);
                         long until = e.getValue().longValue();
-                        String reason = "Sybil Analysis {0}";
-                        ban.banlistRouter(h, reason, when, null, until);
                         String ipPort = "UNKNOWN";
+                        String version = null;
                         RouterInfo ri = _context.netDb().lookupRouterInfoLocally(h);
                         if (ri != null) {
                             ipPort = getRouterIPPort(ri);
+                            version = ri.getVersion();
                             if (ipPort == null || ipPort.isEmpty()) ipPort = "UNKNOWN";
                         }
+                        String reason = version != null ? "Sybil Analysis (" + version + ")" : "Sybil Analysis";
+                        ban.banlistRouter(h, reason, when, null, until);
                         _banLogger.logBan(h, ipPort, reason, until);
                     }
                 }
@@ -570,8 +572,10 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                 blocks.add(h.toBase64());
                 RouterInfo ri = _context.netDb().lookupRouterInfoLocally(h);
                 String ipPort = "UNKNOWN";
+                String version = null;
                 if (ri != null) {
                     ipPort = getRouterIPPort(ri);
+                    version = ri.getVersion();
                     if (ipPort == null || ipPort.isEmpty()) ipPort = "UNKNOWN";
                     for (RouterAddress ra : ri.getAddresses()) {
                         byte[] ip = ra.getIP();
@@ -580,7 +584,9 @@ public class Analysis extends JobImpl implements RouterApp, Runnable {
                         if (host != null) {blocks.add(host);}
                     }
                 }
-                String reason = "Sybil Analysis (" + fmt.format(p).replace(".00", "") + " points)";
+                String reason = version != null ? "Sybil Analysis (" + version + ")" : "Sybil Analysis";
+                String detail = version != null ? " (" + version + ")" : "";
+                reason += " (" + fmt.format(p).replace(".00", "") + " points)";
                 _context.banlist().banlistRouter(h, reason, null, null, blockUntil);
                 _banLogger.logBan(h, ipPort, reason, blockUntil);
 

@@ -480,8 +480,14 @@ public class BanLogger {
             if (hasActiveBan(ip)) {
                 return;
             }
-        } else if (!_loggedHashes.add(hashStr)) {
-            return;
+        } else {
+            if (!_loggedHashes.add(hashStr)) {
+                return;
+            }
+            // Also track IP to prevent duplicate logging for same IP
+            if (ip != null && !ip.isEmpty() && !"UNKNOWN".equals(ip)) {
+                _loggedIPs.add(ip);
+            }
         }
 
         String timestamp = _dateFormat.format(new Date());

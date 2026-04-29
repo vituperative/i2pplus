@@ -111,7 +111,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
     private final ConcurrentMap<Hash, Set<RepublishLeaseSetJob>> _publishingLeaseSets =
         new ConcurrentHashMap<>(8);
 
-    private static final long LOCAL_LEASESET_REFRESH_INTERVAL = 90 * 1000;  // 90 seconds
+    private static final long LOCAL_LEASESET_REFRESH_INTERVAL = 3*60*1000;  // 3 mintes
 
     /** Singleton job to refresh client LeaseSets - only one instance exists */
     private volatile RefreshClientLeaseSetsJob _refreshClientLeaseSetsJob;
@@ -739,7 +739,7 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         return null;
     }
 
-    
+
 
     /**
      *  Lookup using the client's tunnels

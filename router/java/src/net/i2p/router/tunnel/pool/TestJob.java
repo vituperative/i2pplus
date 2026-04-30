@@ -58,13 +58,22 @@ public class TestJob extends JobImpl {
     private static final int MIN_TEST_DELAY = 60 * 1000; // 60s minimum
     private static final int MAX_TEST_DELAY = 180 * 1000; // 180s maximum
     private static final int SUCCESS_HISTORY_SIZE = 3; // Track last 3 results
+    private static final int MIN_TEST_JOBS_PER_RUNNER = 8;
+    private static final int MAX_LAG_FOR_SCHEDULE = 50;
+    private static final double POOL_COVERAGE_THRESHOLD = 0.9; // 90% of maxQueuedTests
+    private static final int MAX_EXPLORATORY_PER_POOL = 4;
+    private static final int MAX_CLIENT_PER_POOL = 8;
+    private static final float DEFAULT_SUCCESS_RATE = 0.5f; // 50% for new tunnels
+    private static final int LAG_SEVERE_MAX = 2000;
+    private static final int LAG_SEVERE_AVG = 10;
+    private static final int MAX_LAG_RESCHEDULE = 10;
 
     /**
      * Maximum number of TestJob instances that should be queued before deferring new ones.
      * Prevents job queue saturation from too many waiting tunnel tests.
      */
     private static final int MAX_QUEUED_TESTS = SystemVersion.isSlow() ? 16 : 32;
-    public static int maxQueuedTests = MAX_QUEUED_TESTS;
+    public static volatile int maxQueuedTests = MAX_QUEUED_TESTS;
 
     /**
      * Hard limit for total TestJob instances (queued + active).
@@ -108,8 +117,7 @@ public class TestJob extends JobImpl {
         try {
             long recvId = cfg.getReceiveTunnelId(0).getTunnelId();
             long sendId = cfg.getSendTunnelId(0).getTunnelId();
-            // Combine both IDs to create a unique key
-            return Long.valueOf((recvId << 32) | (sendId & 0xFFFFFFFFL));
+            return Long.valueOf((recvId & 0xFFFFFFFFL) << 32 | (sendId & 0xFFFFFFFFL));
         } catch (Exception e) {
             return null;
         }
@@ -188,10 +196,10 @@ public class TestJob extends JobImpl {
         long maxLag = ctx.jobQueue().getMaxLag();
         // Limit TestJobs to max 1/6 of available runners to leave resources for other jobs
         int activeRunners = ctx.jobQueue().getActiveRunnerCount();
-        int maxTestJobs = Math.max(8, activeRunners / 6);
+        int maxTestJobs = Math.max(MIN_TEST_JOBS_PER_RUNNER, activeRunners / 6);
         int currentTestJobs = getTotalTestJobCount();
         // If queue has ANY lag, don't add more test jobs - prevents cascade
-        if (readyCount > 0 || maxLag > 50 || currentTestJobs >= maxTestJobs) {
+        if (readyCount > 0 || maxLag > MAX_LAG_FOR_SCHEDULE || currentTestJobs >= maxTestJobs) {
             Log log = ctx.logManager().getLog(TestJob.class);
             if (log.shouldInfo()) {
                 log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag +
@@ -200,12 +208,21 @@ public class TestJob extends JobImpl {
             return false;
         }
 
-        // Try to increment total jobs counter to check limit
+        // Try to atomically check and increment total jobs counter to prevent race condition
         int current = TOTAL_TEST_JOBS.get();
         if (current >= maxQueuedTests) {
             Log log = ctx.logManager().getLog(TestJob.class);
             if (log.shouldInfo()) {
                 log.info("Limit (" + maxQueuedTests + ") reached -> Not scheduling test for " + cfg);
+            }
+            return false;
+        }
+
+        // Atomically reserve a slot to prevent race condition
+        if (!TOTAL_TEST_JOBS.compareAndSet(current, current + 1)) {
+            Log log = ctx.logManager().getLog(TestJob.class);
+            if (log.shouldDebug()) {
+                log.debug("Concurrent limit reached -> Not scheduling test for " + cfg);
             }
             return false;
         }
@@ -226,7 +243,8 @@ public class TestJob extends JobImpl {
             AtomicInteger poolCount = POOL_TEST_COUNTS.get(poolId);
             if (poolCount != null && poolCount.get() > 0) {
                 // For exploratory pools, be more restrictive to allow better coverage
-                if (pool.getSettings().isExploratory() && poolCount.get() >= 4 && current > (maxQueuedTests / 10) * 9) {
+                if (pool.getSettings().isExploratory() && poolCount.get() >= MAX_EXPLORATORY_PER_POOL &&
+                        current > (int)(maxQueuedTests * POOL_COVERAGE_THRESHOLD)) {
                     Log log = ctx.logManager().getLog(TestJob.class);
                     if (log.shouldDebug()) {
                         log.debug("Pool " + poolId + " already has " + poolCount.get() + " tests running -> Deferring for better coverage");
@@ -234,7 +252,8 @@ public class TestJob extends JobImpl {
                     return false;
                 }
                 // For client pools, allow some concurrency but limit it
-                else if (!pool.getSettings().isExploratory() && poolCount.get() >= 8 && current > (maxQueuedTests / 10) * 9) {
+                else if (!pool.getSettings().isExploratory() && poolCount.get() >= MAX_CLIENT_PER_POOL &&
+                        current > (int)(maxQueuedTests * POOL_COVERAGE_THRESHOLD)) {
                     Log log = ctx.logManager().getLog(TestJob.class);
                     if (log.shouldDebug()) {
                         log.debug("Pool " + poolId + " already has " + poolCount.get() + " tests running -> Deferring for better coverage");
@@ -256,20 +275,13 @@ public class TestJob extends JobImpl {
     }
 
     /**
-     * Atomically increment total job counter and check limits.
-     * This prevents race conditions in job scheduling.
-     *
+     * Verify total job counter not over hard limit (slot reserved in shouldSchedule).
      * @param ctx the router context
-     * @return true if job can proceed, false if limit exceeded
+     * @return true if under hard limit, false if exceeded
      */
-    private static boolean tryIncrementTotalJobs(RouterContext ctx) {
+    private static boolean isUnderHardLimit(RouterContext ctx) {
         int current = TOTAL_TEST_JOBS.get();
-        if (current >= HARD_TEST_JOB_LIMIT) {
-            return false;
-        }
-        // Simple increment - avoid contention from do-while loop
-        TOTAL_TEST_JOBS.incrementAndGet();
-        return true;
+        return current < HARD_TEST_JOB_LIMIT;
     }
 
     /**
@@ -326,30 +338,47 @@ public class TestJob extends JobImpl {
 
         // Register this test as running for the tunnel
         Long tunnelKey = getTunnelKey(cfg);
-        if (tunnelKey != null) {
-            TestJob existing = RUNNING_TESTS.putIfAbsent(tunnelKey, this);
-            if (existing != null) {
-                if (_log.shouldDebug()) {
-                    _log.debug("Test already registered for tunnel key " + tunnelKey + " -> Invalidating duplicate test for " + cfg);
-                }
-                // Clean up pool registration since we're not proceeding
-                if (_pool != null) {
-                    String poolId = getPoolId(_pool);
-                    AtomicInteger poolCount = POOL_TEST_COUNTS.get(poolId);
-                    if (poolCount != null) {
-                        poolCount.decrementAndGet();
-                        if (poolCount.get() <= 0) {
-                            POOL_TEST_COUNTS.remove(poolId);
-                        }
+        if (tunnelKey == null) {
+            if (_log.shouldWarn())
+                _log.warn("Failed to generate tunnel key -> Invalidating test for " + cfg);
+            if (_pool != null) {
+                String poolId = getPoolId(_pool);
+                AtomicInteger poolCount = POOL_TEST_COUNTS.get(poolId);
+                if (poolCount != null) {
+                    poolCount.decrementAndGet();
+                    if (poolCount.get() <= 0) {
+                        POOL_TEST_COUNTS.remove(poolId);
                     }
                 }
-                _valid = false;
-                return;
             }
+            decrementTotalJobs();
+            _valid = false;
+            return;
         }
 
-        // Increment total job counter atomically
-        if (!tryIncrementTotalJobs(ctx)) {
+        TestJob existing = RUNNING_TESTS.putIfAbsent(tunnelKey, this);
+        if (existing != null) {
+            if (_log.shouldDebug()) {
+                _log.debug("Test already registered for tunnel key " + tunnelKey + " -> Invalidating duplicate test for " + cfg);
+            }
+            // Clean up pool registration since we're not proceeding
+            if (_pool != null) {
+                String poolId = getPoolId(_pool);
+                AtomicInteger poolCount = POOL_TEST_COUNTS.get(poolId);
+                if (poolCount != null) {
+                    poolCount.decrementAndGet();
+                    if (poolCount.get() <= 0) {
+                        POOL_TEST_COUNTS.remove(poolId);
+                    }
+                }
+            }
+            decrementTotalJobs(); // Slot reserved in shouldSchedule, now unused
+            _valid = false;
+            return;
+        }
+
+        // Verify total job counter not over hard limit (slot reserved in shouldSchedule)
+        if (!isUnderHardLimit(ctx)) {
             if (_log.shouldInfo()) {
                 _log.info("Hard limit (" + HARD_TEST_JOB_LIMIT + ") reached -> Not scheduling test for " + cfg);
             }
@@ -368,6 +397,7 @@ public class TestJob extends JobImpl {
                     }
                 }
             }
+            decrementTotalJobs(); // Slot reserved in shouldSchedule, now unused
             _valid = false;
             return;
         }
@@ -387,6 +417,7 @@ public class TestJob extends JobImpl {
     public void runJob() {
         final RouterContext ctx = getContext();
         if (_pool == null || !_pool.isAlive()) {
+            cleanupTunnelTracking();
             decrementTotalJobs();
             return;
         }
@@ -403,7 +434,7 @@ public class TestJob extends JobImpl {
 
         long maxLag = ctx.jobQueue().getMaxLag();
         long avgLag = ctx.jobQueue().getAvgLag();
-        if (maxLag > 2000 || avgLag > 10) {
+        if (maxLag > LAG_SEVERE_MAX || avgLag > LAG_SEVERE_AVG) {
             // Skip exploratory tunnels first under extreme pressure
             if (isExploratory) {
                 if (_log.shouldInfo()) {
@@ -422,6 +453,7 @@ public class TestJob extends JobImpl {
                 _log.warn("Aborted test due to severe max job lag (Max: " + maxLag + " / Avg: " + avgLag + "ms) → " + _cfg);
             }
             ctx.statManager().addRateData("tunnel.testAborted", _cfg.getLength());
+            cleanupTunnelTracking();
             decrementTotalJobs();
             return; // Exit without rescheduling
         }
@@ -667,6 +699,7 @@ public class TestJob extends JobImpl {
     public void testSuccessful(int ms) {
         final RouterContext ctx = getContext();
         if (_pool == null || !_pool.isAlive()) {
+            cleanupTunnelTracking();
             decrementTotalJobs();
             return;
         }
@@ -691,6 +724,7 @@ public class TestJob extends JobImpl {
         // Clean up session tags
         clearTestTags();
         if (!scheduleRetest(false)) {
+            cleanupTunnelTracking();
             decrementTotalJobs(); // Clean up if couldn't reschedule
         }
     }
@@ -714,7 +748,7 @@ public class TestJob extends JobImpl {
     }
 
     private float getSuccessRate() {
-        if (_successCount == 0) return 0.5f; // Assume 50% for new tunnels
+        if (_successCount == 0) return DEFAULT_SUCCESS_RATE;
         return (float) _successCount / SUCCESS_HISTORY_SIZE;
     }
 
@@ -746,7 +780,7 @@ public class TestJob extends JobImpl {
         }
         if (_ratchetEncryptTag != null) {
             RatchetSKM rskm = getRatchetKeyManager();
-            if (rskm != null && _ratchetEncryptTag != null) {
+            if (rskm != null) {
                 rskm.consumeTag(_ratchetEncryptTag);
             }
             _ratchetEncryptTag = null;
@@ -772,6 +806,7 @@ public class TestJob extends JobImpl {
      */
     private void testFailed(long timeToFail) {
         if (_pool == null || !_pool.isAlive()) {
+            cleanupTunnelTracking();
             decrementTotalJobs();
             return;
         }
@@ -794,6 +829,7 @@ public class TestJob extends JobImpl {
 
         if (keepGoing) {
             if (!scheduleRetest(false)) {
+                cleanupTunnelTracking();
                 decrementTotalJobs(); // Clean up if couldn't reschedule
             }
         } else {
@@ -816,6 +852,7 @@ public class TestJob extends JobImpl {
 
             _failureCount = 0;
 
+            cleanupTunnelTracking();
             decrementTotalJobs();
         }
     }
@@ -853,9 +890,9 @@ public class TestJob extends JobImpl {
         int readyCount = ctx.jobQueue().getReadyCount();
         long maxLag = ctx.jobQueue().getMaxLag();
         int activeRunners = ctx.jobQueue().getActiveRunnerCount();
-        int maxTestJobs = Math.max(8, activeRunners / 6);
+        int maxTestJobs = Math.max(MIN_TEST_JOBS_PER_RUNNER, activeRunners / 6);
         int totalCount = getTotalTestJobCount();
-        if (readyCount > 50 || maxLag > 10 || totalCount >= maxTestJobs) {
+        if (readyCount > MAX_LAG_RESCHEDULE || maxLag > MAX_LAG_RESCHEDULE || totalCount >= maxTestJobs) {
             if (_log.shouldInfo()) {
                 _log.info("Job queue lagging or too many test jobs (" + readyCount + " ready jobs, maxLag=" + maxLag +
                          "ms, testJobs=" + totalCount + "/" + maxTestJobs + ") -> Skipping retest for " + _cfg);
@@ -986,6 +1023,7 @@ public class TestJob extends JobImpl {
      */
     @Override
     public void dropped() {
+        cleanupTunnelTracking();
         if (_counted.compareAndSet(true, false)) {
             decrementTotalJobs();
         }

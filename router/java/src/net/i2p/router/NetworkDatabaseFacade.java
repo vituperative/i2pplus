@@ -109,6 +109,22 @@ public abstract class NetworkDatabaseFacade implements Service {
     public abstract LeaseSet store(Hash key, LeaseSet leaseSet) throws IllegalArgumentException;
 
     /**
+     * Record access to a LeaseSet for refresh tracking.
+     * Only tracks if we have tunnels built AND there's a hostname.
+     *
+     * @since 0.9.67
+     */
+    public abstract void accessLeaseSet(Hash key);
+
+    /**
+     * Remove a LeaseSet from refresh tracking.
+     * Call this after HostChecker completes to avoid unnecessary refreshes.
+     *
+     * @since 0.9.67
+     */
+    public abstract void removeLeaseSetFromTracking(Hash key);
+
+    /**
      * @return the routerInfo if another router already existed at that key
      *
      * @throws IllegalArgumentException if the data is not valid

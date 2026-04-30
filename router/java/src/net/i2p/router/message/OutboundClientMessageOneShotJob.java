@@ -205,6 +205,9 @@ public class OutboundClientMessageOneShotJob extends JobImpl {
         _toString = "[" + toHash.toBase32().substring(0,8) + "]";
         // we look up here rather than runJob() so we may adjust the timeout
         _leaseSet = ctx.clientNetDb(_from.calculateHash()).lookupLeaseSetLocally(toHash);
+        if (_leaseSet != null) {
+            ctx.clientNetDb(_from.calculateHash()).accessLeaseSet(toHash);
+        }
 
         // use expiration requested by client if available, otherwise session config,
         // otherwise router config, otherwise default

@@ -74,6 +74,9 @@ public class DummyNetworkDatabaseFacade extends NetworkDatabaseFacade {
     }
 
     public void unpublish(LeaseSet localLeaseSet) {}
+    public void accessLeaseSet(Hash key) {}
+    public void removeLeaseSetFromTracking(Hash key) {}
+
     public void fail(Hash dbEntry) {
         _routers.remove(dbEntry);
     }

@@ -716,20 +716,6 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         if (ds == null || !ds.isLeaseSet()) {return null;}
         LeaseSet ls = (LeaseSet) ds;
         if (ls.isCurrent(Router.CLOCK_FUDGE_FACTOR)) {
-            if (isClientDb()) {
-                NamingService ns = _context.namingService();
-                if (ns != null) {
-                    String hostname = ns.reverseLookup(key);
-                    if (hostname != null) {
-                        // Only update once per refresh interval to avoid flooding
-                        long now = _context.clock().now();
-                        Long lastUpdate = _clientLeaseSetAccessTime.get(key);
-                        if (lastUpdate == null || now - lastUpdate > LOCAL_LEASESET_REFRESH_INTERVAL) {
-                            _clientLeaseSetAccessTime.put(key, now);
-                        }
-                    }
-                }
-            }
             return ls;
         }
         key = blindCache().getHash(key);
@@ -737,6 +723,39 @@ public abstract class KademliaNetworkDatabaseFacade extends NetworkDatabaseFacad
         // Interesting key, so either refetch it or simply explore with it
         if (_exploreKeys != null) {_exploreKeys.add(key);}
         return null;
+    }
+
+    /**
+     * Record access to a LeaseSet for refresh tracking.
+     * Call this when actively using a LeaseSet (tunnel build, outbound message).
+     * Only tracks if we have tunnels built AND there's a hostname.
+     * Do NOT call for HostChecker lookups.
+     * @since 0.9.67
+     */
+    public void accessLeaseSet(Hash key) {
+        if (!isClientDb() || key == null) return;
+        // Only track if we have tunnels built to this destination
+        if (_context.tunnelManager().getOutboundPool(key) == null) return;
+        // Only track if there's a hostname (excludes HostChecker lookups)
+        NamingService ns = _context.namingService();
+        if (ns == null) return;
+        String hostname = ns.reverseLookup(key);
+        if (hostname == null) return;
+        long now = _context.clock().now();
+        Long lastUpdate = _clientLeaseSetAccessTime.get(key);
+        if (lastUpdate == null || now - lastUpdate > LOCAL_LEASESET_REFRESH_INTERVAL) {
+            _clientLeaseSetAccessTime.put(key, now);
+        }
+    }
+
+    /**
+     * Remove a LeaseSet from refresh tracking.
+     * Call this after HostChecker completes to avoid unnecessary refreshes.
+     * @since 0.9.67
+     */
+    public void removeLeaseSetFromTracking(Hash key) {
+        if (key == null) return;
+        _clientLeaseSetAccessTime.remove(key);
     }
 
 
